@@ -12,6 +12,7 @@ namespace Haiku.Rando.Topology
             SceneId1 = sceneId1;
             SceneId2 = sceneId2;
         }
+
         public string Name { get; }
 
         public TransitionType Type { get; }
@@ -19,7 +20,7 @@ namespace Haiku.Rando.Topology
         public int SceneId1 { get; }
 
         public int SceneId2 { get; }
-
+                                                                                           
         public RoomScene Scene1 { get; set; }
 
         public RoomScene Scene2 { get; set; }
@@ -27,6 +28,17 @@ namespace Haiku.Rando.Topology
         public Vector2 Position1 { get; set; }
 
         public Vector2 Position2 { get; set; }
+
+        public string Alias1 { get; set; }
+
+        public string Alias2 { get; set; }
+
+        public string GetAlias(int sceneId)
+        {
+            if (sceneId == SceneId1) return Alias1 ?? Name;
+            if (sceneId == SceneId2) return Alias2 ?? Name;
+            return Name;
+        }
 
         public List<IRandoEdge> Incoming { get; set; } = new List<IRandoEdge>();
 

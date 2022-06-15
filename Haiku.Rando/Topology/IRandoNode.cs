@@ -6,6 +6,8 @@ namespace Haiku.Rando.Topology
     {
         string Name { get; }
 
+        string GetAlias(int sceneId);
+
         IReadOnlyList<IRandoEdge> Incoming { get; }
 
         IReadOnlyList<IRandoEdge> Outgoing { get; }

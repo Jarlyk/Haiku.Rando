@@ -2,7 +2,9 @@
 {
     public sealed class InRoomEdge : IRandoEdge
     {
-        public string Name => $"{Origin?.Name ?? string.Empty}_{Destination?.Name ?? string.Empty}";
+        public string Name => $"{Origin?.GetAlias(SceneId) ?? string.Empty}_{Destination?.GetAlias(SceneId) ?? string.Empty}";
+
+        public int SceneId { get; set; }
 
         public IRandoNode Origin { get; set; }
 

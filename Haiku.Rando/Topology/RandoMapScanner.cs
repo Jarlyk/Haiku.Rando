@@ -67,7 +67,6 @@ namespace Haiku.Rando.Topology
                 trans.Scene2 = _visitedScenes[trans.SceneId2];
             }
 
-            //TODO: Export nodes and edges to files
             var path = System.IO.Path.Combine(Assembly.GetExecutingAssembly().Location, "..\\Haiku.Rando");
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
@@ -78,6 +77,16 @@ namespace Haiku.Rando.Topology
                 foreach (var node in _allNodes)
                 {
                     writer.WriteLine($"{node.Name}");
+                }
+            }
+
+            using (var checksFile = File.Open(System.IO.Path.Combine(path, "checks.txt"), FileMode.Create, FileAccess.ReadWrite))
+            using (var writer = new StreamWriter(checksFile))
+            {
+                writer.WriteLine("SceneId,Check");
+                foreach (var check in _allNodes.OfType<RandoCheck>().OrderBy(c => c.SceneId).ThenBy(c => c.Type))
+                {
+                    writer.WriteLine($"{check.SceneId},{check.Name}");
                 }
             }
 
@@ -100,22 +109,29 @@ namespace Haiku.Rando.Topology
 
             foreach (var exit in Object.FindObjectsOfType<CapsuleElevator>())
             {
+                //NOTE: We implicitly assume only one elevator is allowed per room
                 var trans = GetTransition(exit.pointName, TransitionType.CapsuleElevator, sceneId, exit.levelToLoad);
                 SetPosition(trans, sceneId, exit.transform.position);
+                SetAlias(trans, sceneId, $"{sceneId}E");
                 transitions.Add(trans);
             }
 
-            foreach (var exit in Object.FindObjectsOfType<LoadNewLevel>())
+            var edgeExits = Object.FindObjectsOfType<LoadNewLevel>();
+            foreach (var exit in edgeExits)
             {
                 var trans = GetTransition(exit.pointName, TransitionType.Standard, sceneId, exit.levelToLoad);
                 SetPosition(trans, sceneId, exit.transform.position);
                 transitions.Add(trans);
             }
 
-            foreach (var exit in Object.FindObjectsOfType<EnterRoomTrigger>())
+            var doorExits = Object.FindObjectsOfType<EnterRoomTrigger>();
+            for (var i = 0; i < doorExits.Length; i++)
             {
+                var exit = doorExits[i];
                 var trans = GetTransition(exit.pointName, TransitionType.Standard, sceneId, exit.levelToLoad);
                 SetPosition(trans, sceneId, exit.transform.position);
+                var doorAlias = doorExits.Length > 1 ? $"{sceneId}P{exit.extraInfo}" : $"{sceneId}P";
+                SetAlias(trans, sceneId, doorAlias);
                 transitions.Add(trans);
             }
 
@@ -123,19 +139,26 @@ namespace Haiku.Rando.Topology
             {
                 var trans = GetTransition("Train", TransitionType.Train, sceneId, SpecialScenes.Train);
                 SetPosition(trans, sceneId, exit.transform.position);
+                trans.Alias1 = "Train";
+                trans.Alias2 = "Train";
                 transitions.Add(trans);
             }
 
             //Create a node for any PlayerStart locations
-            foreach (var start in Object.FindObjectsOfType<PlayerStartPoint>())
+            var startPoints = Object.FindObjectsOfType<PlayerStartPoint>();
+            for (var i = 0; i < startPoints.Length; i++)
             {
+                var start = startPoints[i];
                 var trans = GetTransition(start.pointName, TransitionType.StartPoint, sceneId, sceneId);
                 SetPosition(trans, sceneId, start.transform.position);
+                var alias = startPoints.Length > 1 ? $"{sceneId}S{i}" : $"{sceneId}S";
+                trans.Alias1 = alias;
+                trans.Alias2 = alias;
                 transitions.Add(trans);
             }
 
             //Create nodes for checks in the room
-            var checks = FindChecks();
+            var checks = FindChecks(sceneId);
 
             //TODO: Perform reachability analysis
             //TODO: Create AStarPath, configure it and generate paths between nodes
@@ -146,8 +169,10 @@ namespace Haiku.Rando.Topology
                 foreach (var otherNode in transitions.Where(n => n != node))
                 {
                     var edgeOut = new InRoomEdge(node, otherNode);
+                    edgeOut.SceneId = sceneId;
                     node.Outgoing.Add(edgeOut);
                     otherNode.Incoming.Add(edgeOut);
+                    scene.Edges.Add(edgeOut);
                     _allEdges.Add(edgeOut);
                 }
 
@@ -155,8 +180,10 @@ namespace Haiku.Rando.Topology
                 foreach (var check in checks)
                 {
                     var edgeCheck = new InRoomEdge(node, check);
+                    edgeCheck.SceneId = sceneId;
                     node.Outgoing.Add(edgeCheck);
                     check.Incoming.Add(edgeCheck);
+                    scene.Edges.Add(edgeCheck);
                     _allEdges.Add(edgeCheck);
                 }
             }
@@ -191,19 +218,31 @@ namespace Haiku.Rando.Topology
             }
         }
 
-        private List<RandoCheck> FindChecks()
+        private void SetAlias(TransitionNode node, int sceneId, string alias)
+        {
+            if (node.SceneId1 == sceneId)
+            {
+                node.Alias1 = alias;
+            }
+            else
+            {
+                node.Alias2 = alias;
+            }
+        }
+
+        private List<RandoCheck> FindChecks(int sceneId)
         {
             var checks = new List<RandoCheck>();
 
             foreach (var pickup in Object.FindObjectsOfType<PickupWrench>())
             {
-                var check = new RandoCheck(CheckType.Wrench, pickup.transform.position, 0);
+                var check = new RandoCheck(CheckType.Wrench, sceneId, pickup.transform.position, 0);
                 checks.Add(check);
             }
 
             foreach (var pickup in Object.FindObjectsOfType<UnlockTutorial>())
             {
-                var check = new RandoCheck(CheckType.Ability, pickup.transform.position, pickup.abilityID);
+                var check = new RandoCheck(CheckType.Ability, sceneId, pickup.transform.position, pickup.abilityID);
                 checks.Add(check);
             }
 
@@ -236,31 +275,86 @@ namespace Haiku.Rando.Topology
                     type = CheckType.Item;
                     itemId = pickup.itemID;
                 }
-                var check = new RandoCheck(type, pickup.transform.position, itemId) { SaveId = pickup.saveID };
+                var check = new RandoCheck(type, sceneId, pickup.transform.position, itemId) { SaveId = pickup.saveID };
                 checks.Add(check);
             }
 
             foreach (var pickup in Object.FindObjectsOfType<Disruptor>())
             {
-                var check = new RandoCheck(CheckType.MapDisruptor, pickup.transform.position, pickup.disruptorID);
+                var check = new RandoCheck(CheckType.MapDisruptor, sceneId, pickup.transform.position, pickup.disruptorID);
                 checks.Add(check);
             }
 
             foreach (var door in Object.FindObjectsOfType<SwitchDoor>())
             {
-                var check = new RandoCheck(CheckType.Lever, door.switchCollider.transform.position, door.doorID);
+                var check = new RandoCheck(CheckType.Lever, sceneId, door.switchCollider.transform.position, door.doorID);
                 checks.Add(check);
             }
 
             foreach (var pickup in Object.FindObjectsOfType<PowerCell>())
             {
-                var check = new RandoCheck(CheckType.PowerCell, pickup.transform.position, pickup.saveID) { SaveId = pickup.saveID };
+                var check = new RandoCheck(CheckType.PowerCell, sceneId, pickup.transform.position, pickup.saveID) { SaveId = pickup.saveID };
                 checks.Add(check);
+            }
+
+            foreach (var e7Shop in Object.FindObjectsOfType<e7UpgradeShop>())
+            {
+                var fireCheck = new RandoCheck(CheckType.FireRes, sceneId, e7Shop.transform.position, 0);
+                checks.Add(fireCheck);
+                var waterCheck = new RandoCheck(CheckType.WaterRes, sceneId, e7Shop.transform.position, 0);
+                checks.Add(waterCheck);
+            }
+            foreach (var shop in Object.FindObjectsOfType<ShopTrigger>())
+            {
+                foreach (var button in shop.shopItems.Select(i => i.GetComponent<IShopItem>()).OfType<ShopItemButton>())
+                {
+                    CheckType type;
+                    int itemId;
+                    if (button.chip)
+                    {
+                        type = CheckType.Chip;
+                        itemId = GameManager.instance.getChipNumber(button.chipIdentifier);
+                    }
+                    else if (button.chipSlot)
+                    {
+                        type = CheckType.ChipSlot;
+                        itemId = button.chipSlotID;
+                    }
+                    else if (button.marker)
+                    {
+                        //We ignore pins
+                        continue;
+                    }
+                    else if (button.item)
+                    {
+                        type = CheckType.Item;
+                        itemId = button.itemID;
+                    }
+                    else if (button.powercell)
+                    {
+                        type = CheckType.PowerCell;
+                        itemId = button.saveID;
+                    }
+                    else
+                    {
+                        //Unknown type?
+                        continue;
+                    }
+
+                    var check = new RandoCheck(type, sceneId, shop.transform.position, itemId)
+                    {
+                        SaveId = button.saveID, 
+                        IsShopItem = true
+                    };
+                    checks.Add(check);
+                }
             }
 
             //TODO: PinionBirdWhistle?
             //TODO: Parts monument detection
             //TODO: Lore check detection
+            
+            //TODO: Fight-gated checks; these might just fall out naturally due to just being inactive items?
 
             _allNodes.AddRange(checks);
             return checks;

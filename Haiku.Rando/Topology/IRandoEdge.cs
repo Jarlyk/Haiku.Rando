@@ -4,6 +4,8 @@
     {
         string Name { get; }
 
+        int SceneId { get; }
+
         IRandoNode Origin { get; }
 
         IRandoNode Destination { get; }

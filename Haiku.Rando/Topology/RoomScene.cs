@@ -7,5 +7,7 @@ namespace Haiku.Rando.Topology
         public int SceneId { get; set; }
 
         public List<IRandoNode> Nodes { get; set; } = new List<IRandoNode>();
+
+        public List<IRandoEdge> Edges { get; set; } = new List<IRandoEdge>();
     }
 }

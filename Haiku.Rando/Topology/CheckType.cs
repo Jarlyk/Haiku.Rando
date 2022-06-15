@@ -12,6 +12,8 @@
         Lever,
         PartsMonument,
         PowerCell,
-        Coolant
+        Coolant,
+        FireRes,
+        WaterRes
     }
 }
