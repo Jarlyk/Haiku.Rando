@@ -33,6 +33,9 @@
     <Reference Include="UnityEngine">
       <HintPath>..\lib\Game\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>..\lib\Game\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\lib\Game\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
@@ -47,6 +50,9 @@
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>..\lib\Game\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>..\lib\Game\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.Physics2DModule">
       <HintPath>..\lib\Game\UnityEngine.Physics2DModule.dll</HintPath>

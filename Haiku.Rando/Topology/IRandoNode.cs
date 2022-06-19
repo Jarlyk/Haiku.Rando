@@ -8,8 +8,8 @@ namespace Haiku.Rando.Topology
 
         string GetAlias(int sceneId);
 
-        IReadOnlyList<IRandoEdge> Incoming { get; }
+        IReadOnlyList<GraphEdge> Incoming { get; }
 
-        IReadOnlyList<IRandoEdge> Outgoing { get; }
+        IReadOnlyList<GraphEdge> Outgoing { get; }
     }
 }

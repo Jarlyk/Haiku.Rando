@@ -7,5 +7,6 @@ namespace Haiku.Rando
     public static class SpecialScenes
     {
         public const int Train = 9;
+        public const int GameStart = 10;
     }
 }

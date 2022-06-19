@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using BepInEx;
+using Haiku.Rando.Checks;
 using Haiku.Rando.Topology;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ namespace Haiku.Rando
     {
         public void Awake()
         {
+            UniversalPickup.InitHooks();
+            CheckManager.InitHooks();
         }
 
         public void Update()

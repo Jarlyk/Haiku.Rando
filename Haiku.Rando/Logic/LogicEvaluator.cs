@@ -7,12 +7,18 @@ namespace Haiku.Rando.Logic
 {
     public sealed class LogicEvaluator
     {
-        public ICheckRandoContext Context { get; }
+        public ICheckRandoContext Context { get; set; }
 
-        public bool CanTraverse(IRandoEdge edge)
+        public bool CanTraverse(GraphEdge edge)
         {
             //TODO
             return true;
+        }
+
+        public IReadOnlyList<LogicCondition> GetMissingLogic(GraphEdge edge)
+        {
+            //TODO
+            return new LogicCondition[] { };
         }
     }
 }

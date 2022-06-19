@@ -27,6 +27,7 @@ namespace Haiku.Rando.Logic
             _random = new Xoroshiro128Plus(_config.Seed);
         }
 
+        public RandoTopology Topology => _topology;
         public IReadOnlyDictionary<RandoCheck, RandoCheck> CheckMapping => _checkMapping;
 
         public void Randomize()
@@ -47,16 +48,18 @@ namespace Haiku.Rando.Logic
             //We're going to explore, keeping track of what we can reach and what frontier of edges are not yet passable
             var reachableTransitions = new List<TransitionNode>();
             var availableChecks = new List<RandoCheck>();
-            var frontier = new List<IRandoEdge>();
-            var explored = new List<IRandoEdge>();
+            var frontier = new List<FrontierEdge>();
+            var explored = new List<FrontierEdge>();
 
             //TODO: Populate our initial frontier based on our start point
 
             //We want to keep exploring and populating checks for as long as we have remaining checks in our pools
+            int depth = 1;
             while (_pools.Any(p => p.Count > 0))
             {
                 //Explore the frontier, expanding our available checks
-                Explore(reachableTransitions, availableChecks, frontier, explored);
+                Explore(depth, reachableTransitions, availableChecks, frontier, explored);
+                depth++;
                 if (frontier.Count == 0)
                 {
                     //If there's no more frontier, we've fully progressed
@@ -68,6 +71,12 @@ namespace Haiku.Rando.Logic
                 //Compute what checks we have available for each pool
                 var availableByPool = _pools.Select(p => availableChecks.Intersect(p).ToList()).ToList();
 
+                //Update current missing logic on the frontier
+                foreach (var edge in frontier)
+                {
+                    edge.MissingLogic = _logic.GetMissingLogic(edge.Edge);
+                }
+
                 //TODO: Determine possible frontier edges we want to unlock and score them to weight random selection
                 //TODO: Choose an edge to unlock
                 //TODO: Get the checks we need to place in order to unlock
@@ -75,26 +84,38 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private void Explore(List<TransitionNode> reachableTransitions, List<RandoCheck> availableChecks, List<IRandoEdge> frontier, List<IRandoEdge> explored)
+        private double WeighFrontier(FrontierEdge edge)
         {
-            var pendingExploration = new Stack<IRandoEdge>(frontier);
+            //TODO
+            return 0;
+        }
+
+        private double WeighCheckPlacement(RandoCheck check)
+        {
+            //TODO
+            return 0;
+        }
+
+        private void Explore(int depth, List<TransitionNode> reachableTransitions, List<RandoCheck> availableChecks, List<FrontierEdge> frontier, List<FrontierEdge> explored)
+        {
+            var pendingExploration = new Stack<FrontierEdge>(frontier);
             while (pendingExploration.Count > 0)
             {
                 var edge = pendingExploration.Pop();
-                if (_logic.CanTraverse(edge))
+                if (_logic.CanTraverse(edge.Edge))
                 {
                     frontier.Remove(edge);
                     explored.Add(edge);
-                    if (edge.Destination is RandoCheck check)
+                    if (edge.Edge.Destination is RandoCheck check)
                     {
                         availableChecks.Add(check);
                     }
-                    else if (edge.Destination is TransitionNode node)
+                    else if (edge.Edge.Destination is TransitionNode node)
                     {
                         reachableTransitions.Add(node);
-                        foreach (var edgeOut in node.Outgoing.Where(e => !explored.Contains(e)))
+                        foreach (var edgeOut in node.Outgoing.Where(e => explored.All(x => x.Edge != e)))
                         {
-                            pendingExploration.Push(edgeOut);
+                            pendingExploration.Push(new FrontierEdge(edgeOut, depth));
                         }
                     }
                 }
@@ -117,8 +138,7 @@ namespace Haiku.Rando.Logic
         private CheckPool BuildPool(params CheckType[] checkTypes)
         {
             var pool = new CheckPool();
-            var allChecks = _topology.Nodes.OfType<RandoCheck>();
-            pool.AddRange(allChecks.Where(c => checkTypes.Contains(c.Type)));
+            pool.AddRange(_topology.Checks.Where(c => checkTypes.Contains(c.Type)));
             return pool;
         }
 
@@ -134,6 +154,21 @@ namespace Haiku.Rando.Logic
 
         private sealed class CheckPool : List<RandoCheck>
         {
+        }
+
+        private sealed class FrontierEdge
+        {
+            public FrontierEdge(GraphEdge edge, int depth)
+            {
+                Edge = edge;
+                Depth = depth;
+            }
+
+            public GraphEdge Edge { get; }
+
+            public int Depth { get; }
+
+            public IReadOnlyList<LogicCondition> MissingLogic { get; set; }
         }
     }
 }

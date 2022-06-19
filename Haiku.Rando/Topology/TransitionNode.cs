@@ -21,10 +21,6 @@ namespace Haiku.Rando.Topology
 
         public int SceneId2 { get; }
                                                                                            
-        public RoomScene Scene1 { get; set; }
-
-        public RoomScene Scene2 { get; set; }
-
         public Vector2 Position1 { get; set; }
 
         public Vector2 Position2 { get; set; }
@@ -40,12 +36,12 @@ namespace Haiku.Rando.Topology
             return Name;
         }
 
-        public List<IRandoEdge> Incoming { get; set; } = new List<IRandoEdge>();
+        public List<GraphEdge> Incoming { get; } = new List<GraphEdge>();
 
-        public List<IRandoEdge> Outgoing { get; set; } = new List<IRandoEdge>();
+        public List<GraphEdge> Outgoing { get; } = new List<GraphEdge>();
 
-        IReadOnlyList<IRandoEdge> IRandoNode.Incoming => Incoming;
+        IReadOnlyList<GraphEdge> IRandoNode.Incoming => Incoming;
 
-        IReadOnlyList<IRandoEdge> IRandoNode.Outgoing => Outgoing;
+        IReadOnlyList<GraphEdge> IRandoNode.Outgoing => Outgoing;
     }
 }

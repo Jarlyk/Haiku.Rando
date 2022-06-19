@@ -16,13 +16,13 @@ namespace Haiku.Rando.Topology
 
         public string Name => $"{Type}[{CheckId}]";
 
-        public CheckType Type { get; set; }
+        public CheckType Type { get; }
 
-        public Vector2 Position { get; set; }
+        public Vector2 Position { get; }
 
-        public int SceneId { get; set; }
+        public int SceneId { get; }
 
-        public int CheckId { get; set; }
+        public int CheckId { get; }
 
         public int SaveId { get; set; }
 
@@ -32,11 +32,11 @@ namespace Haiku.Rando.Topology
 
         public string GetAlias(int sceneId) => Alias;
 
-        public List<InRoomEdge> Incoming { get; set; } = new List<InRoomEdge>();
+        public List<GraphEdge> Incoming { get; } = new List<GraphEdge>();
 
-        IReadOnlyList<IRandoEdge> IRandoNode.Incoming => Incoming;
+        IReadOnlyList<GraphEdge> IRandoNode.Incoming => Incoming;
 
-        IReadOnlyList<IRandoEdge> IRandoNode.Outgoing => Array.Empty<IRandoEdge>();
+        IReadOnlyList<GraphEdge> IRandoNode.Outgoing => Array.Empty<GraphEdge>();
         
     }
 }

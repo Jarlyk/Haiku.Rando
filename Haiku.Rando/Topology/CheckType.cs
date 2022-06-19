@@ -3,6 +3,7 @@
     public enum CheckType
     {
         Wrench,
+        Bulblet,
         Ability,
         Item,
         Chip,

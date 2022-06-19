@@ -16,7 +16,7 @@ namespace Haiku.Rando.Topology
         private readonly Dictionary<int, RoomScene> _visitedScenes = new Dictionary<int, RoomScene>();
         private readonly Dictionary<string, TransitionNode> _transitionNodes = new Dictionary<string, TransitionNode>();
         private readonly List<IRandoNode> _allNodes = new List<IRandoNode>();
-        private readonly List<IRandoEdge> _allEdges = new List<IRandoEdge>();
+        private readonly List<GraphEdge> _allEdges = new List<GraphEdge>();
 
         public IEnumerator RunScan()
         {
@@ -60,13 +60,6 @@ namespace Haiku.Rando.Topology
                 }
             }
 
-            //Post-process transition edges to wire up references
-            foreach (var trans in _transitionNodes.Values)
-            {
-                trans.Scene1 = _visitedScenes[trans.SceneId1];
-                trans.Scene2 = _visitedScenes[trans.SceneId2];
-            }
-
             var path = System.IO.Path.Combine(Assembly.GetExecutingAssembly().Location, "..\\Haiku.Rando");
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
@@ -98,13 +91,18 @@ namespace Haiku.Rando.Topology
                     writer.WriteLine($"{edge.Name}");
                 }
             }
+
+            using (var topologyFile = File.Open(System.IO.Path.Combine(path, "HaikuTopology.json"), FileMode.Create, FileAccess.ReadWrite))
+            using (var writer = new StreamWriter(topologyFile))
+            {
+                var topology = new RandoTopology(_visitedScenes, _allNodes, _allEdges);
+                topology.Serialize(writer);
+            }
         }
 
         public RoomScene AnalyzeRoom(int sceneId)
         {
-            var scene = new RoomScene();
-            scene.SceneId = sceneId;
-
+            var scene = new RoomScene(sceneId);
             var transitions = new List<TransitionNode>();
 
             foreach (var exit in Object.FindObjectsOfType<CapsuleElevator>())
@@ -168,8 +166,7 @@ namespace Haiku.Rando.Topology
             {
                 foreach (var otherNode in transitions.Where(n => n != node))
                 {
-                    var edgeOut = new InRoomEdge(node, otherNode);
-                    edgeOut.SceneId = sceneId;
+                    var edgeOut = new GraphEdge(sceneId, node, otherNode);
                     node.Outgoing.Add(edgeOut);
                     otherNode.Incoming.Add(edgeOut);
                     scene.Edges.Add(edgeOut);
@@ -179,8 +176,7 @@ namespace Haiku.Rando.Topology
                 //Currently we assume all nodes can reach all checks
                 foreach (var check in checks)
                 {
-                    var edgeCheck = new InRoomEdge(node, check);
-                    edgeCheck.SceneId = sceneId;
+                    var edgeCheck = new GraphEdge(sceneId, node, check);
                     node.Outgoing.Add(edgeCheck);
                     check.Incoming.Add(edgeCheck);
                     scene.Edges.Add(edgeCheck);
@@ -236,7 +232,13 @@ namespace Haiku.Rando.Topology
 
             foreach (var pickup in Object.FindObjectsOfType<PickupWrench>())
             {
-                var check = new RandoCheck(CheckType.Wrench, sceneId, pickup.transform.position, 0);
+                var check = new RandoCheck(CheckType.Wrench, sceneId, pickup.transform.position, 0) { SaveId = pickup.saveID };
+                checks.Add(check);
+            }
+
+            foreach (var pickup in Object.FindObjectsOfType<PickupBulb>())
+            {
+                var check = new RandoCheck(CheckType.Bulblet, sceneId, pickup.transform.position, 0);
                 checks.Add(check);
             }
 
