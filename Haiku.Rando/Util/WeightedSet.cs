@@ -11,11 +11,13 @@ namespace Haiku.Rando.Util
         private readonly List<T> _items = new List<T>();
         private readonly List<double> _partialSums = new List<double>();
 
+        public int Count => _items.Count;
+
         /// <summary>
         /// Add a new weighted entry to the set; 
         /// </summary>
-        /// <param name="weight"></param>
-        /// <param name="item"></param>
+        /// <param name="weight">Relative weight of item; must be > 0</param>
+        /// <param name="item">Item</param>
         public void Add(double weight, T item)
         {
             _items.Add(item);
@@ -40,6 +42,7 @@ namespace Haiku.Rando.Util
 
             return true;
         }
+
         public bool Contains(T item)
         {
             return _items.Contains(item);
@@ -81,7 +84,9 @@ namespace Haiku.Rando.Util
             var set = new WeightedSet<T>();
             foreach (var item in items)
             {
-                set.Add(getWeight(item), item);
+                var weight = getWeight(item);
+                if (weight > 0)
+                    set.Add(weight, item);
             }
 
             return set;

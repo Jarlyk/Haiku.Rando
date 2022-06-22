@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Haiku.Rando.Topology
 {
@@ -15,5 +17,25 @@ namespace Haiku.Rando.Topology
         public List<IRandoNode> Nodes { get; } = new List<IRandoNode>();
 
         public List<GraphEdge> Edges { get; } = new List<GraphEdge>();
+
+        public IReadOnlyList<IRandoNode> FindNodes(string pattern)
+        {
+            if (pattern == "*") return Nodes;
+
+            if (pattern.StartsWith("*"))
+            {
+                return Nodes.Where(n => n.GetAlias(SceneId).EndsWith(pattern, StringComparison.InvariantCultureIgnoreCase))
+                            .ToList();
+            }
+
+            if (pattern.EndsWith("*"))
+            {
+                return Nodes.Where(n => n.GetAlias(SceneId).StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase))
+                            .ToList();
+            }
+
+            return Nodes.Where(n => n.GetAlias(SceneId).Equals(pattern, StringComparison.InvariantCultureIgnoreCase))
+                        .ToList();
+        }
     }
 }

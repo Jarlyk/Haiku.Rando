@@ -142,7 +142,7 @@ namespace Haiku.Rando.Topology
                 transitions.Add(trans);
             }
 
-            //Create a node for any PlayerStart locations
+            //Create a node for any PlayerStart locations (used for one-way transitions, typically)
             var startPoints = Object.FindObjectsOfType<PlayerStartPoint>();
             for (var i = 0; i < startPoints.Length; i++)
             {
@@ -152,6 +152,28 @@ namespace Haiku.Rando.Topology
                 var alias = startPoints.Length > 1 ? $"{sceneId}S{i}" : $"{sceneId}S";
                 trans.Alias1 = alias;
                 trans.Alias2 = alias;
+                transitions.Add(trans);
+            }
+            
+            //Create special transition nodes for repair stations
+            var repairStations = Object.FindObjectsOfType<ReplenishHealth>();
+            for (var i = 0; i < repairStations.Length; i++)
+            {
+                var start = startPoints[i];
+                var trans = GetTransition($"{sceneId}Repair", TransitionType.RepairStation, sceneId, sceneId);
+                SetPosition(trans, sceneId, start.transform.position);
+                trans.Alias1 = trans.Name;
+                trans.Alias2 = trans.Name;
+                transitions.Add(trans);
+            }
+
+            //Special case for Haiku wake point
+            if (sceneId == SpecialScenes.GameStart)
+            {
+                var trans = GetTransition($"{sceneId}Wake", TransitionType.HaikuWake, sceneId, sceneId);
+                SetPosition(trans, sceneId, Object.FindObjectOfType<IntroSequence>().spawnPoint.position);
+                trans.Alias1 = trans.Name;
+                trans.Alias2 = trans.Name;
                 transitions.Add(trans);
             }
 
@@ -331,11 +353,6 @@ namespace Haiku.Rando.Topology
                     {
                         type = CheckType.Item;
                         itemId = button.itemID;
-                    }
-                    else if (button.powercell)
-                    {
-                        type = CheckType.PowerCell;
-                        itemId = button.saveID;
                     }
                     else
                     {

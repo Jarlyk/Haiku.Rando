@@ -5,6 +5,8 @@
         Standard,
         CapsuleElevator,
         Train,
-        StartPoint
+        StartPoint,
+        RepairStation,
+        HaikuWake
     }
 }

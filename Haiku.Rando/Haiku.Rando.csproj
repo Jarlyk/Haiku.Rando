@@ -60,5 +60,8 @@
     <Reference Include="UnityEngine.TilemapModule">
       <HintPath>..\lib\Game\UnityEngine.TilemapModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\lib\Game\UnityEngine.UI.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

@@ -20,9 +20,31 @@ namespace Haiku.Rando.Checks
 
         public static void InitHooks()
         {
-            //TODO: Check whether PickupItem.Start interacts properly in conjunction with this
-
+            On.PickupItem.Start += PickupItem_Start;
             On.PickupItem.TriggerPickup += PickupItemOnTriggerPickup;
+        }
+
+        private static void PickupItem_Start(On.PickupItem.orig_Start orig, PickupItem self)
+        {
+            var universalPickup = self.GetComponent<UniversalPickup>();
+            if (!universalPickup)
+            {
+                orig(self);
+            }
+
+            var check = universalPickup.check;
+            if (check == null) return;
+
+            bool alreadyGot = CheckManager.AlreadyGotCheck(check);
+            if (alreadyGot)
+            {
+                self.gameObject.SetActive(false);
+            }
+
+            if (universalPickup.midAir)
+            {
+                self.interactAnimator.enabled = false;
+            }
         }
 
         private static void PickupItemOnTriggerPickup(On.PickupItem.orig_TriggerPickup orig, PickupItem self)
@@ -47,16 +69,16 @@ namespace Haiku.Rando.Checks
             switch (check.Type)
             {
                 case CheckType.Wrench:
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_HEALING_WRENCH_TITLE", "", 4f);
-                    GameManager.instance.canHeal = true;
-                    GameManager.instance.worldObjects[check.SaveId].collected = true;
-                    break;
                 case CheckType.Bulblet:
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_LIGHT_BULB_TITLE", "", 4f);
-                    GameManager.instance.lightBulb = true;
-                    break;
                 case CheckType.Ability:
-                    //TODO: Maybe this should be handled by actual ability pickup object?
+                case CheckType.MapDisruptor:
+                case CheckType.Lore:
+                case CheckType.Lever:
+                case CheckType.PartsMonument:
+                case CheckType.PowerCell:
+                case CheckType.FireRes:
+                case CheckType.WaterRes:
+                    CheckManager.TriggerCheck(self, check);
                     break;
                 case CheckType.Item:
                     self.itemID = check.CheckId;
@@ -72,55 +94,12 @@ namespace Haiku.Rando.Checks
                     self.chipSlotNumber = check.CheckId;
                     orig(self);
                     break;
-                case CheckType.MapDisruptor:
-                    //TODO: This one should probably be replaced with the actual disruptor
-                    break;
-                case CheckType.Lore:
-                    //TODO
-                    break;
-                case CheckType.Lever:
-                    //TODO
-                    break;
-                case CheckType.PartsMonument:
-                    //TODO
-                    break;
-                case CheckType.PowerCell:
-                    self.StartCoroutine(CheckManager.RemoveHeat());
-                    GameManager.instance.powerCells[check.CheckId].collected = true;
-                    //TODO: Sound effect and particles from PowerCell?
-                    AchievementManager.instance.CheckNumbersOfPowercellsCollected();
-                    break;
                 case CheckType.Coolant:
                     self.triggerCoolant = true;
                     orig(self);
                     break;
-                case CheckType.FireRes:
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_FIRE_RES_TITLE", "_FIRE_RES_DESCRIPTION", 4f);
-                    GameManager.instance.fireRes = true;
-                    break;
-                case CheckType.WaterRes:
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_WATER_RES_TITLE", "_WATER_RES_DESCRIPTION", 4f);
-                    GameManager.instance.waterRes = true;
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private void Start()
-        {
-            if (check == null) return;
-
-            bool alreadyGot = CheckManager.AlreadyGotCheck(check);
-            if (alreadyGot)
-            {
-                gameObject.SetActive(false);
-            }
-
-            if (midAir)
-            {
-                var pickup = GetComponent<PickupItem>();
-                pickup.interactAnimator.enabled = false;
             }
         }
 

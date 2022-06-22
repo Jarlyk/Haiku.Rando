@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Haiku.Rando.Topology;
 using Haiku.Rando.Util;
+using UnityEngine;
 
 namespace Haiku.Rando.Logic
 {
@@ -43,7 +44,7 @@ namespace Haiku.Rando.Logic
             _randomized = true;
         }
 
-        private void ArrangeChecks()
+        private bool ArrangeChecks()
         {
             //We're going to explore, keeping track of what we can reach and what frontier of edges are not yet passable
             var reachableTransitions = new List<TransitionNode>();
@@ -51,7 +52,11 @@ namespace Haiku.Rando.Logic
             var frontier = new List<FrontierEdge>();
             var explored = new List<FrontierEdge>();
 
-            //TODO: Populate our initial frontier based on our start point
+            //Populate our initial frontier based on our start point
+            //TODO: Support other start locations besides standard wake
+            var startTrans = _topology.Transitions.First(t => t.Name == $"{SpecialScenes.GameStart}Wake");
+            reachableTransitions.Add(startTrans);
+            frontier.AddRange(startTrans.Outgoing.Select(e => new FrontierEdge(e, 0)));
 
             //We want to keep exploring and populating checks for as long as we have remaining checks in our pools
             int depth = 1;
@@ -75,13 +80,68 @@ namespace Haiku.Rando.Logic
                 foreach (var edge in frontier)
                 {
                     edge.MissingLogic = _logic.GetMissingLogic(edge.Edge);
+                    edge.BacktrackDepth = depth - edge.Depth;
+
+                    //TODO: Need to take into account logic requirements in context of overlapping pools
+                    var canUnlock = true;
+                    foreach (var logic in edge.MissingLogic)
+                    {
+                        var matchingPools = availableByPool.Where(p => p.Any(c => _logic.MatchesState(c, logic.StateName))).ToList();
+                        var availCount = matchingPools.Count > 0 ? matchingPools.Sum(p => p.Count) : 0;
+                        canUnlock &= availCount >= logic.Count;
+                    }
+
+                    edge.CanUnlock = canUnlock;
                 }
 
-                //TODO: Determine possible frontier edges we want to unlock and score them to weight random selection
-                //TODO: Choose an edge to unlock
+                //Compute total of each missing logic state
+                var logicTotals = new Dictionary<string, int>();
+                foreach (var logic in frontier.SelectMany(e => e.MissingLogic))
+                {
+                    if (!logicTotals.TryGetValue(logic.StateName, out int value))
+                    {
+                        logicTotals.Add(logic.StateName, logic.Count);
+                    }
+                    else
+                    {
+                        logicTotals[logic.StateName] += logic.Count;
+                    }
+                }
+
+                //Compute uniqueness
+                foreach (var edge in frontier)
+                {
+                    int n = 0;
+                    double p = 1;
+                    for (var i = 0; i < edge.MissingLogic.Count; i++)
+                    {
+                        var logic = edge.MissingLogic[i];
+                        p *= logic.Count/(double)logicTotals[logic.StateName];
+                    }
+
+                    edge.Uniqueness = 1 - p;
+                }
+
+                //Determine possible frontier edges we want to unlock and score them to weight random selection
+                var frontierSet = WeightedSet<FrontierEdge>.Build(frontier.Where(e => e.CanUnlock), WeighFrontier);
+                if (frontierSet.Count == 0)
+                {
+                    Debug.LogWarning("Frontier has run out of checks that can be unlocked; logic may not be solvable");
+                    return false;
+                }
+
+                //Randomly choose an edge we want to unlock
+                var nextEdge = frontierSet.PickItem(_random.NextDouble());
+
+                //Place required checks to satisfy the logic
+                //TODO
+
                 //TODO: Get the checks we need to place in order to unlock
                 //TODO: Place the required checks
             }
+
+            //Successfully arranged all checks
+            return true;
         }
 
         private double WeighFrontier(FrontierEdge edge)
@@ -169,6 +229,12 @@ namespace Haiku.Rando.Logic
             public int Depth { get; }
 
             public IReadOnlyList<LogicCondition> MissingLogic { get; set; }
+
+            public bool CanUnlock { get; set; }
+
+            public double Uniqueness { get; set; }
+
+            public int BacktrackDepth { get; set; }
         }
     }
 }

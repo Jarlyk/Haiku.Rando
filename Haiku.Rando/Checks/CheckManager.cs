@@ -149,9 +149,7 @@ namespace Haiku.Rando.Checks
             {
                 oldObject.SetActive(false);
 
-                //TODO: Get prefab for shiny pickup
-                GameObject pickupPrefab = null;
-                newObject = Object.Instantiate(pickupPrefab, oldObject.transform.position, oldObject.transform.rotation);
+                newObject = Object.Instantiate(HaikuResources.PrefabGenericPickup, oldObject.transform.position, oldObject.transform.rotation);
             }
 
             if (newObject)
@@ -164,7 +162,32 @@ namespace Haiku.Rando.Checks
 
         private void ReplaceShopCheck(RandoCheck original, RandoCheck replacement)
         {
-            //TODO
+            var button = Object.FindObjectsOfType<ShopItemButton>().FirstOrDefault(b => MatchesShop(b, original));
+            if (button)
+            {
+                var replacer = button.gameObject.AddComponent<ShopItemReplacer>();
+                replacer.check = replacement;
+            }
+        }
+
+        private static bool MatchesShop(ShopItemButton button, RandoCheck check)
+        {
+            if (!check.IsShopItem) return false;
+
+            switch (check.Type)
+            {
+                case CheckType.Item:
+                    return button.item && button.itemID == check.CheckId;
+                case CheckType.Chip:
+                    return button.chip && GameManager.instance.getChipNumber(button.chipIdentifier) == check.CheckId;
+                case CheckType.ChipSlot:
+                    return button.chipSlot && button.chipSlotID == check.CheckId;
+                case CheckType.PowerCell:
+                    return button.powercell;
+                default:
+                    //Other types of checks will never show up in a standard item shop
+                    return false;
+            }
         }
 
         private static void E7FireWaterTrigger_Start(ILContext il)

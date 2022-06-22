@@ -10,9 +10,11 @@ namespace Haiku.Rando
     [BepInDependency("haiku.mapi", "1.0")]
     public sealed class RandoPlugin : BaseUnityPlugin
     {
-        public void Awake()
+        public void Start()
         {
+            HaikuResources.Init();
             UniversalPickup.InitHooks();
+            ShopItemReplacer.InitHooks();
             CheckManager.InitHooks();
         }
 
