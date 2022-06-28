@@ -1,5 +1,8 @@
-﻿namespace Haiku.Rando.Topology
+﻿using System;
+
+namespace Haiku.Rando.Topology
 {
+    [Serializable]
     public enum TransitionType
     {
         Standard,

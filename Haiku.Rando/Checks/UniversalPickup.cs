@@ -30,6 +30,7 @@ namespace Haiku.Rando.Checks
             if (!universalPickup)
             {
                 orig(self);
+                return;
             }
 
             var check = universalPickup.check;
@@ -78,6 +79,7 @@ namespace Haiku.Rando.Checks
                 case CheckType.PowerCell:
                 case CheckType.FireRes:
                 case CheckType.WaterRes:
+                case CheckType.TrainStation:
                     CheckManager.TriggerCheck(self, check);
                     break;
                 case CheckType.Item:

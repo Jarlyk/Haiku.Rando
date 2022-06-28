@@ -15,6 +15,15 @@
             SceneId = sceneId;
             Origin = origin;
             Destination = destination;
+            (origin as TransitionNode)?.Outgoing.Add(this);
+            if (destination is TransitionNode trans)
+            {
+                trans.Incoming.Add(this);
+            }
+            else if (destination is RandoCheck check)
+            {
+                check.Incoming.Add(this);
+            }
         }
     }
 }

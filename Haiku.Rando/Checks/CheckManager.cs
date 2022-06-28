@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using System.Linq;
+using System.Reflection;
 using System.Runtime;
 using System.Text;
 using System.Xml;
@@ -85,46 +86,50 @@ namespace Haiku.Rando.Checks
             switch (original.Type)
             {
                 case CheckType.Wrench:
-                    oldObject = Object.FindObjectOfType<PickupWrench>().gameObject;
+                    oldObject = SceneUtils.FindObjectOfType<PickupWrench>().gameObject;
                     break;
                 case CheckType.Bulblet:
-                    oldObject = Object.FindObjectOfType<PickupBulb>().gameObject;
+                    oldObject = SceneUtils.FindObjectOfType<PickupBulb>().gameObject;
                     break;
                 case CheckType.Ability:
-                    oldObject = Object.FindObjectOfType<UnlockTutorial>().gameObject;
+                    oldObject = SceneUtils.FindObjectOfType<UnlockTutorial>().gameObject;
                     midAir = true;
                     break;
                 case CheckType.Item:
-                    oldObject = Object.FindObjectsOfType<PickupItem>().First(p => p.itemID == original.CheckId && p.saveID == original.SaveId).gameObject;
+                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().First(p => p.itemID == original.CheckId && p.saveID == original.SaveId).gameObject;
                     canReuseObject = true;
                     break;
                 case CheckType.Chip:
-                    oldObject = Object.FindObjectsOfType<PickupItem>().First(p => p.triggerChip && GameManager.instance.getChipNumber(p.chipIdentifier) == original.CheckId).gameObject;
+                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().First(p => p.triggerChip && GameManager.instance.getChipNumber(p.chipIdentifier) == original.CheckId).gameObject;
                     canReuseObject = true;
                     break;
                 case CheckType.ChipSlot:
-                    oldObject = Object.FindObjectsOfType<PickupItem>().First(p => p.triggerChipSlot && p.chipSlotNumber == original.CheckId).gameObject;
+                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().First(p => p.triggerChipSlot && p.chipSlotNumber == original.CheckId).gameObject;
                     canReuseObject = true;
                     break;
                 case CheckType.MapDisruptor:
-                    oldObject = Object.FindObjectOfType<Disruptor>().gameObject;
+                    oldObject = SceneUtils.FindObjectOfType<Disruptor>().gameObject;
                     break;
                 case CheckType.Lore:
                     //TODO
                     break;
                 case CheckType.Lever:
-                    oldObject = Object.FindObjectsOfType<SwitchDoor>().First(p => p.doorID == original.CheckId).gameObject;
+                    oldObject = SceneUtils.FindObjectsOfType<SwitchDoor>().First(p => p.doorID == original.CheckId).gameObject;
                     break;
                 case CheckType.PartsMonument:
                     //TODO
                     break;
                 case CheckType.PowerCell:
-                    oldObject = Object.FindObjectsOfType<PowerCell>().First(p => p.saveID == original.SaveId).gameObject;
+                    oldObject = SceneUtils.FindObjectsOfType<PowerCell>().First(p => p.saveID == original.SaveId).gameObject;
                     midAir = true;
                     break;
                 case CheckType.Coolant:
-                    oldObject = Object.FindObjectsOfType<PickupItem>().First(p => p.triggerCoolant && p.saveID == original.SaveId).gameObject;
+                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().First(p => p.triggerCoolant && p.saveID == original.SaveId).gameObject;
                     canReuseObject = true;
+                    break;
+                case CheckType.TrainStation:
+                    oldObject = SceneUtils.FindObjectOfType<TrainTicket>().gameObject;
+                    canReuseObject = false;
                     break;
                 case CheckType.FireRes:
                 case CheckType.WaterRes:
@@ -162,7 +167,7 @@ namespace Haiku.Rando.Checks
 
         private void ReplaceShopCheck(RandoCheck original, RandoCheck replacement)
         {
-            var button = Object.FindObjectsOfType<ShopItemButton>().FirstOrDefault(b => MatchesShop(b, original));
+            var button = SceneUtils.FindObjectsOfType<ShopItemButton>().FirstOrDefault(b => MatchesShop(b, original));
             if (button)
             {
                 var replacer = button.gameObject.AddComponent<ShopItemReplacer>();
@@ -200,12 +205,12 @@ namespace Haiku.Rando.Checks
                        i => i.MatchBrfalse(out _));
             c.Index += 2;
 
-            //We want to keep this bool for the existing Brfalse check, but first we're going to use it for our own check
-            c.Emit(OpCodes.Dup);
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate<Func<bool, e7FireWaterTrigger, bool>>(HandleFireWaterCheck);
             var end = c.DefineLabel();
             c.Emit(OpCodes.Brtrue, end);
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldfld, typeof(e7FireWaterTrigger).GetField("fireWater", BindingFlags.Instance | BindingFlags.NonPublic));
 
             c.GotoNext(i => i.MatchRet());
             c.MarkLabel(end);
@@ -280,6 +285,9 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.WaterRes:
                     alreadyGot = GameManager.instance.waterRes;
+                    break;
+                case CheckType.TrainStation:
+                    alreadyGot = GameManager.instance.trainStations[check.CheckId].unlockedStation;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -356,13 +364,20 @@ namespace Haiku.Rando.Checks
                     CameraBehavior.instance.ShowLeftCornerUI(refPickup.coolantImage, refPickup.coolantTitle, "", PickupTextDuration);
                     break;
                 case CheckType.FireRes:
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_FIRE_RES_TITLE", "_FIRE_RES_DESCRIPTION", 4f);
+                    CameraBehavior.instance.ShowLeftCornerUI(null, "_FIRE_RES_TITLE", "_FIRE_RES_DESCRIPTION", PickupTextDuration);
                     GameManager.instance.fireRes = true;
                     hasWorldObject = false;
                     break;
                 case CheckType.WaterRes:
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_WATER_RES_TITLE", "_WATER_RES_DESCRIPTION", 4f);
+                    CameraBehavior.instance.ShowLeftCornerUI(null, "_WATER_RES_TITLE", "_WATER_RES_DESCRIPTION", PickupTextDuration);
                     GameManager.instance.waterRes = true;
+                    hasWorldObject = false;
+                    break;
+                case CheckType.TrainStation:
+                    CameraBehavior.instance.ShowLeftCornerUI(null, GameManager.instance.trainStations[check.CheckId].stationName, "", PickupTextDuration);
+                    GameManager.instance.trainStations[check.CheckId].unlockedStation = true;
+                    GameManager.instance.trainUnlocked = true;
+                    AchievementManager.instance.CheckNumberOfTrainStationsUnlocked();
                     hasWorldObject = false;
                     break;
                 default:

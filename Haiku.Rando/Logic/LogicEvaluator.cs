@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Haiku.Rando.Checks;
 using Haiku.Rando.Topology;
@@ -8,21 +9,79 @@ namespace Haiku.Rando.Logic
 {
     public sealed class LogicEvaluator
     {
+        public LogicEvaluator(IReadOnlyList<LogicLayer> layers)
+        {
+            Layers = layers;
+        }
+
+        public IReadOnlyList<LogicLayer> Layers { get; }
+
         public ICheckRandoContext Context { get; set; }
 
         public bool CanTraverse(GraphEdge edge)
         {
-            //TODO
-            return true;
+            var sets = GetAllLogic(edge);
+
+            if (sets.Count == 0) return true;
+
+            return sets.Any(IsLogicSatisfied);
+        }
+
+        public IReadOnlyList<LogicSet> GetAllLogic(GraphEdge edge)
+        {
+            var result = new List<LogicSet>();
+            foreach (var layer in Layers)
+            {
+                if (layer.LogicByEdge.TryGetValue(edge, out var set))
+                {
+                    result.AddRange(set);
+                }
+            }
+
+            return result;
         }
 
         public IReadOnlyList<LogicCondition> GetMissingLogic(GraphEdge edge)
         {
-            //TODO
-            return new LogicCondition[] { };
+            var sets = GetAllLogic(edge);
+            if (sets.Count == 0) return Array.Empty<LogicCondition>();
+
+            //There may be multiple possible logical options
+            //For the purposes of reporting missing logic, we prioritize sets that are missing less
+            var missingPerSet = sets.Select(GetMissingLogic).ToList();
+            if (missingPerSet.Any(m => m.Count == 0)) return Array.Empty<LogicCondition>();
+
+            return missingPerSet.OrderBy(m => m.Sum(s => s.Count)).First();
         }
 
-        public bool MatchesState(RandoCheck check, string stateName)
+        private IReadOnlyList<LogicCondition> GetMissingLogic(LogicSet set)
+        {
+            var result = new List<LogicCondition>();
+            foreach (var condition in set.Conditions)
+            {
+                var diff = condition.Count - Context.GetCount(condition.StateName);
+                if (diff > 0)
+                {
+                    result.Add(new LogicCondition(condition.StateName, diff));
+                }
+            }
+
+            return result;
+        }
+
+        public bool IsLogicSatisfied(LogicSet set)
+        {
+            return set.Conditions.All(IsConditionSatsified);
+        }
+
+        public bool IsConditionSatsified(LogicCondition condition)
+        {
+            if (condition.StateName.Equals("false", StringComparison.InvariantCultureIgnoreCase)) return false;
+
+            return Context.GetCount(condition.StateName) >= condition.Count;
+        }
+
+        public bool MatchesState(int edgeSceneId, RandoCheck check, string stateName)
         {
             if (stateName == LogicStateNames.Bomb) return IsAbility(check, AbilityId.Bomb);
             if (stateName == LogicStateNames.Dash) return false;
@@ -35,17 +94,105 @@ namespace Haiku.Rando.Logic
             if (stateName == LogicStateNames.FireRes) return check.Type == CheckType.FireRes;
             if (stateName == LogicStateNames.WaterRes) return check.Type == CheckType.WaterRes;
             if (stateName == LogicStateNames.Light) return check.Type == CheckType.Bulblet;
-            if (stateName == LogicStateNames.Chip) return check.Type == CheckType.Chip;
-            if (stateName == LogicStateNames.ChipSlot) return check.Type == CheckType.ChipSlot;
-            if (stateName == LogicStateNames.PowerCell) return check.Type == CheckType.PowerCell;
 
-            //TODO: Specific chips?
+            var bracketIndex = stateName.IndexOf('[');
+            if (bracketIndex == -1)
+            {
+                //If no index specifier, only match if in the same room
+                return MatchesType(stateName, check.Type) && check.SceneId == edgeSceneId;
+            }
+
+            var baseName = stateName.Substring(0, bracketIndex);
+            if (!MatchesType(baseName, check.Type)) return false;
+
+            var endIndex = stateName.IndexOf(']');
+            if (endIndex > bracketIndex)
+            {
+                if (int.TryParse(stateName.Substring(bracketIndex + 1, endIndex - bracketIndex - 1), out int checkId))
+                    return check.CheckId == checkId;
+            }
+
             return false;
         }
 
         private static bool IsAbility(RandoCheck check, AbilityId id)
         {
             return check.Type == CheckType.Ability && check.CheckId == (int)id;
+        }
+
+        private static bool MatchesType(string stateName, CheckType type)
+        {
+            if (stateName == "Chip") return type == CheckType.Chip;
+            if (stateName == "Slot") return type == CheckType.ChipSlot;
+            if (stateName == "PowerCell") return type == CheckType.PowerCell;
+            if (stateName == "Item") return type == CheckType.Item;
+            if (stateName == "Disruptor") return type == CheckType.MapDisruptor;
+            if (stateName == "Lever") return type == CheckType.Lever;
+            if (stateName == "Coolant") return type == CheckType.Coolant;
+            if (stateName == "TrainStation") return type == CheckType.TrainStation;
+            return false;
+        }
+
+        public string GetStateName(RandoCheck check)
+        {
+            switch (check.Type)
+            {
+                case CheckType.Wrench:
+                    return LogicStateNames.Heal;
+                case CheckType.Bulblet:
+                    return LogicStateNames.Light;
+                case CheckType.Ability:
+                    return GetAbilityStateName((AbilityId)check.CheckId);
+                case CheckType.Item:
+                    return $"Item[{check.CheckId}]";
+                case CheckType.Chip:
+                    return $"Chip[{check.CheckId}]";
+                case CheckType.ChipSlot:
+                    return $"Slot[{check.CheckId}]";
+                case CheckType.MapDisruptor:
+                    return $"Disruptor[{check.CheckId}]";
+                case CheckType.Lore:
+                    return null;
+                case CheckType.Lever:
+                    return $"Lever[{check.CheckId}]";
+                case CheckType.PartsMonument:
+                    return null;
+                case CheckType.PowerCell:
+                    return $"PowerCell[{check.CheckId}]";
+                case CheckType.Coolant:
+                    return $"Coolant[{check.SaveId}]";
+                case CheckType.FireRes:
+                    return LogicStateNames.FireRes;
+                case CheckType.WaterRes:
+                    return LogicStateNames.WaterRes;
+                case CheckType.TrainStation:
+                    return $"TrainStation[{check.CheckId}]";
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public static string GetAbilityStateName(AbilityId id)
+        {
+            switch (id)
+            {
+                case AbilityId.Magnet:
+                    return LogicStateNames.Magnet;
+                case AbilityId.Ball:
+                    return LogicStateNames.Ball;
+                case AbilityId.Bomb:
+                    return LogicStateNames.Bomb;
+                case AbilityId.Blink:
+                    return LogicStateNames.Blink;
+                case AbilityId.DoubleJump:
+                    return LogicStateNames.DoubleJump;
+                case AbilityId.Grapple:
+                    return LogicStateNames.Grapple;
+                case AbilityId.None:
+                    return null;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Haiku.Rando.Topology
 {
@@ -7,6 +8,8 @@ namespace Haiku.Rando.Topology
         string Name { get; }
 
         string GetAlias(int sceneId);
+
+        Vector2 GetPosition(int sceneId);
 
         IReadOnlyList<GraphEdge> Incoming { get; }
 

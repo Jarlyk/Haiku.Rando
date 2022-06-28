@@ -18,9 +18,5 @@ namespace Haiku.Rando.Logic
         public static string FireRes = "FireRes";
         public static string WaterRes = "WaterRes";
         public static string Light = "Light";
-
-        public static string Chip = "Chip";
-        public static string ChipSlot = "ChipSlot";
-        public static string PowerCell = "PowerCell";
     }
 }

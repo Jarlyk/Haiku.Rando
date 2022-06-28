@@ -32,6 +32,8 @@ namespace Haiku.Rando.Topology
 
         public string GetAlias(int sceneId) => Alias;
 
+        public Vector2 GetPosition(int sceneId) => Position;
+
         public List<GraphEdge> Incoming { get; } = new List<GraphEdge>();
 
         IReadOnlyList<GraphEdge> IRandoNode.Incoming => Incoming;

@@ -11,7 +11,6 @@ namespace Haiku.Rando.Logic
 {
     public sealed class LogicLayer
     {
-
         public LogicLayer(IReadOnlyDictionary<int, SceneLogic> logicByScene)
         {
             LogicByScene = logicByScene;
@@ -98,6 +97,32 @@ namespace Haiku.Rando.Logic
                     continue;
                 }
 
+                //Parse the actual conditions list
+                var conditionText = line.Substring(colonIndex + 1);
+                var conditionSplit = conditionText.Split('+');
+                var conditions = new List<LogicCondition>();
+                for (int i = 0; i < conditionSplit.Length; i++)
+                {
+                    var hashIndex = conditionSplit[i].IndexOf('#');
+                    if (hashIndex > -1)
+                    {
+                        var countText = conditionSplit[i].Substring(0, hashIndex);
+                        var stateText = conditionSplit[i].Substring(hashIndex + 1);
+                        if (!int.TryParse(countText, out int count))
+                        {
+                            Debug.LogError($"Unexpected numeric format for condition count '{conditionSplit[i]}' in scene {scene.SceneId} in logic file at line #{lineNumber}: '{line}'");
+
+                        }
+                        conditions.Add(new LogicCondition(stateText, count));
+                    }
+                    else
+                    {
+                        conditions.Add(new LogicCondition(conditionSplit[i]));
+                    }
+                }
+
+                //Apply this logic set to all edges between the nodes
+                var set = new LogicSet(conditions);
                 foreach (var node1 in nodes1)
                 {
                     foreach (var node2 in nodes2)
@@ -111,16 +136,13 @@ namespace Haiku.Rando.Logic
                                 logicByEdge.Add(edge, logicList);
                             }
 
-                            var conditions = new List<LogicCondition>();
-                            //TODO: Parse expression into set of conditions
-
-                            var set = new LogicSet(conditions);
                             logicList.Add(set);
                         }
                     }
                 }
             }
 
+            //Expose final result as an immutable collection
             return new LogicLayer(logicByScene.ToDictionary(p => p.Key,
                                                             p => new SceneLogic(p.Value.ToDictionary(x => x.Key,
                                                                 x => (IReadOnlyList<LogicSet>)x.Value))));

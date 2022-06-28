@@ -135,6 +135,10 @@ namespace Haiku.Rando.Checks
                     description = "_COOLANT_DESCRIPTION";
                     image = HaikuResources.RefPickupCoolant.coolantImage;
                     break;
+                case CheckType.TrainStation:
+                    title = GameManager.instance.trainStations[check.CheckId].title;
+                    description = GameManager.instance.trainStations[check.CheckId].stationName;
+                    break;
                 case CheckType.FireRes:
                     title = "_FIRE_RES_TITLE";
                     description = "_FIRE_RES_DESCRIPTION";
@@ -222,6 +226,9 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.Coolant:
                     self.itemImage.sprite = HaikuResources.RefPickupCoolant.coolantImage;
+                    break;
+                case CheckType.TrainStation:
+                    //TODO?
                     break;
                 case CheckType.FireRes:
                     //TODO: From canvas?

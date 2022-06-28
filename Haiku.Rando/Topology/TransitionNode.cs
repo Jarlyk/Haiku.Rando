@@ -36,6 +36,13 @@ namespace Haiku.Rando.Topology
             return Name;
         }
 
+        public Vector2 GetPosition(int sceneId)
+        {
+            if (sceneId == SceneId1) return Position1;
+            if (sceneId == SceneId2) return Position2;
+            return Vector2.zero;
+        }
+
         public List<GraphEdge> Incoming { get; } = new List<GraphEdge>();
 
         public List<GraphEdge> Outgoing { get; } = new List<GraphEdge>();

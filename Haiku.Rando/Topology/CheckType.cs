@@ -1,5 +1,8 @@
-﻿namespace Haiku.Rando.Topology
+﻿using System;
+
+namespace Haiku.Rando.Topology
 {
+    [Serializable]
     public enum CheckType
     {
         Wrench,
@@ -15,6 +18,7 @@
         PowerCell,
         Coolant,
         FireRes,
-        WaterRes
+        WaterRes,
+        TrainStation
     }
 }
