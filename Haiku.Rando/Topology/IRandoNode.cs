@@ -11,6 +11,8 @@ namespace Haiku.Rando.Topology
 
         Vector2 GetPosition(int sceneId);
 
+        bool InScene(int sceneId);
+
         IReadOnlyList<GraphEdge> Incoming { get; }
 
         IReadOnlyList<GraphEdge> Outgoing { get; }

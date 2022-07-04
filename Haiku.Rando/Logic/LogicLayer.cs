@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Haiku.Rando.Checks;
 using Haiku.Rando.Topology;
 using MonoMod.Utils;
 using UnityEngine;
@@ -104,21 +105,25 @@ namespace Haiku.Rando.Logic
                 for (int i = 0; i < conditionSplit.Length; i++)
                 {
                     var hashIndex = conditionSplit[i].IndexOf('#');
+                    string stateText;
+                    int count = 1;
                     if (hashIndex > -1)
                     {
-                        var countText = conditionSplit[i].Substring(0, hashIndex);
-                        var stateText = conditionSplit[i].Substring(hashIndex + 1);
-                        if (!int.TryParse(countText, out int count))
+                        var countText = conditionSplit[i].Substring(0, hashIndex).Trim();
+                        stateText = conditionSplit[i].Substring(hashIndex + 1).Trim();
+                        if (!int.TryParse(countText, out count))
                         {
                             Debug.LogError($"Unexpected numeric format for condition count '{conditionSplit[i]}' in scene {scene.SceneId} in logic file at line #{lineNumber}: '{line}'");
 
                         }
-                        conditions.Add(new LogicCondition(stateText, count));
                     }
                     else
                     {
-                        conditions.Add(new LogicCondition(conditionSplit[i]));
+                        stateText = conditionSplit[i].Trim();
                     }
+
+                    stateText = ExpandAlias(stateText, scene);
+                    conditions.Add(new LogicCondition(stateText, count));
                 }
 
                 //Apply this logic set to all edges between the nodes
@@ -146,6 +151,12 @@ namespace Haiku.Rando.Logic
             return new LogicLayer(logicByScene.ToDictionary(p => p.Key,
                                                             p => new SceneLogic(p.Value.ToDictionary(x => x.Key,
                                                                 x => (IReadOnlyList<LogicSet>)x.Value))));
+        }
+
+        private static string ExpandAlias(string stateText, RoomScene scene)
+        {
+            var check = scene.Nodes.OfType<RandoCheck>().FirstOrDefault(c => c.Alias == stateText);
+            return check != null ? LogicEvaluator.GetStateName(check) : stateText;
         }
     }
 }

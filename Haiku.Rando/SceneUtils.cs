@@ -23,7 +23,7 @@ namespace Haiku.Rando
                 _sceneRoots = SceneManager.GetActiveScene().GetRootGameObjects();
             }
 
-            return _sceneRoots.SelectMany(r => r.GetComponentsInChildren<T>()).ToArray();
+            return _sceneRoots.SelectMany(r => r.GetComponentsInChildren<T>(true)).ToArray();
         }
 
         public static T FindObjectOfType<T>()
@@ -36,7 +36,7 @@ namespace Haiku.Rando
                 _sceneRoots = SceneManager.GetActiveScene().GetRootGameObjects();
             }
 
-            return _sceneRoots.Select(r => r.GetComponentInChildren<T>()).FirstOrDefault(c => c != null);
+            return _sceneRoots.Select(r => r.GetComponentInChildren<T>(true)).FirstOrDefault(c => c != null);
         }
     }
 }

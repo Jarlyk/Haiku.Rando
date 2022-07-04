@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Haiku.Rando.Checks;
 using Haiku.Rando.Topology;
+using UnityEngine;
 
 namespace Haiku.Rando.Logic
 {
@@ -77,11 +78,14 @@ namespace Haiku.Rando.Logic
         public bool IsConditionSatsified(LogicCondition condition)
         {
             if (condition.StateName.Equals("false", StringComparison.InvariantCultureIgnoreCase)) return false;
+            if (condition.StateName.Equals("true", StringComparison.InvariantCultureIgnoreCase)) return true;
 
-            return Context.GetCount(condition.StateName) >= condition.Count;
+            var result = Context.GetCount(condition.StateName) >= condition.Count;
+            Debug.Log($"Checking condition {condition} => {result}");
+            return result;
         }
 
-        public bool MatchesState(int edgeSceneId, RandoCheck check, string stateName)
+        public static bool MatchesState(int edgeSceneId, RandoCheck check, string stateName)
         {
             if (stateName == LogicStateNames.Bomb) return IsAbility(check, AbilityId.Bomb);
             if (stateName == LogicStateNames.Dash) return false;
@@ -133,7 +137,7 @@ namespace Haiku.Rando.Logic
             return false;
         }
 
-        public string GetStateName(RandoCheck check)
+        public static string GetStateName(RandoCheck check)
         {
             switch (check.Type)
             {

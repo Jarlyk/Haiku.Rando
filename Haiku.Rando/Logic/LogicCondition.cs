@@ -15,5 +15,11 @@ namespace Haiku.Rando.Logic
         public string StateName { get; }
 
         public int Count { get; }
+
+        public override string ToString()
+        {
+            if (Count == 1) return StateName;
+            return $"{Count}#StateName";
+        }
     }
 }

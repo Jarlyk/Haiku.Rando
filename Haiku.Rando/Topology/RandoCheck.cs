@@ -34,11 +34,14 @@ namespace Haiku.Rando.Topology
 
         public Vector2 GetPosition(int sceneId) => Position;
 
+        public bool InScene(int sceneId) => sceneId == SceneId;
+
         public List<GraphEdge> Incoming { get; } = new List<GraphEdge>();
 
         IReadOnlyList<GraphEdge> IRandoNode.Incoming => Incoming;
 
         IReadOnlyList<GraphEdge> IRandoNode.Outgoing => Array.Empty<GraphEdge>();
-        
+
+        public override string ToString() => $"{SceneId}:{Name}";
     }
 }

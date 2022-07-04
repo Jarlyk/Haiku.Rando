@@ -5,7 +5,8 @@ namespace Haiku.Rando.Topology
     [Serializable]
     public enum TransitionType
     {
-        Standard,
+        RoomEdge,
+        Door,
         CapsuleElevator,
         Train,
         StartPoint,

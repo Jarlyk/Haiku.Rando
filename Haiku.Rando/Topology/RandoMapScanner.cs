@@ -5,11 +5,8 @@ using System.Linq;
 using System.Reflection;
 using Haiku.Rando.Checks;
 using Haiku.Rando.Logic;
-using On.Rewired.UI.ControlMapper;
-using Pathfinding;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 namespace Haiku.Rando.Topology
 {
@@ -81,7 +78,7 @@ namespace Haiku.Rando.Topology
             trainScene.Nodes.AddRange(trainNodes);
 
             //Update aliases for room edge transitions now that all related scenes are available
-            foreach (var node in _transitionNodes.Values.Where(n => n.Type == TransitionType.Standard))
+            foreach (var node in _transitionNodes.Values.Where(n => n.Type == TransitionType.RoomEdge))
             {
                 node.Alias1 = BuildAlias(node, node.SceneId1, node.SceneId2);
                 node.Alias2 = BuildAlias(node, node.SceneId2, node.SceneId1);
@@ -240,7 +237,7 @@ namespace Haiku.Rando.Topology
             foreach (var exit in edgeExits)
             {
                 bool isRight = exit.transform.localScale.x >= 1f;
-                var trans = GetTransition(exit.pointName ?? BuildPointName(sceneId, exit), TransitionType.Standard, 
+                var trans = GetTransition(BuildPointName(sceneId, exit), TransitionType.RoomEdge, 
                                           isRight ? sceneId : exit.levelToLoad, 
                                           isRight ? exit.levelToLoad : sceneId);
                 SetPosition(trans, sceneId, exit.transform.position);
@@ -251,7 +248,7 @@ namespace Haiku.Rando.Topology
             for (var i = 0; i < doorExits.Length; i++)
             {
                 var exit = doorExits[i];
-                var trans = GetTransition(exit.pointName, TransitionType.Standard, sceneId, exit.levelToLoad);
+                var trans = GetTransition(BuildPointName(sceneId, exit), TransitionType.Door, sceneId, exit.levelToLoad);
                 SetPosition(trans, sceneId, exit.transform.position);
                 var doorAlias = doorExits.Length > 1 ? $"Door{exit.extraInfo}" : "Door";
                 SetAlias(trans, sceneId, doorAlias);
@@ -272,7 +269,7 @@ namespace Haiku.Rando.Topology
             for (var i = 0; i < startPoints.Length; i++)
             {
                 var start = startPoints[i];
-                var trans = GetTransition($"{sceneId}{start.pointName ?? $"Start{i}"}", TransitionType.StartPoint, sceneId, sceneId);
+                var trans = GetTransition($"{start.pointName ?? $"Start{i}"}", TransitionType.StartPoint, sceneId, sceneId);
                 SetPosition(trans, sceneId, start.transform.position);
                 var alias = startPoints.Length > 1 ? $"Start{i}" : "Start";
                 trans.Alias1 = alias;
@@ -333,6 +330,12 @@ namespace Haiku.Rando.Topology
         }
 
         private string BuildPointName(int sceneId, LoadNewLevel exit)
+        {
+            bool isRight = exit.transform.localScale.x >= 1f;
+            return isRight ? $"{sceneId}-{exit.levelToLoad}{exit.extraInfo}" : $"{exit.levelToLoad}-{sceneId}{exit.extraInfo}";
+        }
+
+        private string BuildPointName(int sceneId, EnterRoomTrigger exit)
         {
             bool isRight = exit.transform.localScale.x >= 1f;
             return isRight ? $"{sceneId}-{exit.levelToLoad}{exit.extraInfo}" : $"{exit.levelToLoad}-{sceneId}{exit.extraInfo}";

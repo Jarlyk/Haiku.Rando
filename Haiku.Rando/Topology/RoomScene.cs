@@ -24,13 +24,13 @@ namespace Haiku.Rando.Topology
 
             if (pattern.StartsWith("*"))
             {
-                return Nodes.Where(n => n.GetAlias(SceneId).EndsWith(pattern, StringComparison.InvariantCultureIgnoreCase))
+                return Nodes.Where(n => n.GetAlias(SceneId).EndsWith(pattern.Substring(1), StringComparison.InvariantCultureIgnoreCase))
                             .ToList();
             }
 
             if (pattern.EndsWith("*"))
             {
-                return Nodes.Where(n => n.GetAlias(SceneId).StartsWith(pattern, StringComparison.InvariantCultureIgnoreCase))
+                return Nodes.Where(n => n.GetAlias(SceneId).StartsWith(pattern.Substring(0, pattern.Length-1), StringComparison.InvariantCultureIgnoreCase))
                             .ToList();
             }
 

@@ -9,16 +9,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\BaseLogic.txt" />
     <None Remove="Resources\HaikuTopology.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\BaseLogic.txt" />
     <EmbeddedResource Include="Resources\HaikuTopology.json" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\lib\Game\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\lib\Game\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="AstarPathfindingProject">
       <HintPath>..\lib\Game\AstarPathfindingProject.dll</HintPath>

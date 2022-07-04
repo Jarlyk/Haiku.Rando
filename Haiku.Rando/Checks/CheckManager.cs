@@ -60,6 +60,7 @@ namespace Haiku.Rando.Checks
 
         public void ReplaceCheck(RandoCheck original, RandoCheck replacement)
         {
+            Debug.Log($"Replacing check {original} with {replacement}");
             if (original.IsShopItem)
             {
                 ReplaceShopCheck(original, replacement);

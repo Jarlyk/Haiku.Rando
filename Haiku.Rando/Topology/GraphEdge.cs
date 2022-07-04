@@ -25,5 +25,10 @@
                 check.Incoming.Add(this);
             }
         }
+
+        public override string ToString()
+        {
+            return $"{SceneId}:{Name}";
+        }
     }
 }

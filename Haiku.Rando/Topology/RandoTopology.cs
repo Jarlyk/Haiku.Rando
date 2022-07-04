@@ -83,18 +83,6 @@ namespace Haiku.Rando.Topology
             for (int i = 0; i < edges.Length; i++)
             {
                 edges[i] = FromDto(nodes, ref dto.edges[i]);
-
-                //Wire up edge references
-                ((TransitionNode)edges[i].Origin).Outgoing.Add(edges[i]);
-                if (edges[i].Destination is TransitionNode dest)
-                {
-                    dest.Incoming.Add(edges[i]);
-                }
-                else if (edges[i].Destination is RandoCheck check)
-                {
-                    check.Incoming.Add(edges[i]);
-                }
-
                 GetScene(scenes, edges[i].SceneId).Edges.Add(edges[i]);
             }
 
@@ -165,9 +153,10 @@ namespace Haiku.Rando.Topology
         {
             var originName = dto.origin;
             var destinationName = dto.destination;
-            var origin = nodes.FirstOrDefault(n => n.Name == originName);
-            var destination = nodes.FirstOrDefault(n => n.Name == destinationName);
-            var edge = new GraphEdge(dto.sceneId, origin, destination);
+            var sceneId = dto.sceneId;
+            var origin = nodes.FirstOrDefault(n => n.InScene(sceneId) && n.Name == originName);
+            var destination = nodes.FirstOrDefault(n => n.InScene(sceneId) && n.Name == destinationName);
+            var edge = new GraphEdge(sceneId, origin, destination);
             return edge;
         }
 

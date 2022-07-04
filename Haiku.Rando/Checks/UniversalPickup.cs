@@ -33,6 +33,10 @@ namespace Haiku.Rando.Checks
                 return;
             }
 
+            //Need to call orig to wire up rewiredInput
+            self.triggerPin = true;
+            orig(self);
+            
             var check = universalPickup.check;
             if (check == null) return;
 
@@ -81,6 +85,7 @@ namespace Haiku.Rando.Checks
                 case CheckType.WaterRes:
                 case CheckType.TrainStation:
                     CheckManager.TriggerCheck(self, check);
+                    self.gameObject.SetActive(false);
                     break;
                 case CheckType.Item:
                     self.itemID = check.CheckId;
