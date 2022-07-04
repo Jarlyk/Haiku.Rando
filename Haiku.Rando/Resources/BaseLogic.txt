@@ -668,7 +668,7 @@ Down_*: false
 Scene 85
 *_Down: false
 Down_*: false
-Left_Grapple: DoubleJump
+Left_Grapple: DoubleJump+Ball
 Left_Grapple: Grapple
 
 // Scene 86 : Entrance to Pinions Expanse with piston lock
