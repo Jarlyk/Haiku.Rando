@@ -17,11 +17,6 @@
 // If this is the main logic file, the assumption is that all edges can be traversed unless restricted here
 // If this is an extension logic file for a skip category, it will only specify the edges that have an alternate traversal logic for the skips
 
-// Scene 1
-// Transitions:
-// Checks:
-Scene 1
-
 // Scene 5
 // Transitions:
 // Checks:
@@ -75,13 +70,12 @@ Scene 13
 
 // Scene 14
 // Transitions: Right0 (14-11), Right1 (14-13), Left (22-14)
-// Checks: Lever1 (Lever[0]), Lever0 (Lever[9])
+// Checks: Lever (Lever[9])
 Scene 14
-Left_*: Lever0
-*_Left: Lever0
-*_Lever0: Lever0
-Left_Lever0: true
-*_Lever1: false
+Left_*: Lever
+*_Left: Lever
+*_Lever: Lever
+Left_Lever: true
 
 // Scene 15
 // Transitions: Right (15-16), Left (18-15), Repair (15Repair)
@@ -96,10 +90,10 @@ Scene 16
 //No obstacles
 
 // Scene 17
-// Transitions: Right (17-20), Down (18-17)
+// Transitions: Right (17-20)
 // Checks: Magnet (Ability[0])
 Scene 17
-*_Down: false
+//No obstacles
 
 // Scene 18
 // Transitions: Right1 (18-101), Right0 (18-15), Left1 (29-18), Left0 (19-18)
@@ -155,10 +149,9 @@ Left1_Chip: false
 Right1_Chip: false
 
 // Scene 24
-// Transitions: Down (24-26), Left0 (27-24), Left1 (12-24), Door (24-166)
+// Transitions: Left0 (27-24), Left1 (12-24), Door (24-166)
 // Checks:
 Scene 24
-*_Down: false
 *_Left0: Magnet
 *_Left0: DoubleJump
 
@@ -177,7 +170,7 @@ Scene 26
 Right_Lever: true
 
 // Scene 27 : Tired Mother Boss
-// Transitions: Right (27-24), Down (25-27)
+// Transitions: Right (27-24), Left (25-27)
 // Checks:
 Scene 27
 //No obstacles
@@ -189,7 +182,7 @@ Scene 28
 Right_Train: TrainStation[0]
 
 // Scene 29 (Abandoned Wastes Elevator)
-// Transitions: Elevator (165-29), Down1 (29-155), Right (29-18), Down0 (162-29), Down2 (151-29)
+// Transitions: Elevator (165-29), Down2 (29-155), Right (29-18), Down0 (162-29), Down1 (151-29)
 // Checks:
 Scene 29
 Right_Elevator: Light
@@ -202,13 +195,13 @@ Down*_*: false
 Scene 30
 
 // Scene 31
-// Transitions: Left0 (32-31), Left1 (23-31), Down (30-31)
+// Transitions: Left0 (32-31), Left2 (23-31), Left1 (30-31)
 // Checks:
 Scene 31
-Left1_*: Magnet
-*_Down: Magnet+Blink
-*_Down: Magnet+DoubleJump
-*_Down: Magnet+Grapple
+Left2_*: Magnet
+*_Left1: Magnet+Blink
+*_Left1: Magnet+DoubleJump
+*_Left1: Magnet+Grapple
 
 // Scene 32 : Hand Room
 // Transitions: Right0 (32-33), Right1 (32-31), Left (34-32)
@@ -234,13 +227,12 @@ Scene 34
 Right0_Left: Magnet
 
 // Scene 35
-// Transitions: Right1 (35-34), Right0 (35-42), Left (201-35), Down (25-35)
+// Transitions: Right1 (35-34), Right0 (35-42), Left (201-35)
 // Checks: Chip (Chip[18])
 Scene 35
 Right1_*: false
 Right1_Chip: Magnet
 *_Left: Boss[6]
-*_Down: false
 
 // Scene 36
 // Transitions: Right (36-196), Left (37-36)
@@ -288,7 +280,7 @@ Scene 43
 Scene 44
 
 // Scene 45
-// Transitions: Down (45-43), Left (38-45)
+// Transitions: Left (38-45)
 // Checks: PowerCell (PowerCell[10])
 Scene 45
 
@@ -328,7 +320,7 @@ Scene 51
 Scene 52
 
 // Scene 53
-// Transitions: Right (53-53), Left (52-53), Train (53-Train)
+// Transitions: Left (52-53), Train (53-Train)
 // Checks: TrainStation (TrainStation[3])
 Scene 53
 
@@ -343,7 +335,7 @@ Scene 54
 Scene 55
 
 // Scene 56
-// Transitions: Right1 (56-57), Right0 (56-55), Down (35-56)
+// Transitions: Right1 (56-57), Right0 (56-55)
 // Checks: Disruptor (MapDisruptor[13])
 Scene 56
 
@@ -363,7 +355,7 @@ Scene 58
 Scene 59
 
 // Scene 60
-// Transitions: Right1 (60-201), Right0 (60-59), Down (35-60)
+// Transitions: Right1 (60-201), Right0 (60-59)
 // Checks:
 Scene 60
 
@@ -403,14 +395,9 @@ Right1_Left1: Magnet
 Right1_Left1: DoubleJump
 
 // Scene 64
-// Transitions: Down (64-170), Right0 (64-63), Right1 (64-65), Left (169-64), Repair (64Repair)
+// Transitions: Right0 (64-63), Right1 (64-65), Left (169-64)
 // Checks:
 Scene 64
-//TODO: No Repair actually in this room?
-*_Repair: false
-Repair_*: false
-*_Down: false
-Down_*: false
 Left_Right0: Magnet
 Left_Right0: DoubleJump
 Right1_Right0: Magnet
@@ -424,14 +411,11 @@ Scene 65
 //No obstacles
 
 // Scene 66 : Bulb Drop Room
-// Transitions: Right3 (66-69), Right2 (66-67), Right1 (66-85), Right0 (66-77), Left1 (228-66), Left0 (65-66), Left2 (170-66)
-// Checks: Chip (Chip[0])
+// Transitions: Right2 (66-69), Right1 (66-85), Right0 (66-77), Left1 (228-66), Left0 (65-66), Left2 (170-66)
+// Checks:
 Scene 66
 //Left1 can be reached with a fairly easy enemy pogo, so no restrictions there
 //Left0,Right0 (ball exit) and Right1 are partitioned from the bottom half by vertical requirement
-//Right2 appears to not exist
-Right2_*: false
-*_Right2: false
 Left0_Right0: Ball
 Right1_Right0: Ball
 Left1_Left0: Magnet
@@ -446,41 +430,31 @@ Left2_Right0: Magnet+Ball
 Left2_Right0: DoubleJump+Ball
 Left2_Right1: Magnet
 Left2_Right1: DoubleJump
-Right3_Left0: Magnet
-Right3_Left0: DoubleJump
-Right3_Right0: Magnet+Ball
-Right3_Right0: DoubleJump+Ball
-Right3_Right1: Magnet
-Right3_Right1: DoubleJump
-
-// Scene 67
-// Transitions: Right (67-68), Left (66-67)
-// Checks:
-Scene 67
+Right2_Left0: Magnet
+Right2_Left0: DoubleJump
+Right2_Right0: Magnet+Ball
+Right2_Right0: DoubleJump+Ball
+Right2_Right1: Magnet
+Right2_Right1: DoubleJump
 
 // Scene 68 : Electrified gauntlet after Car Battery
-// Transitions: Right (68-86), Left0 (67-68), Left1 (69-68), Repair (68Repair)
-// Checks: Chip (Chip[-1]), Lever (Lever[49]), PowerCell (PowerCell[11])
+// Transitions: Right (68-86), Left (69-68)
+// Checks: Lever (Lever[49]), PowerCell (PowerCell[11])
 Scene 68
-//TODO: The chip doesn't exist here and should be removed
-//The Left0 entrance also appears to no long exist
-*_Left0: false
-Left0_*: false
-Left1_Lever: Lever
-Left1_PowerCell: Lever
-Left1_Right: Magnet
-Left1_Right: Lever+DoubleJump
+Left_Lever: Lever
+Left_PowerCell: Lever
+Left_Right: Magnet
+Left_Right: Lever+DoubleJump
 Right_Lever: true
 Right_PowerCell: true
-Right_Left1: Lever
-Right_Left1: Magnet+DoubleJump
-//TODO: BLJ here that avoids DoubleJump for Right_Left1
+Right_Left: Lever
+Right_Left: Magnet+DoubleJump
+//TODO: BLJ here that avoids DoubleJump for Right_Left
 
 // Scene 69 : Car Battery Room
 // Transitions: Right0 (69-68), Right1 (69-111), Left0 (66-69), Left1 (71-69top), Left2 (71-69bottom)
-// Checks: Chip[26]0 (Chip[26]), Chip[26]1 (Chip[26])
+// Checks: Chip (Chip[26])
 Scene 69
-//TODO: Need to fix the chips in here, as only one of them is the real drop from Car Battery
 *_Left0: Magnet
 *_Left0: DoubleJump
 Right0_Left0: Ball
@@ -527,7 +501,7 @@ Scene 72
 //No obstacles
 
 // Scene 73 : Bombs pickup and sliding laser gauntlet
-// Transitions: Right (73-76), Down (73-76bottom), Left (74-73)
+// Transitions: Right (73-76), Left (74-73)
 // Checks: Bomb (Ability[2])
 Scene 73
 //No obstacles
@@ -593,7 +567,7 @@ Left_*Res: Lever+Ball+Magnet
 Left_*Res: Lever+Ball+DoubleJump
 Left_Lever: true
 Left_Right: Lever+Ball+Magnet
-Left_Right Lever+Ball+DoubleJump
+Left_Right: Lever+Ball+DoubleJump
 Right_*Res: Ball
 Right_Lever: Lever+Ball
 Right_Left: Lever+Ball
@@ -655,19 +629,14 @@ Left_Bulblet: Blink
 Left_Right: Blink+Ball
 
 // Scene 84 : Electron fight
-// Transitions: Right (84-75), Down (64-84)
+// Transitions: Right (84-75)
 // Checks:
 Scene 84
-//The 'Down' transition doesn't appear to be used
-*_Down: false
-Down_*: false
 
 // Scene 85 : Grapple Pickup
-// Transitions: Down (85-66), Left (66-85)
+// Transitions: Left (66-85)
 // Checks: Grapple (Ability[5])
 Scene 85
-*_Down: false
-Down_*: false
 Left_Grapple: DoubleJump+Ball
 Left_Grapple: Grapple
 
@@ -677,7 +646,7 @@ Left_Grapple: Grapple
 Scene 86
 
 // Scene 87
-// Transitions: Right1 (87-88), Right0 (87-89), Left1 (86-87), Down (65-87), Left0 (92-87), Repair (87Repair)
+// Transitions: Right1 (87-88), Right0 (87-89), Left1 (86-87), Left0 (92-87), Repair (87Repair)
 // Checks:
 Scene 87
 
@@ -696,10 +665,11 @@ Scene 89
 // Checks:
 Scene 90
 
-// Scene 91
+// Scene 91 : Pinions room above Mischievous Mechanic (Left1 is drop down)
 // Transitions: Right (91-90), Left1 (98-91), Left0 (88-91)
 // Checks: Disruptor (MapDisruptor[9])
 Scene 91
+Left1_*: false
 
 // Scene 92
 // Transitions: Right (92-87), Left (93-92)
@@ -707,7 +677,7 @@ Scene 91
 Scene 92
 
 // Scene 93
-// Transitions: Right2 (93-92), Right0 (93-171), Right1 (93-96), Left (82-93), Down (100-93)
+// Transitions: Right2 (93-92), Right0 (93-171), Right1 (93-96), Left (82-93)
 // Checks:
 Scene 93
 
@@ -727,14 +697,15 @@ Scene 95
 Scene 96
 
 // Scene 97
-// Transitions: Down (97-34), Left (95-97)
+// Transitions: Left (95-97)
 // Checks: Lever (Lever[42])
 Scene 97
 
-// Scene 98
+// Scene 98 : Mischievous Mechanic Fight
 // Transitions: Right (98-91), Left (88-98)
 // Checks: Lever (Lever[56]), PowerCell (PowerCell[16])
 Scene 98
+*_Right: false
 
 // Scene 100
 // Transitions: Right (100-192), Left (90-100)
@@ -770,26 +741,18 @@ Left1_Left0: FireRes+Magnet
 Left1_Right: FireRes+Magnet
 
 // Scene 104 : Fire Wheels Incinerator Room
-// Transitions: Right1 (104-106), Right0 (104-103), Left (105-104)
-// Checks: Item (Item[3]), PowerCell (PowerCell[4])
+// Transitions: Right1 (104-106), Right0 (104-103)
+// Checks: PowerCell (PowerCell[4])
 Scene 104
 *_Right0: FireRes+Magnet
 Right0_*: FireRes+Magnet
 Right0_*: FireRes+DoubleJump
 Right1_PowerCell: FireRes
-//Left transition here is inactive and not used
-Left_*: false
-*_Left: false
-//TODO: It looks like fragment (Item[3]) is not actually in this room; this might be an inactive check
-*_Item: false
 
 // Scene 105
-// Transitions: Right (105-104), Left (103-105)
+// Transitions: Left (103-105)
 // Checks:
 Scene 105
-//Right transition here is inactive and not used
-*_Right: false
-Right_*: false
 
 // Scene 106
 // Transitions: Right (106-74), Left0 (104-106), Left1 (110-106)
@@ -838,7 +801,7 @@ Scene 111
 
 // Scene 112
 // Transitions: Right1 (112-113), Right0 (112-129), Left1 (70-112), Left0 (111-112)
-// Checks: Chip (Chip[-1])
+// Checks:
 Scene 112
 
 // Scene 113
@@ -882,7 +845,7 @@ Scene 119
 Scene 120
 
 // Scene 121
-// Transitions: Down (121-34), Left (118-121)
+// Transitions: Left (118-121)
 // Checks: PowerCell (PowerCell[5])
 Scene 121
 
@@ -927,44 +890,39 @@ Scene 128
 Scene 129
 
 // Scene 130
-// Transitions: Down (130-34), Left (129-130)
+// Transitions: Left (129-130)
 // Checks: Item (Item[3])
 Scene 130
 
 // Scene 131
-// Transitions: Right0 (131-125), Right1 (131-126), Left0 (132-131top), Left1 (132-131bottom)
+// Transitions: Right0 (131-125), Right1 (131-126), Left (132-131bottom)
 // Checks:
 Scene 131
-*_Left0: false
-// TODO: Not sure why it says there are 2 left transition
-Right1_Left0: Magnet
-Left0_Right1: Magnet
+Right1_Left: Magnet
+Left_Right1: Magnet
 *_Right1: Magnet+WaterRes
-Right0_Left1: DoubleJump
-Left1_Right0: DoubleJump
+Right0_Left: DoubleJump
+Left_Right0: DoubleJump
 *_Right1: DoubleJump+WaterRes
-Right1_Left1: WaterRes
+Right1_Left: WaterRes
 Right1_Right0: WaterRes+Magnet
 Right1_Right0: WaterRes+DoubleJump
 
 // Scene 132
-// Transitions: Right2 (132-143), Right1 (132-131bottom), Right0 (132-131top), Left1 (138-132), Left0 (133-132bottom), Down (133-132top)
-// Checks: Disruptor (MapDisruptor[6]), Lever (Lever[47]), PowerCell (PowerCell[7])
+// Transitions: Right1 (132-143), Right0 (132-131bottom), Left1 (138-132), Left0 (133-132bottom), Down (133-132top)
+// Checks: Disruptor (MapDisruptor[6]), Lever (Lever[47])
 Scene 132
 *_Down: false
-*_Right0: false
-*_PowerCell: false
-// TODO: Not sure why it says there are 3 right transitions and a powercell (PowerCell[7] refers to the powercell in the room located on the bottom right transition of this room, Scene 143)
-
 *_Disruptor: Blink+Magnet
 *_Disruptor: Blink+DoubleJump+Grapple
-Right2_Right1: Magnet
-Right2_Right1: DoubleJump
-Right2_Left0: DoubleJump
+Right1_Right0: Magnet
+Right1_Right0: DoubleJump
 Right1_Left0: DoubleJump
-Left1_Right1: Magnet
-Left1_Right1: DoubleJump
+Right0_Left0: DoubleJump
+Left1_Right0: Magnet
+Left1_Right0: DoubleJump
 Left1_Left0: DoubleJump
+
 // Scene 133
 // Transitions: Right0 (133-225top), Right1 (133-132bottom), Left (134-133)
 // Checks:
@@ -1035,10 +993,10 @@ Left1_Left0: DoubleJump
 *_Chip: Magnet+DoubleJump
 
 // Scene 136
-// Transitions: Down (136-125), Left (134-136), Train (136-Train)
+// Transitions: Left (134-136), Train (136-Train)
 // Checks: TrainStation (TrainStation[5])
 Scene 136
-*_Down: false
+*_Train: TrainStation[5]
 
 // Scene 137
 // Transitions: Right (137-138), Left (134-137)
@@ -1075,7 +1033,7 @@ Scene 139
 // TODO - not sure that works
 
 // Scene 140
-// Transitions: Right0 (140-135), Right1 (140-141), Down (65-140), Repair (140Repair)
+// Transitions: Right0 (140-135), Right1 (140-141), Repair (140Repair)
 // Checks:
 Scene 140
 Right0_Repair: Magnet
@@ -1083,7 +1041,6 @@ Right0_Right1: Magnet
 Right1_Right0: Magnet
 Repair_Right0: Magnet
 Right0_Repair: Blink
-*_Down: false
 
 // Scene 141
 // Transitions: Right (141-134), Left (140-141)
@@ -1092,18 +1049,17 @@ Scene 141
 *_*: Blink
 
 // Scene 143
-// Transitions: Down (143-125), Left (132-143)
+// Transitions: Left (132-143)
 // Checks: Chip (Chip[22]), PowerCell (PowerCell[7])
 Scene 143
 Left_PowerCell: Grapple+Magnet
 Left_PowerCell: Blink+Magnet+DoubleJump
-*_Down: false
 
 // Scene 144
-// Transitions: Down (144-5), Left (139-144)
+// Transitions: Right (144-5), Left (139-144)
 // Checks:
 Scene 144
-*_Down: false
+*_Right: false
 
 // Scene 147
 // Transitions: Right1 (147-135), Right0 (147-156), Left (153-147)
@@ -1118,11 +1074,58 @@ Right1_Left: Blink
 // Transitions: Right0 (151-165hidden), Right1 (151-165), Left1 (152-151), Left0 (162-151)
 // Checks:
 Scene 151
+Right0_Left0: Ball+Light
+Left0_Right0: Ball+Light
+Right1_Right0: false
+Right1_Left0: false
+Left1_Right0: false
+Left1_Left0: false
+Right1_Left1: Ball+Light
+Left1_Right1: Light
 
 // Scene 152
 // Transitions: Right1 (152-153), Right0 (152-151), Left1 (161-152bottom), Left0 (161-152top), Left2 (160-152)
 // Checks: Chip (Chip[20])
 Scene 152
+Left0_Left1: Ball+Light
+Left0_Right0: Ball+Light
+Left0_Left2: Ball+Light
+Left0_Right1: Ball+Light
+Left0_Chip: Ball+Blink+Light
+Left0_Chip: Ball+Grapple+Light
+Left1_Left2: Ball+Light
+Left1_Right0: Ball+Light
+Left1_Left1: Ball+Light
+Left1_Left0: Ball+Light
+Left1_Chip: Ball+Blink+Light
+Left1_Chip: Ball+Grapple+Light
+Right0_Left1: Ball+Light
+Right0_Left0: Ball+Light
+Right0_Left2: Ball+Light
+Right0_Right1: Ball+Light
+Right0_Chip: Ball+Blink+Light
+Right0_Chip: Ball+Grapple+Light
+Right1_Left1: Ball+Magnet+Light
+Right1_Left0: Ball+Magnet+Light
+Right1_Left2: Magnet+Light
+Right1_Right0: Ball+Magnet+Light
+Right1_Left1: Ball+DoubleJump+Light
+Right1_Left0: Ball+DoubleJump+Light
+Right1_Left2: DoubleJump+Light
+Right1_Right0: Ball+DoubleJump+Light
+Right1_Chip: Blink+Magnet+Light
+Right1_Chip: Grapple+Magnet+Light
+Right1_Chip: Blink+DoubleJump+Light
+Right1_Chip: Grapple+DoubleJump+Light
+Left2_Left1: Ball+Magnet+Light
+Left2_Left0: Ball+Magnet+Light
+Left2_Right1: Light
+Left2_Right0: Ball+Magnet+Light
+Left2_Left1: Ball+DoubleJump+Light
+Left2_Left0: Ball+DoubleJump+Light
+Left2_Right0: Ball+DoubleJump+Light
+Left2_Chip: Blink+Light
+Left2_Chip: Grapple+Light
 
 // Scene 153
 // Transitions: Right0 (153-154), Right1 (153-147), Left1 (159-153), Left0 (152-153)
@@ -1141,26 +1144,60 @@ Left0_Right1: Blink+Light
 // Transitions: Right (154-155), Left (153-154)
 // Checks:
 Scene 154
+Right_Left: Light
+Left_Right: Light
 
 // Scene 155
 // Transitions: Right (155-156), Left0 (165-155), Left1 (154-155)
 // Checks: Chip (Chip[11]), Lever (Lever[48])
 Scene 155
+Left1_Lever: Light
+Right_Lever: false
+Left0_Lever: false
+Right_Left1: Light+Lever+Magnet
+Right_Left1: Light+Lever+DoubleJump
+Right_Left0: Light+Lever+Magnet
+Right_Left0: Light+Lever+DoubleJump
+Left0_Left1: Light+Lever
+Left0_Right: Light
+Left1_Left0: Light+Magnet
+Left1_Left0: Light+DoubleJump
+*_Right: Light 
+*_Chip: Light+Magnet
 
 // Scene 156
 // Transitions: Right (156-157), Left1 (147-156), Left0 (155-156), Repair (156Repair)
 // Checks: Disruptor (MapDisruptor[3])
 Scene 156
+*_Left1: Light
+Left1_*: Magnet+Light
+*_Disruptor: Magnet+Light
+Left0_Right: Light
+Left0_Repair: Light
+Right_Left0: Light
+Right_Repair: Light
+Repair_Left0: Light
+Repair_Right: Light
 
 // Scene 157
 // Transitions: Right (157-158), Left (156-157)
 // Checks:
 Scene 157
+Right_Left: Magnet+Light
+Left_Right: Magnet+Light
+Right_Left: DoubleJump+Light
+Left_Right: DoubleJump+Light
 
 // Scene 158
 // Transitions: Right (158-110), Left (157-158)
 // Checks:
 Scene 158
+Left_Right: Blink+Light
+Left_Right: Magnet+Light
+Left_Right: DoubleJump+Light
+Right_Left: Blink+Light
+Right_Left: Magnet+Light
+Right_Left: DoubleJump+Light
 
 // Scene 159
 // Transitions: Right (159-153), Left0 (160-159), Left1 (163-159)
@@ -1175,7 +1212,7 @@ Left1_Right: DoubleJump
 Left1_Right: Blink
 
 // Scene 160
-// Transitions: Right1 (160-159), Right0 (160-152), Down (133-160)
+// Transitions: Right1 (160-159), Right0 (160-152)
 // Checks: Item (Item[0]), Lever (Lever[38])
 Scene 160
 Right1_*: Magnet+Blink+Light
@@ -1185,17 +1222,29 @@ Right0_Item: Blink+Magnet+Light
 Right0_Item: Blink+DoubleJump+Light
 Right0_Item: Grapple+Magnet+Light
 Right0_Item: Grapple+DoubleJump+Light
-*_Down: false
 
 // Scene 161
-// Transitions: Right2 (161-152bottom), Right1 (161-152top), Right0 (161-162), Down (133-161), Repair (161Repair)
+// Transitions: Right2 (161-152bottom), Right1 (161-152top), Right0 (161-162), Repair (161Repair)
 // Checks:
 Scene 161
+Right1_Repair: Light
+Right1_Right2: Blink+Ball+Light
+Right1_Right0: Blink+Magnet+Ball+Light
+Right1_Right0: Blink+DoubleJump+Ball+Light
+Right2_Right1: Ball+Light
+Right2_Right0: Ball+Magnet+Light
+Right2_Right0: Ball+DoubleJump+Light
+Right0_*: false
 
 // Scene 162
 // Transitions: Right (162-151), Left (161-162)
 // Checks: Item (Item[3]), PowerCell (PowerCell[23])
 Scene 162
+Right_*: Ball+Magnet+Light
+Right_*: Ball+DoubleJump+Light
+Left_Right: Ball+Light
+Left_Item: Light
+Left_PowerCell: Light
 
 // Scene 163
 // Transitions: Right (163-159), Left (164-163)
@@ -1206,17 +1255,21 @@ Left_Right: Blink+Magnet
 Right_Left: Blink
 
 // Scene 164
-// Transitions: Right (164-163), Down (133-164)
+// Transitions: Right (164-163)
 // Checks: Blink (Ability[3])
 Scene 164
 Right_Blink: Blink+DoubleJump
 Right_Blink: Blink+Magnet
-*_Down: false
 
 // Scene 165
 // Transitions: Elevator (165-29), Right (165-155), Down (165-18), Left0 (151-165hidden), Left1 (151-165)
 // Checks:
 Scene 165
+*_Down: false
+Left1_Elevator: Light
+Right_Elevator: Light
+*_Left0: Ball+Light+DoubleJump
+Left0_*: Ball+Light
 
 // Scene 166
 // Transitions: 24-166 (24-166)
@@ -1224,38 +1277,30 @@ Scene 165
 Scene 166
 
 // Scene 167 : Mainframe repair
-// Transitions: Down (167-34), Left (62-167), Repair (167Repair)
+// Transitions: Left (62-167), Repair (167Repair)
 // Checks:
 Scene 167
-//'Down' is not a valid transition
-Down_*: false
-*_Down: false
+//No obstacles
 
 // Scene 168 : Vertical to left of Electric Key shop
-// Transitions: Right1 (168-169), Right0 (168-78), Down (62-168)
+// Transitions: Right1 (168-169), Right0 (168-78)
 // Checks: PowerCell (PowerCell[19])
 Scene 168
-*_Down: false
-Down_*: false
 Right1_Right0: Magnet
 Right1_PowerCell: Magnet
 
 // Scene 169 : Electric Key shop entrance
 // Transitions: Right (169-64), Left (168-169), Door (220-169)
-// Checks: Lever (Lever[11])
+// Checks:
 Scene 169
-//TODO: Is the Lever here an actual check?  Seems to be missing
 *_Door: Item[1]
 Right_Left: DoubleJump
 //TODO: BLJ skip
 
 // Scene 170 : Quatern
-// Transitions: Right (170-66), Down (168-170)
+// Transitions: Right (170-66)
 // Checks: Item[3]0 (Item[3]), Chip (Chip[9]), Item[3]1 (Item[3])
 Scene 170
-//'Down' is not used here
-Down_*: false
-*_Down: false
 //The two Item[3] references here are because there are two different capsule fragments
 Right_Item[3]0: 7#PowerCell
 Right_Item[3]1: 17#PowerCell
@@ -1267,7 +1312,7 @@ Right_Chip: 14#PowerCell
 Scene 171
 
 // Scene 172
-// Transitions: Down (172-173), Left (173-172), Repair (172Repair)
+// Transitions: Left (173-172), Repair (172Repair)
 // Checks:
 Scene 172
 
@@ -1292,7 +1337,7 @@ Scene 175
 Scene 176
 
 // Scene 177
-// Transitions: Right (177-176), Down (20-177)
+// Transitions: Right (177-176)
 // Checks: Chip (Chip[24])
 Scene 177
 
@@ -1327,7 +1372,7 @@ Scene 182
 Scene 183
 
 // Scene 184
-// Transitions: Right (184-185), Down (20-184)
+// Transitions: Right (184-185)
 // Checks: Ball (Ability[1])
 Scene 184
 
@@ -1347,12 +1392,12 @@ Scene 186
 Scene 187
 
 // Scene 188
-// Transitions: Right (188-187), Down (188-174), Left1 (189-188), Left0 (231-188)
+// Transitions: Right (188-187), Left1 (189-188), Left0 (231-188)
 // Checks:
 Scene 188
 
 // Scene 189
-// Transitions: Right (189-188), Down (20-189)
+// Transitions: Right (189-188)
 // Checks: PowerCell (PowerCell[0])
 Scene 189
 
@@ -1367,7 +1412,7 @@ Scene 190
 Scene 191
 
 // Scene 192
-// Transitions: Down (192-174), Left1 (100-192), Left0 (178-192)
+// Transitions: Left1 (100-192), Left0 (178-192)
 // Checks: PowerCell (PowerCell[21])
 Scene 192
 
@@ -1382,7 +1427,7 @@ Scene 193
 Scene 194
 
 // Scene 195
-// Transitions: Down (195-174), Left (185-195), Repair (195Repair)
+// Transitions: Left (185-195), Repair (195Repair)
 // Checks:
 Scene 195
 
@@ -1402,7 +1447,7 @@ Scene 197
 Scene 198
 
 // Scene 199
-// Transitions: Right1 (199-221), Right0 (199-197), Down (233-199)
+// Transitions: Right1 (199-221), Right0 (199-197), Left (233-199)
 // Checks:
 Scene 199
 
@@ -1417,65 +1462,63 @@ Scene 200
 Scene 201
 
 // Scene 202 : Lower Right Entrance to Bunker
-// Transitions: Down (202-53), Left0 (43-202), Left1 (61-202)
+// Transitions: Left0 (43-202), Left1 (61-202)
 // Checks:
 Scene 202
-*_Down: false
-Down_*: false
 Left1_Left0: Magnet
 
 // Scene 203
-// Transitions: Right (203-40), Down (35-203)
+// Transitions: Right (203-40)
 // Checks:
 Scene 203
 
 // Scene 204
-// Transitions: Right (204-43), Down (35-204)
+// Transitions: Right (204-43)
 // Checks: Item (Item[6])
 Scene 204
 
 // Scene 205
-// Transitions: Down (205-75), 62-205 (62-205)
+// Transitions: 62-205 (62-205)
 // Checks:
 Scene 205
 
 // Scene 206
-// Transitions: Down (206-34), Left (128-206)
+// Transitions: Left (128-206)
 // Checks: DoubleJump (Ability[4])
 Scene 206
 
 // Scene 207
-// Transitions: Down (207-34), Left0 (120-207), Left1 (128-207)
+// Transitions: Left0 (120-207), Left1 (128-207)
 // Checks: Chip (Chip[6])
 Scene 207
 
 // Scene 208
-// Transitions: Down (208-34), Left (120-208), Door (208-223)
+// Transitions: Left (120-208), Door (208-223)
 // Checks:
 Scene 208
 
 // Scene 209
-// Transitions: Right (209-114), Down (111-209), Train (209-Train)
+// Transitions: Right (209-114), Train (209-Train)
 // Checks: TrainStation (TrainStation[4])
 Scene 209
 
 // Scene 210
-// Transitions: Down (210-34), Left (117-210)
+// Transitions: Left (117-210)
 // Checks: Slot (ChipSlot[7])
 Scene 210
 
 // Scene 211
-// Transitions: Right (211-134), Down (65-211)
+// Transitions: Right (211-134)
 // Checks:
 Scene 211
 
 // Scene 212
-// Transitions: Down (212-174), Left (230-212)
+// Transitions: Left (230-212)
 // Checks: PowerCell (PowerCell[8])
 Scene 212
 
 // Scene 213
-// Transitions: Down (213-18), Left0 (214-213), Left1 (186-213)
+// Transitions: Left0 (214-213), Left1 (186-213)
 // Checks: PowerCell (PowerCell[12])
 Scene 213
 
@@ -1490,7 +1533,7 @@ Scene 214
 Scene 215
 
 // Scene 216
-// Transitions: Down (216-18), Left (218-216)
+// Transitions: Left (218-216)
 // Checks: Slot (ChipSlot[5])
 Scene 216
 
@@ -1505,7 +1548,7 @@ Scene 217
 Scene 218
 
 // Scene 220
-// Transitions: 220-169 (220-169), Down (168-220)
+// Transitions: 220-169 (220-169)
 // Checks: ShopItem0 (Chip[16]), ShopItem1 (Chip[13]), ShopItem2 (Chip[12])
 Scene 220
 
@@ -1515,27 +1558,27 @@ Scene 220
 Scene 221
 
 // Scene 222
-// Transitions: 222-46 (222-46), Down (35-222)
+// Transitions: 222-46 (222-46)
 // Checks:
 Scene 222
 
 // Scene 223
-// Transitions: Down (223-34), 208-223 (208-223)
+// Transitions: 208-223 (208-223)
 // Checks: PowerCell (PowerCell[6])
 Scene 223
 
 // Scene 224
-// Transitions: Down (224-174), 197-224 (197-224)
+// Transitions: 197-224 (197-224)
 // Checks: ShopItem0 (Item[5]), ShopItem1 (Item[2]), ShopItem2 (Item[8]), ShopItem3 (Chip[23]), ShopItem4 (Chip[17])
 Scene 224
 
 // Scene 225
-// Transitions: Down (225-131bottom), Left (133-225top)
+// Transitions: Left (133-225top)
 // Checks:
 Scene 225
 
 // Scene 227
-// Transitions: Down (227-139), 138-227 (138-227)
+// Transitions: 138-227 (138-227)
 // Checks:
 Scene 227
 
@@ -1554,7 +1597,7 @@ Right_Left: Grapple
 Scene 229
 
 // Scene 230
-// Transitions: Right1 (230-229), Right0 (230-212), Down (20-230)
+// Transitions: Right1 (230-229), Right0 (230-212)
 // Checks:
 Scene 230
 
@@ -1564,7 +1607,7 @@ Scene 230
 Scene 231
 
 // Scene 232
-// Transitions: Right (232-215), Down1 (1-232), Down1 (1-232)
+// Transitions: Right (232-215)
 // Checks: Disruptor (MapDisruptor[11]), Lever (Lever[51])
 Scene 232
 

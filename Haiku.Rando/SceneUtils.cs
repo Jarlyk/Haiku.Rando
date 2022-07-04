@@ -14,7 +14,7 @@ namespace Haiku.Rando
         private static GameObject[] _sceneRoots;
         
         public static T[] FindObjectsOfType<T>()
-            where T: class
+            where T: MonoBehaviour
         {
             int sceneId = SceneManager.GetActiveScene().buildIndex;
             if (sceneId != _lastSceneId)
@@ -23,11 +23,50 @@ namespace Haiku.Rando
                 _sceneRoots = SceneManager.GetActiveScene().GetRootGameObjects();
             }
 
-            return _sceneRoots.SelectMany(r => r.GetComponentsInChildren<T>(true)).ToArray();
+            return _sceneRoots.SelectMany(r => r.GetComponentsInChildren<T>(true)).Where(IsValid).ToArray();
+        }
+
+        private static bool IsValid<T>(T x) where T: MonoBehaviour
+        {
+            if (x == null) return false;
+
+            return x.isActiveAndEnabled ||
+                   typeof(T) == typeof(TrainTicket) ||
+                   typeof(T) == typeof(EnterTrain) ||
+                   typeof(T) == typeof(EnterRoomTrigger) ||
+                   typeof(T) == typeof(PickupBulb) ||
+                   IsSpecialPickup(x) ||
+                   IsMischievousPowerCell(x) ||
+                   IsPortalReward(x) ||
+                   x.GetComponents<MonoBehaviour>().Any(c => c.GetType().Name.StartsWith("EnableIf"));
+        }
+
+        private static bool IsSpecialPickup<T>(T x) where T: MonoBehaviour
+        {
+            return x is PickupItem pickup && ((pickup.triggerChip && pickup.chipIdentifier == GameManager.instance.chip[21].identifier) ||
+                                              (IsItem(pickup) && (pickup.itemID == 6 || pickup.itemID == 0)));
+        }
+
+        private static bool IsItem(PickupItem pickup)
+        {
+            return !pickup.triggerChip && !pickup.triggerChipSlot && !pickup.triggerCoolant && !pickup.triggerPin;
+        }
+
+        private static bool IsMischievousPowerCell<T>(T x) where T: MonoBehaviour
+        {
+            return x is PowerCell pc && pc.saveID == 16;
+        }
+
+        private static bool IsPortalReward<T>(T x) where T : MonoBehaviour
+        {
+            var portal = Object.FindObjectOfType<e29Portal>();
+            if (!portal) return false;
+
+            return x is PickupItem;
         }
 
         public static T FindObjectOfType<T>()
-            where T: class
+            where T: MonoBehaviour
         {
             int sceneId = SceneManager.GetActiveScene().buildIndex;
             if (sceneId != _lastSceneId)
@@ -36,7 +75,9 @@ namespace Haiku.Rando
                 _sceneRoots = SceneManager.GetActiveScene().GetRootGameObjects();
             }
 
-            return _sceneRoots.Select(r => r.GetComponentInChildren<T>(true)).FirstOrDefault(c => c != null);
+            return _sceneRoots.Select(r => r.GetComponentInChildren<T>(true)).FirstOrDefault(IsValid);
+
+
         }
     }
 }

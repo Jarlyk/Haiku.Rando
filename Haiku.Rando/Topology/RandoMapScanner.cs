@@ -90,7 +90,7 @@ namespace Haiku.Rando.Topology
                 var byAlias = scene.Nodes.GroupBy(n => n.GetAlias(scene.SceneId));
                 foreach (var group in byAlias)
                 {
-                    var items = group.OrderByDescending(g => g.GetPosition(scene.SceneId).y).ToList();
+                    var items = group.OrderByDescending(g => g.GetPosition(scene.SceneId).y).ThenBy(g => g.GetPosition(scene.SceneId).x).ToList();
                     if (items.Count > 1)
                     {
                         for (int i = 0; i < items.Count; i++)
@@ -210,7 +210,7 @@ namespace Haiku.Rando.Topology
         {
             //If there is no path back, we assume this is a one-way downward transition
             var sDestination = _visitedScenes[destination];
-            if (sDestination.Edges.All(e => e.Destination != node))
+            if (sDestination.Edges.All(e => e.Destination != node) && sDestination.Nodes.OfType<TransitionNode>().Count() > 1)
             {
                 return "Down";
             }
