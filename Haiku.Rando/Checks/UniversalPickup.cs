@@ -24,6 +24,25 @@ namespace Haiku.Rando.Checks
             On.PickupItem.TriggerPickup += PickupItemOnTriggerPickup;
         }
 
+        private void Start()
+        {
+            //PickupItem might have already run Start, so we need to repeat the active-setting process
+            OnStart(GetComponent<PickupItem>());
+        }
+
+        private void OnStart(PickupItem pickup)
+        {
+            if (check == null) return;
+
+            bool alreadyGot = CheckManager.AlreadyGotCheck(check);
+            gameObject.SetActive(!alreadyGot);
+
+            if (midAir)
+            {
+                pickup.interactAnimator.enabled = false;
+            }
+        }
+
         private static void PickupItem_Start(On.PickupItem.orig_Start orig, PickupItem self)
         {
             var universalPickup = self.GetComponent<UniversalPickup>();
@@ -37,19 +56,7 @@ namespace Haiku.Rando.Checks
             self.triggerPin = true;
             orig(self);
             
-            var check = universalPickup.check;
-            if (check == null) return;
-
-            bool alreadyGot = CheckManager.AlreadyGotCheck(check);
-            if (alreadyGot)
-            {
-                self.gameObject.SetActive(false);
-            }
-
-            if (universalPickup.midAir)
-            {
-                self.interactAnimator.enabled = false;
-            }
+            universalPickup.OnStart(self);
         }
 
         private static void PickupItemOnTriggerPickup(On.PickupItem.orig_TriggerPickup orig, PickupItem self)
@@ -64,50 +71,8 @@ namespace Haiku.Rando.Checks
             var check = universalPickup.check;
             if (check == null) return;
 
-            self.triggerChip = false;
-            self.triggerChipSlot = false;
-            self.triggerCoolant = false;
-            self.triggerPin = false;
-            self.saveID = check.SaveId;
-            self.collected = true;
-
-            switch (check.Type)
-            {
-                case CheckType.Wrench:
-                case CheckType.Bulblet:
-                case CheckType.Ability:
-                case CheckType.MapDisruptor:
-                case CheckType.Lore:
-                case CheckType.Lever:
-                case CheckType.PartsMonument:
-                case CheckType.PowerCell:
-                case CheckType.FireRes:
-                case CheckType.WaterRes:
-                case CheckType.TrainStation:
-                    CheckManager.TriggerCheck(self, check);
-                    self.gameObject.SetActive(false);
-                    break;
-                case CheckType.Item:
-                    self.itemID = check.CheckId;
-                    orig(self);
-                    break;
-                case CheckType.Chip:
-                    self.triggerChip = true;
-                    self.chipIdentifier = GameManager.instance.chip[check.CheckId].identifier;
-                    orig(self);
-                    break;
-                case CheckType.ChipSlot:
-                    self.triggerChipSlot = true;
-                    self.chipSlotNumber = check.CheckId;
-                    orig(self);
-                    break;
-                case CheckType.Coolant:
-                    self.triggerCoolant = true;
-                    orig(self);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            CheckManager.TriggerCheck(self, check);
+            self.gameObject.SetActive(false);
         }
 
         private void OnTriggerEnter2D(Collider2D collision)

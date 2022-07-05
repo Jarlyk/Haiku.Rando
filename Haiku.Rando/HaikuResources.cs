@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -65,6 +66,40 @@ namespace Haiku.Rando
             refInstance.SetActive(false);
             Object.DontDestroyOnLoad(refInstance);
             return refInstance.GetComponent<T>();
+        }
+
+        private static GameObject _itemDescObject;
+
+        public static ItemDescriptionManager ItemDesc()
+        {
+            if (!_itemDescObject)
+            {
+                _itemDescObject = GetDontDestroyOnLoadObjects()
+                                  .Select(x => x.GetComponentInChildren<ItemDescriptionManager>(true))
+                                  .First(d => d).gameObject;
+            }
+
+            return _itemDescObject.GetComponent<ItemDescriptionManager>();
+        }
+
+        private static GameObject[] GetDontDestroyOnLoadObjects()
+        {
+            GameObject temp = null;
+            try
+            {
+                temp = new GameObject();
+                Object.DontDestroyOnLoad( temp );
+                UnityEngine.SceneManagement.Scene dontDestroyOnLoad = temp.scene;
+                Object.DestroyImmediate( temp );
+                temp = null;
+     
+                return dontDestroyOnLoad.GetRootGameObjects();
+            }
+            finally
+            {
+                if( temp != null )
+                    Object.DestroyImmediate( temp );
+            }
         }
     }
 }

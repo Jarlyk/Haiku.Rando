@@ -31,8 +31,7 @@ namespace Haiku.Rando.Checks
         {
             IL.e7FireWaterTrigger.Start += E7FireWaterTrigger_Start;
             On.e7UpgradeShop.TriggerUpgrade += E7UpgradeShop_TriggerUpgrade;
-
-            //TODO: Bulblet check support for disabling if boss not defeated
+            On.BeeHive.TriggerBulbItem += BeeHive_TriggerBulbItem;
         }
 
         public void OnSceneLoaded(int sceneId)
@@ -53,12 +52,12 @@ namespace Haiku.Rando.Checks
             {
                 if (Randomizer.CheckMapping.TryGetValue(original, out var replacement))
                 {
-                    ReplaceCheck(original, replacement);
+                    ReplaceCheck(sceneId, original, replacement);
                 }
             }
         }
 
-        public void ReplaceCheck(RandoCheck original, RandoCheck replacement)
+        public void ReplaceCheck(int sceneId, RandoCheck original, RandoCheck replacement)
         {
             Debug.Log($"Replacing check {original} with {replacement}");
             if (original.IsShopItem)
@@ -71,18 +70,22 @@ namespace Haiku.Rando.Checks
             if (original.Type == CheckType.FireRes)
             {
                 _fireResReplacement = replacement;
+                var trigger = SceneUtils.FindObjectsOfType<e7FireWaterTrigger>().First(t => t.fireWater);
+                trigger.dialogue.sentence = GetSpoilerText(replacement);
                 return;
             }
 
             if (original.Type == CheckType.WaterRes)
             {
                 _waterResReplacement = replacement;
+                var trigger = SceneUtils.FindObjectsOfType<e7FireWaterTrigger>().First(t => !t.fireWater);
+                trigger.dialogue.sentence = GetSpoilerText(replacement);
                 return;
             }
 
             GameObject oldObject = null;
             bool midAir = false;
-            bool canReuseObject = false;
+            bool reuseObject = false;
 
             switch (original.Type)
             {
@@ -97,16 +100,16 @@ namespace Haiku.Rando.Checks
                     midAir = true;
                     break;
                 case CheckType.Item:
-                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().First(p => p.itemID == original.CheckId && p.saveID == original.SaveId).gameObject;
-                    canReuseObject = true;
+                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.itemID == original.CheckId && p.saveID == original.SaveId)?.gameObject;
+                    reuseObject = original.CheckId != (int)ItemId.CapsuleFragment;
                     break;
                 case CheckType.Chip:
-                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().First(p => p.triggerChip && GameManager.instance.getChipNumber(p.chipIdentifier) == original.CheckId).gameObject;
-                    canReuseObject = true;
+                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.triggerChip && GameManager.instance.getChipNumber(p.chipIdentifier) == original.CheckId)?.gameObject;
+                    reuseObject = true;
                     break;
                 case CheckType.ChipSlot:
-                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().First(p => p.triggerChipSlot && p.chipSlotNumber == original.CheckId).gameObject;
-                    canReuseObject = true;
+                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.triggerChipSlot && p.chipSlotNumber == original.CheckId)?.gameObject;
+                    reuseObject = false;
                     break;
                 case CheckType.MapDisruptor:
                     oldObject = SceneUtils.FindObjectOfType<Disruptor>().gameObject;
@@ -115,22 +118,22 @@ namespace Haiku.Rando.Checks
                     //TODO
                     break;
                 case CheckType.Lever:
-                    oldObject = SceneUtils.FindObjectsOfType<SwitchDoor>().First(p => p.doorID == original.CheckId).gameObject;
+                    oldObject = SceneUtils.FindObjectsOfType<SwitchDoor>().FirstOrDefault(p => p.doorID == original.CheckId)?.gameObject;
                     break;
                 case CheckType.PartsMonument:
                     //TODO
                     break;
                 case CheckType.PowerCell:
-                    oldObject = SceneUtils.FindObjectsOfType<PowerCell>().First(p => p.saveID == original.SaveId).gameObject;
+                    oldObject = SceneUtils.FindObjectsOfType<PowerCell>().FirstOrDefault(p => p.saveID == original.SaveId)?.gameObject;
                     midAir = true;
                     break;
                 case CheckType.Coolant:
-                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().First(p => p.triggerCoolant && p.saveID == original.SaveId).gameObject;
-                    canReuseObject = true;
+                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.triggerCoolant && p.saveID == original.SaveId)?.gameObject;
+                    reuseObject = true;
                     break;
                 case CheckType.TrainStation:
                     oldObject = SceneUtils.FindObjectOfType<TrainTicket>().gameObject;
-                    canReuseObject = false;
+                    //TODO
                     break;
                 case CheckType.FireRes:
                 case CheckType.WaterRes:
@@ -142,20 +145,27 @@ namespace Haiku.Rando.Checks
 
             if (!oldObject)
             {
-                Debug.Log($"Check type {original.Type} not yet supported");
+                Debug.Log($"Failed to find original object for check {original} in order to replace it");
+                var pickups = SceneUtils.FindObjectsOfType<PickupItem>();
+                Debug.Log($"Scene currently has {pickups.Length} PickupItem instances");
                 return;
             }
 
             GameObject newObject = null;
-            if (canReuseObject)
+            if (reuseObject)
             {
                 newObject = oldObject;
             }
             else
             {
                 oldObject.SetActive(false);
-
                 newObject = Object.Instantiate(HaikuResources.PrefabGenericPickup, oldObject.transform.position, oldObject.transform.rotation);
+
+                if (original.Type == CheckType.Bulblet && !GameManager.instance.bosses[2].defeated)
+                {
+                    //Bulblet pickup gets activated upon boss death
+                    newObject.SetActive(false);
+                }
             }
 
             if (newObject)
@@ -163,6 +173,13 @@ namespace Haiku.Rando.Checks
                 var universalPickup = newObject.AddComponent<UniversalPickup>();
                 universalPickup.check = replacement;
                 universalPickup.midAir = midAir;
+
+                //Special-case: Car Battery death object linkage
+                if (sceneId == 69 && original.Type == CheckType.Chip)
+                {
+                    var carBattery = SceneUtils.FindObjectOfType<CarBattery>();
+                    carBattery.deathObject = newObject;
+                }
             }
         }
 
@@ -173,6 +190,10 @@ namespace Haiku.Rando.Checks
             {
                 var replacer = button.gameObject.AddComponent<ShopItemReplacer>();
                 replacer.check = replacement;
+            }
+            else
+            {
+                Debug.LogWarning($"Failed to find shop button matching original check {original}");
             }
         }
 
@@ -246,6 +267,26 @@ namespace Haiku.Rando.Checks
             }
         }
 
+        private static void BeeHive_TriggerBulbItem(On.BeeHive.orig_TriggerBulbItem orig, BeeHive self)
+        {
+            if (Instance.Randomizer == null)
+            {
+                orig(self);
+                return;
+            }
+
+            var bulbCheck = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Type == CheckType.Bulblet);
+            if (bulbCheck != null)
+            {
+                //Instead of activating the original pickup object, we want to activate the new one instead
+                var newCheck = Instance.Randomizer.CheckMapping[bulbCheck];
+                self.bulbPickup = SceneUtils.FindObjectsOfType<UniversalPickup>()
+                                            .First(p => p.check == newCheck).gameObject;
+            }
+
+            orig(self);
+        }
+
         public static bool AlreadyGotCheck(RandoCheck check)
         {
             bool alreadyGot = false;
@@ -305,11 +346,11 @@ namespace Haiku.Rando.Checks
             {
                 case CheckType.Wrench:
                     GameManager.instance.canHeal = true;
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_HEALING_WRENCH_TITLE", "", PickupTextDuration);
+                    CameraBehavior.instance.ShowLeftCornerUI(InventoryManager.instance.items[(int)ItemId.Wrench].image, "_HEALING_WRENCH_TITLE", "", PickupTextDuration);
                     break;
                 case CheckType.Bulblet:
                     GameManager.instance.lightBulb = true;
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_LIGHT_BULB_TITLE", "", PickupTextDuration);
+                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.ItemDesc().lightBulb.image.sprite, "_LIGHT_BULB_TITLE", "", PickupTextDuration);
                     hasWorldObject = false;
                     break;
                 case CheckType.Ability:
@@ -336,13 +377,17 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.ChipSlot:
                     GameManager.instance.chipSlot[check.CheckId].collected = true;
-                    CameraBehavior.instance.ShowLeftCornerUI(refPickup.chipSlotImage, refPickup.chipSlotTitle, "", PickupTextDuration);
+                    var refChipSlot = HaikuResources.GetRefChipSlot(check.CheckId);
+                    CameraBehavior.instance.ShowLeftCornerUI(refChipSlot.chipSlotImage, refChipSlot.chipSlotTitle, "", PickupTextDuration);
                     break;
                 case CheckType.MapDisruptor:
                     GameManager.instance.disruptors[check.CheckId].destroyed = true;
                     CameraBehavior.instance.Shake(0.2f, 0.2f);
                     var refDisruptor = HaikuResources.RefDisruptor;
-                    CameraBehavior.instance.ShowLeftCornerUI(refDisruptor.mapImage, refDisruptor.disruptorDestroyedText, "", PickupTextDuration);
+                    CameraBehavior.instance.ShowLeftCornerUI(refDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite, 
+                                                             "_DISRUPTOR", 
+                                                             "", 
+                                                             PickupTextDuration);
                     AchievementManager.instance.CheckNumberOfDisruptorsDestroyed();
                     break;
                 case CheckType.Lore:
@@ -357,6 +402,10 @@ namespace Haiku.Rando.Checks
                 case CheckType.PowerCell:
                     self.StartCoroutine(RemoveHeat());
                     GameManager.instance.powerCells[check.CheckId].collected = true;
+                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.RefPowerCell.GetComponentInChildren<SpriteRenderer>(true).sprite, 
+                                                             "_POWERCELL",
+                                                             "",
+                                                             PickupTextDuration);
                     //TODO: Sound effect and particles from PowerCell?
                     AchievementManager.instance.CheckNumbersOfPowercellsCollected();
                     break;
@@ -391,6 +440,51 @@ namespace Haiku.Rando.Checks
             }
 
             SoundManager.instance.PlayOneShot(refPickup.pickupSFXPath);
+        }
+
+        private static string GetSpoilerText(RandoCheck check)
+        {
+            switch (check.Type)
+            {
+                case CheckType.Wrench:
+                    return "_HEALING_WRENCH_TITLE";
+                case CheckType.Bulblet:
+                    return "_LIGHT_BULB_TITLE";
+                case CheckType.Ability:
+                    var refUnlock = HaikuResources.RefUnlockTutorial;
+                    return refUnlock.abilities[check.CheckId].title;
+                case CheckType.Item:
+                    return InventoryManager.instance.items[check.CheckId].itemName;
+                case CheckType.Chip:
+                    return GameManager.instance.chip[check.CheckId].title;
+                case CheckType.ChipSlot:
+                    return "_CHIP_SLOT";
+                case CheckType.MapDisruptor:
+                    return "_DISRUPTOR";
+                case CheckType.Lore:
+                    //TODO
+                    break;
+                case CheckType.Lever:
+                    //TODO
+                    break;
+                case CheckType.PartsMonument:
+                    //TODO
+                    break;
+                case CheckType.PowerCell:
+                    return "_POWERCELL";
+                case CheckType.Coolant:
+                    return "_COOLANT_TITLE";
+                case CheckType.FireRes:
+                    return "_FIRE_RES_TITLE";
+                case CheckType.WaterRes:
+                    return "_WATER_RES_TITLE";
+                case CheckType.TrainStation:
+                    return GameManager.instance.trainStations[check.CheckId].title;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return "";
         }
 
         public static IEnumerator RemoveHeat()

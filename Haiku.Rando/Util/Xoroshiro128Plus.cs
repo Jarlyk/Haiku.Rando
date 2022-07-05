@@ -251,7 +251,7 @@ namespace Haiku.Rando.Util
         }
 
         /// <summary>
-        /// next() as 64-bit floating-point number.
+        /// next() as 64-bit floating-point number in [0-1).
         /// </summary>
         public double NextDouble()
         {
@@ -259,7 +259,7 @@ namespace Haiku.Rando.Util
         }
 
         /// <summary>
-        /// next() as 32-bit floating-point number.
+        /// next() as 32-bit floating-point number in [0,1).
         /// </summary>
         public float NextFloat()
         {

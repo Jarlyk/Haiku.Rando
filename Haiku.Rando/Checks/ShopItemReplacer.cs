@@ -19,9 +19,11 @@ namespace Haiku.Rando.Checks
             On.ShopItemButton.InitialCheck += ShopItemButton_InitialCheck;
         }
 
+        private static ShopItemReplacer _pendingPurchase;
+
         private static void ShopTrigger_ConfirmPurchase(On.ShopTrigger.orig_ConfirmPurchase orig, ShopTrigger self)
         {
-            var replacer = self.GetComponent<ShopItemReplacer>();
+            var replacer = _pendingPurchase;
             if (!replacer)
             {
                 orig(self);
@@ -56,10 +58,12 @@ namespace Haiku.Rando.Checks
             var replacer = self.GetComponent<ShopItemReplacer>();
             if (!replacer)
             {
+                _pendingPurchase = null;
                 orig(self);
                 return;
             }
 
+            _pendingPurchase = replacer;
             self.item = true;
             orig(self);
         }
@@ -89,7 +93,7 @@ namespace Haiku.Rando.Checks
                 case CheckType.Bulblet:
                     title = "_LIGHT_BULB_TITLE";
                     description = "_LIGHT_BULB_DESCRIPTION";
-                    //TODO: Can probably grab image from menu canvas that's kept alive
+                    image = HaikuResources.ItemDesc().lightBulb.image.sprite;
                     break;
                 case CheckType.Ability:
                     var refUnlock = HaikuResources.RefUnlockTutorial;
@@ -115,6 +119,7 @@ namespace Haiku.Rando.Checks
                 case CheckType.MapDisruptor:
                     title = "_DISRUPTOR";
                     description = "Add text for disruptor locations here";
+                    image = HaikuResources.RefDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite;
                     break;
                 case CheckType.Lore:
                     //TODO
@@ -128,7 +133,7 @@ namespace Haiku.Rando.Checks
                 case CheckType.PowerCell:
                     title = "_POWERCELL";
                     description = "";
-                    image = HaikuResources.RefPowerCell.sr.sprite;
+                    image = HaikuResources.RefPowerCell.GetComponentInChildren<SpriteRenderer>(true).sprite;
                     break;
                 case CheckType.Coolant:
                     title = "_COOLANT_TITLE";
@@ -142,12 +147,12 @@ namespace Haiku.Rando.Checks
                 case CheckType.FireRes:
                     title = "_FIRE_RES_TITLE";
                     description = "_FIRE_RES_DESCRIPTION";
-                    //TODO: From canvas?
+                    image = HaikuResources.ItemDesc().fireRes.image.sprite;
                     break;
                 case CheckType.WaterRes:
                     title = "_WATER_RES_TITLE";
                     description = "_WATER_RES_DESCRIPTION";
-                    //TODO: From canvas?
+                    image = HaikuResources.ItemDesc().waterRes.image.sprite;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -199,7 +204,7 @@ namespace Haiku.Rando.Checks
                     self.itemImage.sprite = InventoryManager.instance.items[(int)ItemId.Wrench].image;
                     break;
                 case CheckType.Bulblet:
-                    //TODO: From canvas?
+                    self.itemImage.sprite = HaikuResources.ItemDesc().lightBulb.image.sprite;
                     break;
                 case CheckType.Ability:
                     //TODO: From canvas?
@@ -214,6 +219,7 @@ namespace Haiku.Rando.Checks
                     self.itemImage.sprite = HaikuResources.GetRefChipSlot(replacer.check.CheckId).chipSlotImage;
                     break;
                 case CheckType.MapDisruptor:
+                    self.itemImage.sprite = HaikuResources.RefDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite;
                     break;
                 case CheckType.Lore:
                     break;
@@ -222,7 +228,7 @@ namespace Haiku.Rando.Checks
                 case CheckType.PartsMonument:
                     break;
                 case CheckType.PowerCell:
-                    self.itemImage.sprite = HaikuResources.RefPowerCell.sr.sprite;
+                    self.itemImage.sprite = HaikuResources.RefPowerCell.GetComponentInChildren<SpriteRenderer>(true).sprite;
                     break;
                 case CheckType.Coolant:
                     self.itemImage.sprite = HaikuResources.RefPickupCoolant.coolantImage;
@@ -231,10 +237,10 @@ namespace Haiku.Rando.Checks
                     //TODO?
                     break;
                 case CheckType.FireRes:
-                    //TODO: From canvas?
+                    self.itemImage.sprite = HaikuResources.ItemDesc().fireRes.image.sprite;
                     break;
                 case CheckType.WaterRes:
-                    //TODO: From canvas?
+                    self.itemImage.sprite = HaikuResources.ItemDesc().waterRes.image.sprite;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

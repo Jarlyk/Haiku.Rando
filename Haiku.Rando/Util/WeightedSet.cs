@@ -21,7 +21,7 @@ namespace Haiku.Rando.Util
         public void Add(double weight, T item)
         {
             _items.Add(item);
-            var priorSum = _partialSums.Count > 0 ? _partialSums[0] : 0;
+            var priorSum = _partialSums.Count > 0 ? _partialSums[_partialSums.Count-1] : 0;
             _partialSums.Add(priorSum + weight);
         }
 

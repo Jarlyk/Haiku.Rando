@@ -232,7 +232,7 @@ namespace Haiku.Rando.Logic
                 var original = candidates.PickItem(_random.NextDouble());
                 candidates.Remove(original);
 
-                Debug.Log($"Replacing check {original.Check} with {match}");
+                Debug.Log($"Remaining checks, replaced {original.Check} with {match}");
                 _checkMapping.Add(original.Check, match);
                 _pools[0].Remove(match);
                 checksToReplace.Remove(original);
@@ -244,8 +244,9 @@ namespace Haiku.Rando.Logic
 
         private double WeighFrontier(FrontierEdge edge)
         {
-            //TODO
-            return 1;
+            var u = edge.Uniqueness;
+            var d = edge.Depth;
+            return u*u*u + d*d;
         }
 
         private double WeighCheckPlacement(InLogicCheck check)
@@ -313,8 +314,8 @@ namespace Haiku.Rando.Logic
         private void BuildPools()
         {
             //TODO: Create pools based on config
-            //For testing, we're going to start with just a single simple pool
-            var pool = BuildPool(CheckType.Ability, CheckType.Chip, CheckType.Item, CheckType.ChipSlot, CheckType.MapDisruptor, CheckType.FireRes, CheckType.WaterRes, CheckType.Bulblet);
+            //For testing, we're going to start with everything currently supported
+            var pool = BuildPool(CheckType.Ability, CheckType.Chip, CheckType.Item, CheckType.ChipSlot, CheckType.MapDisruptor, CheckType.FireRes, CheckType.WaterRes, CheckType.Bulblet, CheckType.PowerCell, CheckType.Coolant);
             _pools.Add(pool);
         }
 

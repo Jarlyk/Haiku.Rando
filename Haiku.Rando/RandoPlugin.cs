@@ -42,6 +42,7 @@ namespace Haiku.Rando
             UniversalPickup.InitHooks();
             ShopItemReplacer.InitHooks();
             CheckManager.InitHooks();
+            QoL.InitHooks();
 
             IL.LoadGame.Start += LoadGame_Start;
             On.PCSaveManager.Load += PCSaveManager_Load;
@@ -66,7 +67,7 @@ namespace Haiku.Rando
         {
             var c = new ILCursor(il);
             c.GotoNext(MoveType.After, i => i.MatchCallvirt("GameManager", "LoadSaveFile"));
-            //c.EmitDelegate((Action)BeginRando);
+            c.EmitDelegate((Action)BeginRando);
         }
 
         private void BeginRando()

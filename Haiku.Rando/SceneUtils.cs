@@ -11,19 +11,24 @@ namespace Haiku.Rando
     public static class SceneUtils
     {
         private static int _lastSceneId;
-        private static GameObject[] _sceneRoots;
+        private static GameObject[] _sceneRoots = {};
         
         public static T[] FindObjectsOfType<T>()
             where T: MonoBehaviour
         {
+            UpdateRoots();
+            return _sceneRoots.Where(r => r).SelectMany(r => r.GetComponentsInChildren<T>(true)).Where(IsValid).ToArray();
+        }
+
+        private static void UpdateRoots()
+        {
+            //Cache roots, but refresh them if first root is dead (this indicates that scene was left and reentered)
             int sceneId = SceneManager.GetActiveScene().buildIndex;
-            if (sceneId != _lastSceneId)
+            if (sceneId != _lastSceneId || _sceneRoots.Length == 0 || (!_sceneRoots[0]))
             {
                 _lastSceneId = sceneId;
                 _sceneRoots = SceneManager.GetActiveScene().GetRootGameObjects();
             }
-
-            return _sceneRoots.SelectMany(r => r.GetComponentsInChildren<T>(true)).Where(IsValid).ToArray();
         }
 
         private static bool IsValid<T>(T x) where T: MonoBehaviour
@@ -35,6 +40,7 @@ namespace Haiku.Rando
                    typeof(T) == typeof(EnterTrain) ||
                    typeof(T) == typeof(EnterRoomTrigger) ||
                    typeof(T) == typeof(PickupBulb) ||
+                   typeof(T) == typeof(ShopItemButton) ||
                    IsSpecialPickup(x) ||
                    IsMischievousPowerCell(x) ||
                    IsPortalReward(x) ||
@@ -68,16 +74,8 @@ namespace Haiku.Rando
         public static T FindObjectOfType<T>()
             where T: MonoBehaviour
         {
-            int sceneId = SceneManager.GetActiveScene().buildIndex;
-            if (sceneId != _lastSceneId)
-            {
-                _lastSceneId = sceneId;
-                _sceneRoots = SceneManager.GetActiveScene().GetRootGameObjects();
-            }
-
-            return _sceneRoots.Select(r => r.GetComponentInChildren<T>(true)).FirstOrDefault(IsValid);
-
-
+            UpdateRoots();
+            return _sceneRoots.Where(r => r).Select(r => r.GetComponentInChildren<T>(true)).FirstOrDefault(IsValid);
         }
     }
 }

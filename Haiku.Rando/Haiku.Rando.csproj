@@ -67,6 +67,9 @@
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>..\lib\Game\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>..\lib\Game\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.Physics2DModule">
       <HintPath>..\lib\Game\UnityEngine.Physics2DModule.dll</HintPath>
     </Reference>
