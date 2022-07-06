@@ -6,7 +6,7 @@
 //
 // For the actual logic expressions, they are written as a series of AND conditions using '+' to join them
 // For example, Ball+Bomb means that you need both the ball and bomb upgrade to travel along this edge
-// Supported ability names: Bomb,Dash,DoubleJump,Grapple,Heal,Ball,Blink,Magnet,FireRes,WaterRes,Light
+// Supported ability names: Bomb,Dash,DoubleJump,Grapple,Heal,Ball,Blink,Magnet,FireRes,WaterRes,Light,Clock
 //
 // You can also add restrictions based on things like count of power cells found or a specific item
 // The supported countable/indexable entries are: Chip,Slot,PowerCell,Item,Disruptor,Lever,Coolant,Boss
@@ -179,7 +179,7 @@ Scene 27
 // Transitions: Right (28-26), Train (28-Train)
 // Checks: TrainStation (TrainStation[0]), ShopItem0 (Item[5]), ShopItem1 (Item[2]), ShopItem2 (Item[0]), ShopItem3 (Chip[4])
 Scene 28
-Right_Train: TrainStation[0]
+Right_Train: Clock+TrainStation
 
 // Scene 29 (Abandoned Wastes Elevator)
 // Transitions: Elevator (165-29), Down2 (29-155), Right (29-18), Down0 (162-29), Down1 (151-29)
@@ -323,6 +323,7 @@ Scene 52
 // Transitions: Left (52-53), Train (53-Train)
 // Checks: TrainStation (TrainStation[3])
 Scene 53
+Left_Train: Clock+TrainStation
 
 // Scene 54
 // Transitions: Right (54-48), Left (55-54)
@@ -650,10 +651,11 @@ Scene 86
 // Checks:
 Scene 87
 
-// Scene 88
+// Scene 88 : Pinions Train Station
 // Transitions: Right0 (88-91), Right1 (88-98), Left (87-88), Train (88-Train)
-// Checks: Item (Item[3]), TrainStation (TrainStation[1])
+// Checks: Item (Item[3]), TrainStation (TrainStation[1]), Clock (Clock[0])
 Scene 88
+*_Train: Clock+TrainStation
 
 // Scene 89
 // Transitions: Right (89-90), Left (87-89)
@@ -996,7 +998,7 @@ Left1_Left0: DoubleJump
 // Transitions: Left (134-136), Train (136-Train)
 // Checks: TrainStation (TrainStation[5])
 Scene 136
-*_Train: TrainStation[5]
+*_Train: Clock+TrainStation
 
 // Scene 137
 // Transitions: Right (137-138), Left (134-137)
@@ -1350,6 +1352,7 @@ Scene 178
 // Transitions: Right (179-173), Left (193-179), Train (179-Train)
 // Checks: Lever (Lever[25]), TrainStation (TrainStation[2])
 Scene 179
+*_Train: Clock+TrainStation
 
 // Scene 180
 // Transitions: Right (180-174), Left0 (181-180), Left1 (191-180)
@@ -1501,6 +1504,7 @@ Scene 208
 // Transitions: Right (209-114), Train (209-Train)
 // Checks: TrainStation (TrainStation[4])
 Scene 209
+Right_Train: Clock+TrainStation
 
 // Scene 210
 // Transitions: Left (117-210)

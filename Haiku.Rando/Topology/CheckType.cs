@@ -19,6 +19,7 @@ namespace Haiku.Rando.Topology
         Coolant,
         FireRes,
         WaterRes,
-        TrainStation
+        TrainStation,
+        Clock
     }
 }

@@ -154,6 +154,9 @@ namespace Haiku.Rando.Checks
                     description = "_WATER_RES_DESCRIPTION";
                     image = HaikuResources.ItemDesc().waterRes.image.sprite;
                     break;
+                case CheckType.Clock:
+                    //This is never randomized, but is important to logic
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -241,6 +244,9 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.WaterRes:
                     self.itemImage.sprite = HaikuResources.ItemDesc().waterRes.image.sprite;
+                    break;
+                case CheckType.Clock:
+                    //This is never randomized, but is important to logic
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

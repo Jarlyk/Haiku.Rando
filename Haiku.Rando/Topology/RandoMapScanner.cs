@@ -487,6 +487,13 @@ namespace Haiku.Rando.Topology
                 checks.Add(check);
             }
 
+            foreach (var pickup in SceneUtils.FindObjectsOfType<FixClockAndTrain>())
+            {
+                var check = new RandoCheck(CheckType.Clock, sceneId, pickup.transform.position, 0);
+                check.Alias = "Clock";
+                checks.Add(check);
+            }
+
             foreach (var e7Shop in SceneUtils.FindObjectsOfType<e7UpgradeShop>())
             {
                 var fireCheck = new RandoCheck(CheckType.FireRes, sceneId, e7Shop.transform.position, 0);

@@ -134,6 +134,7 @@ namespace Haiku.Rando.Logic
             if (stateName == "Lever") return type == CheckType.Lever;
             if (stateName == "Coolant") return type == CheckType.Coolant;
             if (stateName == "TrainStation") return type == CheckType.TrainStation;
+            if (stateName == "Clock") return type == CheckType.Clock;
             return false;
         }
 
@@ -171,6 +172,8 @@ namespace Haiku.Rando.Logic
                     return LogicStateNames.WaterRes;
                 case CheckType.TrainStation:
                     return $"TrainStation[{check.CheckId}]";
+                case CheckType.Clock:
+                    return "Clock";
                 default:
                     throw new ArgumentOutOfRangeException();
             }

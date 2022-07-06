@@ -135,6 +135,9 @@ namespace Haiku.Rando.Checks
                     oldObject = SceneUtils.FindObjectOfType<TrainTicket>().gameObject;
                     //TODO
                     break;
+                case CheckType.Clock:
+                    //This is never randomized, but is important to logic
+                    break;
                 case CheckType.FireRes:
                 case CheckType.WaterRes:
                     //These shouldn't be reached, as they're handled earlier
@@ -179,6 +182,7 @@ namespace Haiku.Rando.Checks
                 {
                     var carBattery = SceneUtils.FindObjectOfType<CarBattery>();
                     carBattery.deathObject = newObject;
+                    newObject.AddComponent<Rigidbody2D>();
                 }
             }
         }
@@ -331,6 +335,9 @@ namespace Haiku.Rando.Checks
                 case CheckType.TrainStation:
                     alreadyGot = GameManager.instance.trainStations[check.CheckId].unlockedStation;
                     break;
+                case CheckType.Clock:
+                    //This is never randomized, but is important to logic
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -430,6 +437,9 @@ namespace Haiku.Rando.Checks
                     AchievementManager.instance.CheckNumberOfTrainStationsUnlocked();
                     hasWorldObject = false;
                     break;
+                case CheckType.Clock:
+                    //This is never randomized, but is important to logic
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -480,6 +490,9 @@ namespace Haiku.Rando.Checks
                     return "_WATER_RES_TITLE";
                 case CheckType.TrainStation:
                     return GameManager.instance.trainStations[check.CheckId].title;
+                case CheckType.Clock:
+                    //This is never randomized, but is important to logic
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
