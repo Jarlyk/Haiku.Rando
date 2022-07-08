@@ -23,8 +23,8 @@ namespace Haiku.Rando
         public static ConfigEntry<bool> IncludeCoolant { get; private set; }
         public static ConfigEntry<bool> IncludeSealants { get; private set; }
 
-        //QoL: Fast Money
-        //QoL: Normalized Money Drops
+        public static ConfigEntry<bool> FastMoney { get; private set; }
+        public static ConfigEntry<bool> SyncedMoney { get; private set; }
 
         //Groups of settings
         private const string General = "General";
@@ -50,6 +50,11 @@ namespace Haiku.Rando
             IncludePowerCells = config.Bind(Pool, "Power Cells", true);
             IncludeCoolant = config.Bind(Pool, "Coolant", true);
             IncludeSealants = config.Bind(Pool, "Sealants", true);
+
+            FastMoney = config.Bind(QoL, "FastMoney", true,
+                                    "Makes it so that money totems drop all their money in a single hit");
+            SyncedMoney = config.Bind(QoL, "SyncedMoney", true,
+                                      "Synchronizes money drop randomization from totems and makes general enemy drops no longer random; intended for racing");
 
             //Save defaults if didn't already exist
             config.Save();

@@ -266,6 +266,17 @@ namespace Haiku.Rando.Util
             return (float)(NextLong() & ((1L << 24) - 1)) * (1.0f / (1L << 24));
         }
 
+        /// <summary>
+        /// Return a uniformly distributed random integer in [min,exclusiveMax)
+        /// </summary>
+        /// <param name="min">Inclusive minimum value</param>
+        /// <param name="exclusiveMax">Exclusive maximum value</param>
+        /// <returns>Integer in [min,exclusiveMax)</returns>
+        public int NextRange(int min, int exclusiveMax)
+        {
+            var u = NextDouble()*(exclusiveMax - min);
+            return min + (int)Math.Floor(u);
+        }
 
         UInt64 next()
         {

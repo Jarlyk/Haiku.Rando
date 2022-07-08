@@ -57,6 +57,7 @@ namespace Haiku.Rando.Logic
                 throw new InvalidOperationException("Randomization already complete; to randomize again, please create a new instance of CheckRandomizer");
             }
 
+            SyncedRng.SequenceSeed = _random.NextULong();
             BuildPool();
             ArrangeChecks();
 
