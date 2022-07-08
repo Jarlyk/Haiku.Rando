@@ -35,6 +35,7 @@ namespace Haiku.Rando.Logic
         public static LogicLayer Deserialize(RandoTopology topology, StreamReader reader)
         {
             var logicByScene = new Dictionary<int, Dictionary<GraphEdge, List<LogicSet>>>();
+            var groups = new Dictionary<string, List<string>>();
 
             int lineNumber = 0;
             RoomScene scene = null;
@@ -60,6 +61,24 @@ namespace Haiku.Rando.Logic
                         logicByEdge = new Dictionary<GraphEdge, List<LogicSet>>();
                         logicByScene.Add(sceneId, logicByEdge);
                     }
+
+                    groups.Clear();
+                    continue;
+                }
+
+                if (line.StartsWith("$"))
+                {
+                    var startBrace = line.IndexOf('{');
+                    var endBrace = line.IndexOf('}');
+                    if (startBrace == -1 || endBrace == -1)
+                    {
+                        Debug.LogError($"Missing curly braces in group definition at line #{lineNumber}: '{line}'");
+                    }
+
+                    var groupName = line.Substring(1, startBrace-1).Trim();
+                    var listText = line.Substring(startBrace + 1, endBrace - startBrace - 1);
+                    var listSplit = listText.Split(',').Select(s => s.Trim()).ToList();
+                    groups.Add(groupName, listSplit);
                     continue;
                 }
 
@@ -70,12 +89,19 @@ namespace Haiku.Rando.Logic
                     continue;
                 }
 
+                bool twoWay = false;
                 var edgeName = line.Substring(0, colonIndex).Trim();
                 var split = edgeName.Split('_');
                 if (split.Length != 2)
                 {
-                    Debug.LogError($"Unexpected edge format in logic file at line #{lineNumber}: '{line}'");
-                    continue;
+                    split = edgeName.Split('=');
+                    if (split.Length != 2)
+                    {
+                        Debug.LogError($"Unexpected edge format in logic file at line #{lineNumber}: '{line}'");
+                        continue;
+                    }
+
+                    twoWay = true;
                 }
 
                 if (scene == null)
@@ -84,14 +110,14 @@ namespace Haiku.Rando.Logic
                     continue;
                 }
 
-                var nodes1 = scene.FindNodes(split[0]);
+                var nodes1 = FindNodes(scene, split[0], groups);
                 if (nodes1.Count == 0)
                 {
                     Debug.LogError($"Unable to resolve nodes for '{split[0]}' in scene {scene.SceneId} in logic file at line #{lineNumber}: '{line}'");
                     continue;
                 }
 
-                var nodes2 = scene.FindNodes(split[1]);
+                var nodes2 = FindNodes(scene, split[1], groups);
                 if (nodes2.Count == 0)
                 {
                     Debug.LogError($"Unable to resolve nodes for '{split[1]}' in scene {scene.SceneId} in logic file at line #{lineNumber}: '{line}'");
@@ -128,22 +154,10 @@ namespace Haiku.Rando.Logic
 
                 //Apply this logic set to all edges between the nodes
                 var set = new LogicSet(conditions);
-                foreach (var node1 in nodes1)
+                AddLogic(nodes1, nodes2, scene, logicByEdge, set);
+                if (twoWay)
                 {
-                    foreach (var node2 in nodes2)
-                    {
-                        var edge = scene.Edges.FirstOrDefault(e => e.Origin == node1 && e.Destination == node2);
-                        if (edge != null)
-                        {
-                            if (!logicByEdge.TryGetValue(edge, out var logicList))
-                            {
-                                logicList = new List<LogicSet>();
-                                logicByEdge.Add(edge, logicList);
-                            }
-
-                            logicList.Add(set);
-                        }
-                    }
+                    AddLogic(nodes2, nodes1, scene, logicByEdge, set);
                 }
             }
 
@@ -151,6 +165,35 @@ namespace Haiku.Rando.Logic
             return new LogicLayer(logicByScene.ToDictionary(p => p.Key,
                                                             p => new SceneLogic(p.Value.ToDictionary(x => x.Key,
                                                                 x => (IReadOnlyList<LogicSet>)x.Value))));
+        }
+
+        private static IReadOnlyList<IRandoNode> FindNodes(RoomScene scene, string pattern, Dictionary<string, List<string>> groups)
+        {
+            return groups.TryGetValue(pattern, out var list)
+                ? list.SelectMany(scene.FindNodes).ToList()
+                : scene.FindNodes(pattern);
+        }
+
+        private static void AddLogic(IReadOnlyList<IRandoNode> nodes1, IReadOnlyList<IRandoNode> nodes2, RoomScene scene, Dictionary<GraphEdge, List<LogicSet>> logicByEdge,
+                                     LogicSet set)
+        {
+            foreach (var node1 in nodes1)
+            {
+                foreach (var node2 in nodes2)
+                {
+                    var edge = scene.Edges.FirstOrDefault(e => e.Origin == node1 && e.Destination == node2);
+                    if (edge != null)
+                    {
+                        if (!logicByEdge.TryGetValue(edge, out var logicList))
+                        {
+                            logicList = new List<LogicSet>();
+                            logicByEdge.Add(edge, logicList);
+                        }
+
+                        logicList.Add(set);
+                    }
+                }
+            }
         }
 
         private static string ExpandAlias(string stateText, RoomScene scene)

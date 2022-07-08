@@ -23,6 +23,9 @@ namespace Haiku.Rando
         public static ConfigEntry<bool> IncludeCoolant { get; private set; }
         public static ConfigEntry<bool> IncludeSealants { get; private set; }
 
+        //QoL: Fast Money
+        //QoL: Normalized Money Drops
+
         //Groups of settings
         private const string General = "General";
         private const string Pool = "Pool";
