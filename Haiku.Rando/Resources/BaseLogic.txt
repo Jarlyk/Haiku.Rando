@@ -1312,214 +1312,225 @@ Right_Chip: 14#PowerCell
 // Transitions: Right (171-173), Left (93-171)
 // Checks:
 Scene 171
+// No obstacles
 
 // Scene 172
 // Transitions: Left (173-172), Repair (172Repair)
 // Checks:
 Scene 172
+//No obstacles
 
 // Scene 173
 // Transitions: Right0 (173-172), Right1 (173-174), Left1 (171-173), Left0 (179-173)
 // Checks:
 Scene 173
+*1_*: Magnet
+*1_*: DoubleJump
+// TODO: *1_* is doable with bomb jumps or BLJs.
 
 // Scene 174
 // Transitions: Left2 (180-174), Left3 (173-174), Left1 (182-174), Left0 (187-174), Right2 (174-175), Right1 (174-183), Right0 (174-186)
 // Checks:
 Scene 174
+// TODO: Mundo Moment (leaving this room for jarlyk)
 
 // Scene 175
 // Transitions: Right (175-176), Left (174-175)
 // Checks: Lever (Lever[26]), PowerCell (PowerCell[20])
 Scene 175
+Left_Right: Lever
+Left_Right: Grapple
+Left_Lever: Grapple
+Right_Left: Lever
+Right_Left: Grapple
+Right_Lever: true
+*_PowerCell: Grapple
+// TODO: Blink (also maybe longer blink chip required) can let you get the power cell
 
 // Scene 176
 // Transitions: Right (176-178), Left0 (175-176), Left1 (177-176)
 // Checks:
 Scene 176
+Left1_*: Magnet
+Left1_*: DoubleJump
 
 // Scene 177
 // Transitions: Right (177-176)
 // Checks: Chip (Chip[24])
 Scene 177
+*_Chip: Ball+Magnet
+*_Chip: Ball+DoubleJump
+*_Chip: Blink+Magnet
+*_Chip: Blink+DoubleJump
+// TODO: Ball+grapple+enemy pogo is possible.
+// Ball+blink with no skips is possible but maybe it should be under a "precise movement" setting.
+// Blink only is also possible but requires BLJs.
+// Ball only is possible with bomb jumps.
 
 // Scene 178
 // Transitions: Elevator (178-117), Right (178-192), Left (176-178)
 // Checks:
 Scene 178
+// No obstacles
 
 // Scene 179
 // Transitions: Right (179-173), Left (193-179), Train (179-Train)
 // Checks: Lever (Lever[25]), TrainStation (TrainStation[2])
 Scene 179
 *_Train: Clock+TrainStation
+Left_Lever: true
+Right_Lever: false
 
 // Scene 180
 // Transitions: Right (180-174), Left0 (181-180), Left1 (191-180)
 // Checks:
 Scene 180
+*_Left1: Ball
 
 // Scene 181
 // Transitions: Right0 (181-182), Right1 (181-182bottom), Right2 (181-180), Left (190-181)
 // Checks: Disruptor (MapDisruptor[10])
 Scene 181
+// No obstacles
 
 // Scene 182
 // Transitions: Right (182-174), Left1 (181-182bottom), Left0 (181-182)
 // Checks: Lever0 (Lever[44]), Lever1 (Lever[45]), PowerCell (PowerCell[22])
 Scene 182
+Left0_Lever0: true 
+Left1_Lever0: false
+Right_Lever0: Lever1
+Left0_Lever1: false
+Left1_Lever1: Lever0
+Right_Lever1: false
+Left0_PowerCell: false
+Left1_PowerCell: Lever0
+Right_PowerCell: false
+Left1_Left0: false 
+Right_Left0: Lever1
+Left0_Left1: false
+Right_Left1: false
+Left0_Right: Lever1
+Left1_Right: false
 
 // Scene 183
 // Transitions: Right (183-185), Left (174-183)
 // Checks: Disruptor (MapDisruptor[12])
 Scene 183
+// No obstacles
 
 // Scene 184
 // Transitions: Right (184-185)
 // Checks: Ball (Ability[1])
 Scene 184
+*_Ball: Ball
+*_Ball: Magnet
+// TODO: Dj+bomb jump or grapple+dj climbing will get you up. Without ball you need to beat Sawblade to get to the ball check.
 
 // Scene 185
 // Transitions: Right (185-195), Left0 (186-185), Left1 (184-185), Left2 (183-185)
 // Checks: Lever (Lever[7])
 Scene 185
+Left0_Left1: Ball+Magnet
+Left0_Left1: Ball+Lever
+Left0_Left2: Ball
+Left0_Right: Ball
+Left1_Left0: Ball+Magnet
+Left1_Left2: Magnet
+Left1_Left2: Lever
+Left1_Right: Magnet
+Left1_Right: Lever
+Right_Left0: Ball+Magnet
+Right_Left1: Magnet
+Left0_Lever: Ball+Magnet
+Left1_Lever: true
+Left2_Lever: Ball+Magnet
+Right_Lever: Ball+Magnet
 
 // Scene 186
 // Transitions: Right0 (186-213), Right1 (186-185), Left (174-186)
 // Checks: Item (Item[3])
 Scene 186
+Left_Right0: Magnet+Grapple
+Left_Right0: Magnet+Blink
+Left_Right0: Magnet+DoubleJump
+*_Right1: Ball+Magnet
+*_Right1: Ball+DoubleJump
+*_Item: Ball+Magnet
+*_Item: Ball+DoubleJump
+// TODO: Bomb jumps can replace any instance of dj. Left_Right0 can be done with only bomb jumps or grapple+dj.
 
 // Scene 187
 // Transitions: Right (187-174), Left (188-187)
 // Checks:
 Scene 187
+// No obstacles, but itemless requires some tight coyote jumps
 
 // Scene 188
 // Transitions: Right (188-187), Left1 (189-188), Left0 (231-188)
 // Checks:
 Scene 188
+Right_Left0: DoubleJump
+Right_Left0: Magnet+Grapple
 
 // Scene 189
 // Transitions: Right (189-188)
 // Checks: PowerCell (PowerCell[0])
 Scene 189
+// No obstacles
 
 // Scene 190
 // Transitions: Right (190-181), Left (193-190)
 // Checks:
 Scene 190
+// No obstacles
 
 // Scene 191
 // Transitions: Right (191-180), Left (194-191)
 // Checks:
 Scene 191
+*_*: Ball
 
 // Scene 192
 // Transitions: Left1 (100-192), Left0 (178-192)
 // Checks: PowerCell (PowerCell[21])
 Scene 192
+Left0_*: true
+Left1_Left0: Magnet
+Left1_PowerCell: Magnet
+// TODO: Left1_* might be doable with crazy enemy pogos and dj, is probably fully doable with grapple+dj height
 
 // Scene 193
 // Transitions: Right2 (193-179), Right0 (193-190), Right1 (193-194), Left (229-193)
 // Checks:
 Scene 193
+Right0_*: true
+Right1_Right2: true
+Right2_Right1: true
+Right1_Right0: Magnet
+Right1_Right0: DoubleJump
+Right2_Right0: Magnet
+Right2_Right0: DoubleJump
+Right1_Left: Magnet
+Right1_Left: DoubleJump
+Right2_Left: Magnet
+Right2_Left: DoubleJump
+Left_Right0: Magnet
+Left_Right0: DoubleJump
+// TODO: BLJ skips
 
 // Scene 194
 // Transitions: Right (194-191), Left (193-194), Repair (194Repair)
 // Checks: Chip (Chip[5])
 Scene 194
-
-// Scene 195
-// Transitions: Left (185-195), Repair (195Repair)
-// Checks:
-Scene 195
-
-// Scene 196
-// Transitions: Right (196-197), Left1 (36-196), Left0 (50-196)
-// Checks:
-Scene 196
-
-// Scene 197
-// Transitions: Right (197-198), Left1 (199-197), Left0 (196-197), Door (197-224)
-// Checks:
-Scene 197
-
-// Scene 198
-// Transitions: Right0 (198-200), Right1 (198-231), Left (197-198)
-// Checks: PowerCell (PowerCell[15])
-Scene 198
-
-// Scene 199
-// Transitions: Right1 (199-221), Right0 (199-197), Left (233-199)
-// Checks:
-Scene 199
-
-// Scene 200
-// Transitions: Right (200-217), Left (198-200)
-// Checks: Coolant (Coolant[0])
-Scene 200
-
-// Scene 201 : Neutron fight
-// Transitions: Right (201-35), Left (60-201)
-// Checks:
-Scene 201
-
-// Scene 202 : Lower Right Entrance to Bunker
-// Transitions: Left0 (43-202), Left1 (61-202)
-// Checks:
-Scene 202
-Left1_Left0: Magnet
-
-// Scene 203
-// Transitions: Right (203-40)
-// Checks:
-Scene 203
-
-// Scene 204
-// Transitions: Right (204-43)
-// Checks: Item (Item[6])
-Scene 204
-
-// Scene 205
-// Transitions: 62-205 (62-205)
-// Checks:
-Scene 205
-
-// Scene 206
-// Transitions: Left (128-206)
-// Checks: DoubleJump (Ability[4])
-Scene 206
-
-// Scene 207
-// Transitions: Left0 (120-207), Left1 (128-207)
-// Checks: Chip (Chip[6])
-Scene 207
-
-// Scene 208
-// Transitions: Left (120-208), Door (208-223)
-// Checks:
-Scene 208
-
-// Scene 209
-// Transitions: Right (209-114), Train (209-Train)
-// Checks: TrainStation (TrainStation[4])
-Scene 209
-Right_Train: Clock+TrainStation
-
-// Scene 210
-// Transitions: Left (117-210)
-// Checks: Slot (ChipSlot[7])
-Scene 210
-
-// Scene 211
-// Transitions: Right (211-134)
-// Checks:
-Scene 211
+*_Right: Ball
+Right_*: Ball
 
 // Scene 212
 // Transitions: Left (230-212)
 // Checks: PowerCell (PowerCell[8])
 Scene 212
+// TODO: Defeating Big Brother gives access to PowerCell
 
 // Scene 213
 // Transitions: Left0 (214-213), Left1 (186-213)
@@ -1599,11 +1610,18 @@ Right_Left: Grapple
 // Transitions: Right (229-193), Left0 (230-229), Left1 (221-229)
 // Checks:
 Scene 229
+Right_*: Magnet
+Right_*: DoubleJump
+*_Left0: Magnet
+*_Left0: DoubleJump
+// TODO: BLJ skips
 
 // Scene 230
 // Transitions: Right1 (230-229), Right0 (230-212)
 // Checks:
 Scene 230
+Right1_Right0: Magnet+DoubleJump
+// TODO: Pretty sure there's several skips here
 
 // Scene 231
 // Transitions: Right (231-188), Left (198-231)

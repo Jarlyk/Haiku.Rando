@@ -182,7 +182,13 @@ namespace Haiku.Rando.Checks
                 {
                     var carBattery = SceneUtils.FindObjectOfType<CarBattery>();
                     carBattery.deathObject = newObject;
-                    newObject.AddComponent<Rigidbody2D>();
+
+                    var rb = newObject.AddComponent<Rigidbody2D>();
+                    rb.gravityScale = 0;
+                    var collider = newObject.AddComponent<CircleCollider2D>();
+                    collider.radius = 0.1f;
+                    newObject.layer = (int)LayerId.GroundCollision;
+                    //TODO: Go to Car Battery and find the actual settings for this
                 }
             }
         }

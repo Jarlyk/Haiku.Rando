@@ -19,9 +19,8 @@ namespace Haiku.Rando
     {
         private RandoTopology _topology;
         private LogicLayer _baseLogic;
-        private CheckRandomizerConfig _randoConfig;
         private CheckRandomizer _randomizer;
-        private ulong _primarySeed;
+        private ulong? _savedSeed;
 
         public void Start()
         {
@@ -35,8 +34,7 @@ namespace Haiku.Rando
                 _baseLogic = LogicLayer.Deserialize(_topology, reader);
             }
 
-            _randoConfig = new CheckRandomizerConfig();
-            _randoConfig.Seed = new Xoroshiro128Plus().NextULong();
+            Settings.Init(Config);
 
             HaikuResources.Init();
             UniversalPickup.InitHooks();
@@ -55,11 +53,11 @@ namespace Haiku.Rando
         private void PCSaveManager_Load(On.PCSaveManager.orig_Load orig, PCSaveManager self, string filePath)
         {
             orig(self, filePath);
-            _primarySeed = 0;
+            _savedSeed = null;
             var hasRandoData = self.es3SaveFile.Load<bool>("hasRandoData", false);
             if (hasRandoData)
             {
-                _primarySeed = self.es3SaveFile.Load<ulong>("randoSeed", 0UL);
+                _savedSeed = self.es3SaveFile.Load<ulong>("randoSeed", 0UL);
             }
         }
 
@@ -72,13 +70,8 @@ namespace Haiku.Rando
 
         private void BeginRando()
         {
-            if (_primarySeed != 0)
-            {
-                _randoConfig.Seed = _primarySeed;
-            }
-
             var evaluator = new LogicEvaluator(new[] { _baseLogic });
-            _randomizer = new CheckRandomizer(_randoConfig, _topology, evaluator);
+            _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed);
             _randomizer.Randomize();
             CheckManager.Instance.Randomizer = _randomizer;
         }

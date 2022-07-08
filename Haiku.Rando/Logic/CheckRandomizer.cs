@@ -10,24 +10,41 @@ namespace Haiku.Rando.Logic
 {
     public sealed class CheckRandomizer : ICheckRandoContext
     {
-        private readonly CheckRandomizerConfig _config;
         private readonly RandoTopology _topology;
         private readonly LogicEvaluator _logic;
         private readonly HashSet<string> _acquiredStates = new HashSet<string>();
         private readonly Dictionary<RandoCheck, RandoCheck> _checkMapping = new Dictionary<RandoCheck, RandoCheck>();
-        private readonly List<CheckPool> _pools = new List<CheckPool>();
+        private readonly CheckPool _pool = new CheckPool();
         private readonly List<RandoCheck> _visitedChecks = new List<RandoCheck>();
         private readonly Xoroshiro128Plus _random;
         private bool _randomized;
 
-        public CheckRandomizer(CheckRandomizerConfig config, RandoTopology topology, LogicEvaluator logic)
+        public CheckRandomizer(RandoTopology topology, LogicEvaluator logic, ulong? savedSeed)
         {
-            _config = config;
             _topology = topology;
             _logic = logic;
-            _random = new Xoroshiro128Plus(_config.Seed);
+
+            ulong seed;
+            if (savedSeed != null)
+            {
+                seed = savedSeed.Value;
+            }
+            else if (string.IsNullOrEmpty(Settings.Seed.Value))
+            {
+                var tempRandom = new Xoroshiro128Plus();
+                seed = tempRandom.NextULong();
+            }
+            else if (!ulong.TryParse(Settings.Seed.Value, out seed))
+            {
+                seed = (ulong)((long)Settings.Seed.Value.GetHashCode() - int.MinValue);
+            }
+
+            Seed = seed;
+            _random = new Xoroshiro128Plus(seed);
             _logic.Context = this;
         }
+
+        public ulong Seed { get; }
 
         public RandoTopology Topology => _topology;
 
@@ -40,7 +57,7 @@ namespace Haiku.Rando.Logic
                 throw new InvalidOperationException("Randomization already complete; to randomize again, please create a new instance of CheckRandomizer");
             }
 
-            BuildPools();
+            BuildPool();
             ArrangeChecks();
 
             _randomized = true;
@@ -63,7 +80,7 @@ namespace Haiku.Rando.Logic
 
             //We want to keep exploring and populating checks for as long as we have remaining checks in our pools
             int depth = 1;
-            while (_pools.Any(p => p.Count > 0))
+            while (_pool.Count > 0)
             {
                 //Explore the frontier, expanding our available checks
                 Explore(depth, checksToReplace, frontier, explored);
@@ -149,8 +166,7 @@ namespace Haiku.Rando.Logic
 
                 _checkMapping.Add(original.Check, match);
                 remainingChecks.Remove(match);
-                foreach (var pool in _pools)
-                    pool.Remove(match);
+                _pool.Remove(match);
                 checksToReplace.Remove(original);
                 AddState(LogicEvaluator.GetStateName(match));
                 Debug.Log($"To satisfy condition {condition}, replaced check {original.Check.Name} with {match.Name}");
@@ -171,11 +187,10 @@ namespace Haiku.Rando.Logic
                 var canUnlock = true;
                 foreach (var logic in edge.MissingLogic)
                 {
-                    var matchingPools = _pools
-                                        .Where(
-                                            p => p.Any(c => LogicEvaluator.MatchesState(edge.Edge.SceneId, c, logic.StateName)))
+                    var matching = _pool
+                                        .Where(c => LogicEvaluator.MatchesState(edge.Edge.SceneId, c, logic.StateName))
                                         .ToList();
-                    var availCount = matchingPools.Count > 0 ? matchingPools.Sum(p => p.Count) : 0;
+                    var availCount = matching.Count;
                     canUnlock &= availCount >= logic.Count;
                 }
 
@@ -219,22 +234,20 @@ namespace Haiku.Rando.Logic
             //Choose from weighted distribution and replace each check in turn
             while (candidates.Count > 0)
             {
-                if (_pools.All(p => p.Count == 0))
+                if (_pool.Count == 0)
                 {
                     //No more checks to place; leave the rest as vanilla
-                    Debug.Log(
-                        $"Ran out of checks to place with {candidates.Count} locations still remaining to populate; leaving as vanilla");
+                    Debug.Log($"Ran out of checks to place with {candidates.Count} locations still remaining to populate; leaving as vanilla");
                     break;
                 }
 
-                //TODO: Multiple pools support
-                var match = _pools[0][0];
+                var match = _pool[0];
                 var original = candidates.PickItem(_random.NextDouble());
                 candidates.Remove(original);
 
                 Debug.Log($"Remaining checks, replaced {original.Check} with {match}");
                 _checkMapping.Add(original.Check, match);
-                _pools[0].Remove(match);
+                _pool.Remove(match);
                 checksToReplace.Remove(original);
 
                 //Technically this isn't required, but might be useful for debugging
@@ -278,7 +291,7 @@ namespace Haiku.Rando.Logic
                     {
                         if (!_visitedChecks.Contains(check))
                         {
-                            if (_pools.Any(p => p.Any(c => c.Type == check.Type)))
+                            if (_pool.Any(c => c.Type == check.Type))
                             {
                                 Debug.Log($"Found check {check} at depth {depth} from edge {edge.Edge}; will replace from pool");
                                 checksToReplace.Add(new InLogicCheck(check, depth));
@@ -311,19 +324,26 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private void BuildPools()
+        private void BuildPool()
         {
-            //TODO: Create pools based on config
-            //For testing, we're going to start with everything currently supported
-            var pool = BuildPool(CheckType.Ability, CheckType.Chip, CheckType.Item, CheckType.ChipSlot, CheckType.MapDisruptor, CheckType.FireRes, CheckType.WaterRes, CheckType.Bulblet, CheckType.PowerCell, CheckType.Coolant);
-            _pools.Add(pool);
+            _pool.Clear();
+            if (Settings.IncludeWrench.Value) AddToPool(CheckType.Wrench);
+            if (Settings.IncludeBulblet.Value) AddToPool(CheckType.Bulblet);
+            if (Settings.IncludeAbilities.Value) AddToPool(CheckType.Ability);
+            if (Settings.IncludeItems.Value) AddToPool(CheckType.Item);
+            if (Settings.IncludeChips.Value) AddToPool(CheckType.Chip);
+            if (Settings.IncludeChipSlots.Value) AddToPool(CheckType.ChipSlot);
+            if (Settings.IncludeMapDisruptors.Value) AddToPool(CheckType.MapDisruptor);
+            if (Settings.IncludeLevers.Value) AddToPool(CheckType.Lever);
+            if (Settings.IncludePowerCells.Value) AddToPool(CheckType.PowerCell);
+            if (Settings.IncludeCoolant.Value) AddToPool(CheckType.Coolant);
+            if (Settings.IncludeSealants.Value) AddToPool(CheckType.FireRes);
+            if (Settings.IncludeSealants.Value) AddToPool(CheckType.WaterRes);
         }
 
-        private CheckPool BuildPool(params CheckType[] checkTypes)
+        private void AddToPool(CheckType checkType)
         {
-            var pool = new CheckPool();
-            pool.AddRange(_topology.Checks.Where(c => checkTypes.Contains(c.Type)));
-            return pool;
+            _pool.AddRange(_topology.Checks.Where(c => c.Type == checkType));
         }
 
         private void AddState(string state)
