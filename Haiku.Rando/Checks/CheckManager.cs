@@ -100,8 +100,16 @@ namespace Haiku.Rando.Checks
                     midAir = true;
                     break;
                 case CheckType.Item:
-                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.itemID == original.CheckId && p.saveID == original.SaveId)?.gameObject;
-                    reuseObject = original.CheckId != (int)ItemId.CapsuleFragment;
+                    if (sceneId == SpecialScenes.Quatern)
+                    {
+                        oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.itemID == original.CheckId && p.saveID == original.SaveId)?.gameObject;
+                        reuseObject = true;
+                    }
+                    else
+                    {
+                        oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.itemID == original.CheckId && p.saveID == original.SaveId)?.gameObject;
+                        reuseObject = original.CheckId != (int)ItemId.CapsuleFragment;
+                    }
                     break;
                 case CheckType.Chip:
                     oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.triggerChip && GameManager.instance.getChipNumber(p.chipIdentifier) == original.CheckId)?.gameObject;
@@ -427,12 +435,16 @@ namespace Haiku.Rando.Checks
                     CameraBehavior.instance.ShowLeftCornerUI(refPickup.coolantImage, refPickup.coolantTitle, "", PickupTextDuration);
                     break;
                 case CheckType.FireRes:
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_FIRE_RES_TITLE", "_FIRE_RES_DESCRIPTION", PickupTextDuration);
+                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.ItemDesc().fireRes.image.sprite,
+                                                             "_FIRE_RES_TITLE", "_FIRE_RES_DESCRIPTION",
+                                                             PickupTextDuration);
                     GameManager.instance.fireRes = true;
                     hasWorldObject = false;
                     break;
                 case CheckType.WaterRes:
-                    CameraBehavior.instance.ShowLeftCornerUI(null, "_WATER_RES_TITLE", "_WATER_RES_DESCRIPTION", PickupTextDuration);
+                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.ItemDesc().waterRes.image.sprite,
+                                                             "_WATER_RES_TITLE", "_WATER_RES_DESCRIPTION",
+                                                             PickupTextDuration);
                     GameManager.instance.waterRes = true;
                     hasWorldObject = false;
                     break;

@@ -181,7 +181,7 @@ namespace Haiku.Rando.Logic
             //Update current missing logic on the frontier
             foreach (var edge in frontier)
             {
-                edge.MissingLogic = _logic.GetMissingLogic(edge.Edge);
+                edge.MissingLogic = _logic.GetMissingLogic(edge.Edge, _random);
                 edge.BacktrackDepth = depth - edge.Depth;
 
                 //TODO: Need to take into account logic requirements in context of overlapping pools
@@ -259,14 +259,15 @@ namespace Haiku.Rando.Logic
         private double WeighFrontier(FrontierEdge edge)
         {
             var u = edge.Uniqueness;
-            var d = edge.Depth;
-            return u*u*u + d*d;
+            var d = edge.BacktrackDepth;
+            var c = edge.MissingLogic.Count;
+            return (100*u*u*u + d*d)/(c + 1);
         }
 
         private double WeighCheckPlacement(InLogicCheck check)
         {
-            //TODO
-            return 1;
+            var d = check.Depth;
+            return d*d;
         }
 
         private void Explore(int depth, List<InLogicCheck> checksToReplace, List<FrontierEdge> frontier, List<FrontierEdge> explored)
@@ -335,7 +336,7 @@ namespace Haiku.Rando.Logic
             if (Settings.IncludeChips.Value) AddToPool(CheckType.Chip);
             if (Settings.IncludeChipSlots.Value) AddToPool(CheckType.ChipSlot);
             if (Settings.IncludeMapDisruptors.Value) AddToPool(CheckType.MapDisruptor);
-            if (Settings.IncludeLevers.Value) AddToPool(CheckType.Lever);
+            //if (Settings.IncludeLevers.Value) AddToPool(CheckType.Lever);
             if (Settings.IncludePowerCells.Value) AddToPool(CheckType.PowerCell);
             if (Settings.IncludeCoolant.Value) AddToPool(CheckType.Coolant);
             if (Settings.IncludeSealants.Value) AddToPool(CheckType.FireRes);

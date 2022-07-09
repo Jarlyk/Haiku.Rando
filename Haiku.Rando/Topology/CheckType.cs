@@ -2,6 +2,8 @@
 
 namespace Haiku.Rando.Topology
 {
+    //TODO: Check for the 'children' in save the children quest in Steam Town
+
     [Serializable]
     public enum CheckType
     {

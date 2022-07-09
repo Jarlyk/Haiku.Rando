@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Haiku.Rando.Checks;
 using Haiku.Rando.Topology;
+using Haiku.Rando.Util;
 using UnityEngine;
 
 namespace Haiku.Rando.Logic
@@ -42,7 +43,7 @@ namespace Haiku.Rando.Logic
             return result;
         }
 
-        public IReadOnlyList<LogicCondition> GetMissingLogic(GraphEdge edge)
+        public IReadOnlyList<LogicCondition> GetMissingLogic(GraphEdge edge, Xoroshiro128Plus random)
         {
             var sets = GetAllLogic(edge);
             if (sets.Count == 0) return Array.Empty<LogicCondition>();
@@ -52,7 +53,11 @@ namespace Haiku.Rando.Logic
             var missingPerSet = sets.Select(GetMissingLogic).ToList();
             if (missingPerSet.Any(m => m.Count == 0)) return Array.Empty<LogicCondition>();
 
-            return missingPerSet.OrderBy(m => m.Sum(s => s.Count)).First();
+            var byCount = missingPerSet.GroupBy(m => m.Sum(s => s.Count)).OrderBy(g => g.Key).ToList();
+            var group = byCount[0].ToList();
+            if (group.Count == 1) return group[0];
+            var pick = random.NextRange(0, group.Count);
+            return group[pick];
         }
 
         private IReadOnlyList<LogicCondition> GetMissingLogic(LogicSet set)

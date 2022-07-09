@@ -20,7 +20,7 @@ namespace Haiku.Rando
             On.IntroSequence.Intro += IntroSequence_Intro;
 
             //Fast Money
-            On.SmallMoneyPile.TakeDamage += SmallMoneyPile_TakeDamage;
+            IL.SmallMoneyPile.TakeDamage += SmallMoneyPile_TakeDamage; 
 
             //Synced Money
             On.SmallMoneyPile.SpawnCurrency += SmallMoneyPile_SpawnCurrency;
@@ -57,12 +57,24 @@ namespace Haiku.Rando
             yield break;
         }
 
-        private static void SmallMoneyPile_TakeDamage(On.SmallMoneyPile.orig_TakeDamage orig, SmallMoneyPile self, int damage, int side, object playerPos)
+        private static void SmallMoneyPile_TakeDamage(ILContext il)
+        {
+            var c = new ILCursor(il);
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Func<SmallMoneyPile, bool>)OnSmallMoneyPileTakeDamage);
+            var retLabel = c.DefineLabel();
+            c.Emit(OpCodes.Brtrue, retLabel);
+
+            c.GotoNext(i => i.MatchRet());
+            c.MarkLabel(retLabel);
+        }
+
+        private static bool OnSmallMoneyPileTakeDamage(SmallMoneyPile self)
         {
             if (!Settings.FastMoney.Value)
             {
-                orig(self, damage, side, playerPos);
-                return;
+                return false;
             }
 
             if (self.flipSpriteWhenHit)
@@ -75,6 +87,7 @@ namespace Haiku.Rando
                 self.SpawnCurrency();
             }
 
+            GameManager.instance.moneyPiles[self.pileID].collected = true;
             if (self.hitSFXPath != "")
             {
                 RuntimeManager.PlayOneShot(self.hitSFXPath, self.transform.position);
@@ -84,7 +97,11 @@ namespace Haiku.Rando
             self.coll.enabled = false;
             self.SpawnCurrency();
             CameraBehavior.instance.Shake(0.2f, 0.2f);
+            self.anim.SetTrigger("hit");
+            self.anim.SetTrigger("damaged");
+            self.anim.SetTrigger("more damaged");
             self.anim.SetBool("depleted", true);
+            return true;
         }
 
         private static void SmallMoneyPile_SpawnCurrency(On.SmallMoneyPile.orig_SpawnCurrency orig, SmallMoneyPile self)
@@ -142,13 +159,53 @@ namespace Haiku.Rando
 
         private static void EnemyHealth_TakeDamage(ILContext il)
         {
-            //TODO
+            var c = new ILCursor(il);
+
+            //Replace the existing currency spawning
+            ILLabel skipExisting = null;
+            c.GotoNext(MoveType.After,
+                       i => i.MatchLdarg(0),
+                       i => i.MatchLdfld("EnemyHealth", "currencies"),
+                       i => i.MatchLdlen(),
+                       i => i.MatchBrfalse(out skipExisting));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Action<EnemyHealth>)EHDropCurrencySynced);
+            c.Emit(OpCodes.Br, skipExisting);
+        }
+
+        private static void EHDropCurrencySynced(EnemyHealth self)
+        {
+            int pick1;
+            int pick2;
+            if (Settings.SyncedMoney.Value)
+            {
+                var rng = SyncedRng.Get(self.gameObject);
+                pick1 = rng.Random.NextRange(0, self.currencies.Length);
+                pick2 = rng.Random.NextRange(0, self.currencies.Length);
+            }
+            else
+            {
+                pick1 = Random.Range(0, self.currencies.Length);
+                pick2 = Random.Range(0, self.currencies.Length);
+            }
+            Object.Instantiate(self.currencies[pick1], self.transform.position, Quaternion.identity);
+            Object.Instantiate(self.currencies[pick2], self.transform.position, Quaternion.identity);
         }
 
         private static void SwingingGarbageMagnet_SpawnCurrency(On.SwingingGarbageMagnet.orig_SpawnCurrency orig, SwingingGarbageMagnet self)
         {
-            orig(self);
-            //TODO
+            if (!Settings.SyncedMoney.Value)
+            {
+                orig(self);
+                return;
+            }
+
+            var rng = SyncedRng.Get(self.gameObject);
+            for (int i = 0; i < 6; i++)
+            {
+                var pick = rng.Random.NextRange(0, self.currencies.Length);
+                Object.Instantiate(self.currencies[pick], self.transform.position, Quaternion.identity);
+            }
         }
     }
 }

@@ -21,6 +21,7 @@
 // Transitions:
 // Checks:
 Scene 5
+//Special scene; no logic here
 
 // Scene 9
 // Transitions: Repair1 (9Repair), Exit209 (209-Train), Repair1 (9Repair), Exit53 (53-Train), Exit179 (179-Train), Exit88 (88-Train), Exit136 (136-Train), Exit28 (28-Train)
@@ -318,7 +319,7 @@ Left1_Left0: DoubleJump
 Right_Left*: Magnet+DoubleJump
 Right_Left*: Magnet+Grapple
 Right_Left*: Magnet+Blink
-//TODO: Is Disruptor freely accessible here?
+//TODO: Left1_Left0 is a pretty easy BLJ
 
 // Scene 44
 // Transitions: Right (44-43), Left (38-44)
@@ -698,22 +699,37 @@ Left1_Right1: Ball
 *_Item: Blink
 //TODO: Possible enemy pogo skips, plus some BLJ and coyote stuff, maybe
 
-// Scene 82
+// Scene 82 : Power Cell left of elevators room
 // Transitions: Right (82-93), Left (81-82)
 // Checks: PowerCell (PowerCell[14])
 Scene 82
+Right_Left: Ball
+Left_*: Ball
 
 // Scene 83 : Bulb Hive
 // Transitions: Right (83-81), Left (63-83)
 // Checks: Bulblet (Bulblet[0]), Lever2 (Lever[21]), Lever1 (Lever[20]), Lever0 (Lever[22])
 Scene 83
-//TODO: figure out which lever is which; for now ignoring the lever logic
-Right_Bulblet: Ball+Magnet
-Right_Bulblet: Ball+DoubleJump
-Right_Left: Blink+Ball+Magnet
-Right_Left: Blink+Ball+DoubleJump
+Right_Bulblet: Ball+Magnet+Lever0
+Right_Bulblet: Ball+DoubleJump+Lever0
+Right_Bulblet: Ball+Lever2
+Right_Bulblet: Ball+Lever1
+Right_Left: Blink+Ball+Magnet+Lever0
+Right_Left: Blink+Ball+DoubleJump+Lever0
+Right_Left: Blink+Ball+Lever2
+Right_Left: Blink+Ball+Lever1
+Right_Lever0: Ball
+Right_Lever1: Ball+Magnet+Lever0
+Right_Lever1: Ball+DoubleJump+Lever0
+Right_Lever1: Lever1
+Right_Lever2: Ball+Magnet+Lever0
+Right_Lever2: Ball+DoubleJump+Lever0
+Right_Lever2: Ball+Lever2
 Left_Bulblet: Blink
-Left_Right: Blink+Ball
+Left_Right: Blink+Ball+Lever2
+Left_Right: Blink+Ball+Bomb+Lever1
+//TODO: BLJ can bypass the Magnet|DoubleJump requirements
+//A really easy bomb jump is included in this logic, but there's a harder one as well for skips probably
 
 // Scene 84 : Electron fight
 // Transitions: Right (84-75)
@@ -731,74 +747,112 @@ Left_Grapple: Grapple
 // Transitions: Right (86-87), Left (68-86)
 // Checks:
 Scene 86
+Right_Left: false
+//TODO: Add pinion lever to checks?  It's not currently in pool, so just treat as backwards impossible for logic
 
 // Scene 87
 // Transitions: Right1 (87-88), Right0 (87-89), Left1 (86-87), Left0 (92-87), Repair (87Repair)
 // Checks:
 Scene 87
+$LeftCorner {Left1, Repair}
+$Bottom {Left1, Repair, Right1}
+Right1_LeftCorner: Magnet
+Right1_LeftCorner: DoubleJump
+//TODO: Right1_LeftCorner is an easy BLJ
+Bottom_Right0: Magnet
+Bottom_Left0: Magnet+Clock
+Bottom_Left0: DoubleJump+Clock
+Left0_*: Clock
+Right0_Left0: Clock
 
 // Scene 88 : Pinions Train Station
 // Transitions: Right0 (88-91), Right1 (88-98), Left (87-88), Train (88-Train)
 // Checks: Item (Item[3]), TrainStation (TrainStation[1]), Clock (Clock[0])
 Scene 88
+$Bottom {Left, Right1}
+$Checks {Item, Clock}
 *_Train: Clock+TrainStation
+Bottom_Checks: DoubleJump
+Bottom_Checks: Clock
 
 // Scene 89
 // Transitions: Right (89-90), Left (87-89)
 // Checks:
 Scene 89
 
-// Scene 90
+// Scene 90 : Troll platforms room on way to Factory hidden entrance
 // Transitions: Right (90-100), Left2 (91-90), Left1 (89-90), Left0 (94-90)
 // Checks:
 Scene 90
+$Bottom {Left1, Left2}
+$Top {Right, Left0}
+Bottom=Top: Clock
 
 // Scene 91 : Pinions room above Mischievous Mechanic (Left1 is drop down)
 // Transitions: Right (91-90), Left1 (98-91), Left0 (88-91)
 // Checks: Disruptor (MapDisruptor[9])
 Scene 91
 Left1_*: false
+//No other obstacles besides drop being one-way
 
-// Scene 92
+// Scene 92 : Breaking platforms gauntlet to elevators room
 // Transitions: Right (92-87), Left (93-92)
 // Checks:
 Scene 92
+//No obstacles
 
-// Scene 93
+// Scene 93 : Elevators room
 // Transitions: Right2 (93-92), Right0 (93-171), Right1 (93-96), Left (82-93)
 // Checks:
 Scene 93
+$Top {Right0, Left}
+*=!Top: Clock
 
-// Scene 94
+// Scene 94 : Breaking platforms right of Steam Town
 // Transitions: Right (94-90), Left (95-94)
 // Checks:
 Scene 94
+//No obstacles
 
-// Scene 95
+// Scene 95 : Steam Town
 // Transitions: Right1 (95-94), Right0 (95-97), Left (96-95)
 // Checks: Chip (Chip[21])
 Scene 95
+//NOTE: The Chip here is behind the 'save the children' quest
+//This means access is a bit unusual, as it involves visiting room 97 and completing it
+//We thus flag the Chip as being gated based on room 97's obstacles
+//TODO: For future room rando, we probably want to keep 95-97 linked, as otherwise logic here gets very wonky
+*_Chip: Magnet
+*_Chip: DoubleJump+Lever[42]
 
-// Scene 96
+// Scene 96 : Piston bridge
 // Transitions: Right (96-95), Left (93-96)
 // Checks:
 Scene 96
+Left_Right: Grapple
+//TODO: Piston bridge lever is not currently part of checks
 
 // Scene 97
 // Transitions: Left (95-97)
 // Checks: Lever (Lever[42])
 Scene 97
+*_Lever: Lever
+*_Lever: Magnet
 
 // Scene 98 : Mischievous Mechanic Fight
 // Transitions: Right (98-91), Left (88-98)
 // Checks: Lever (Lever[56]), PowerCell (PowerCell[16])
 Scene 98
 *_Right: false
+Left_PowerCell: Lever
+Left_Lever: Lever
+Right_Left: Lever
 
-// Scene 100
+// Scene 100 : Hidden tunnel toward Factory right side
 // Transitions: Right (100-192), Left (90-100)
 // Checks:
 Scene 100
+Left_Right: Magnet
 
 // Scene 101
 // Transitions: Right0 (101-108), Right1 (101-102), Left (18-101)
@@ -886,101 +940,180 @@ Left_Right: FireRes+Chip[25]+Grapple
 // Transitions: Right (111-112), Left (69-111)
 // Checks:
 Scene 111
+Right_Left: Magnet
+Right_Left: DoubleJump
+
 
 // Scene 112
 // Transitions: Right1 (112-113), Right0 (112-129), Left1 (70-112), Left0 (111-112)
 // Checks:
 Scene 112
+*_*1: Blink
+*_*1: WaterRes
+*1_*: WaterRes
+*1_*: Blink
+
 
 // Scene 113
 // Transitions: Right (113-114), Left (112-113), Repair (113Repair)
 // Checks: Chip (Chip[19])
 Scene 113
+*_Chip: Ball
+*_Chip: Blink
 
 // Scene 114
 // Transitions: Right0 (114-115), Right1 (114-118), Left1 (209-114), Left0 (113-114)
 // Checks:
 Scene 114
+*1_*0: Magnet
+*1_*0: DoubleJump
 
 // Scene 115
 // Transitions: Right (115-116), Left (114-115)
 // Checks:
 Scene 115
+Left_Right: Magnet
+Left_Right: DoubleJump
+Left_Right: Grapple
+Left_Right: Ball
+Left_Right: Blink
 
 // Scene 116
 // Transitions: Right (116-117), Left (115-116)
 // Checks:
 Scene 116
+*_*: Ball
 
 // Scene 117
 // Transitions: Elevator (178-117), Right (117-210), Left (116-117)
 // Checks:
 Scene 117
+Right_*: WaterRes
+*_Right: WaterRes+Magnet
 
 // Scene 118
 // Transitions: Right2 (118-121), Right1 (118-119bottom), Right0 (118-119top), Left1 (122-118), Left0 (114-118)
 // Checks: Disruptor (MapDisruptor[7])
 Scene 118
+$Top {Disruptor, Right0}
+$BottomTrans {Right2, Left1}
+!Right0_Disruptor: false
+Right0_!Disruptor: false
+*_Right0: false
+Right0_Disruptor: WaterRes
+Right0_Disruptor: Blink
+Left0_!Top: Blink
+Left0_!Top: WaterRes
+Right1_!Top: Blink
+Right1_!Top: WaterRes
+BottomTrans_!Top: WaterRes+Magnet
+BottomTrans_!Top: WaterRes+DoubleJump
+BottomTrans_!Top: Blink+Magnet
+BottomTrans_!Top: Blink+DoubleJump
+Left1_Right2: Blink
+Left1_Right2: WaterRes
+
 
 // Scene 119
 // Transitions: Right (119-120), Left1 (118-119bottom), Left0 (118-119top)
 // Checks:
 Scene 119
+// No obstacles
 
 // Scene 120
 // Transitions: Right0 (120-208), Right1 (120-207), Left (119-120)
 // Checks: Lever (Lever[54])
 Scene 120
+!Right1_Lever: false
+*_Right0: DoubleJump
+Left_Right1: Lever+DoubleJump
+Right0_Right1: Lever
 
 // Scene 121
 // Transitions: Left (118-121)
 // Checks: PowerCell (PowerCell[5])
 Scene 121
+Left_PowerCell: Grapple+Magnet
+Left_PowerCell: Blink+Magnet
 
 // Scene 122
 // Transitions: Right (122-118), Left (123-122)
 // Checks:
 Scene 122
+Left_Right: Magnet
+Left_Right: DoubleJump
+Left_Right: Blink+Grapple+Chip[20]
+Left_Right: Blink+WaterRes+Chip[20]
+// Chip[20] == Amplifying Transputer
 
 // Scene 123
 // Transitions: Right1 (123-127), Right0 (123-122), Left0 (124-123), Left1 (126-123)
 // Checks:
 Scene 123
+*0_*0: Grapple
+*0_*0: Blink
+*0_*0: WaterRes
+*0_*1: Bomb+WaterRes
+*1_*1: Grapple
+*1_*1: WaterRes
+*1_*0: WaterRes+Magnet+Bomb
+
 
 // Scene 124
 // Transitions: Right (124-123), Left (125-124)
 // Checks:
 Scene 124
+Right_Left: WaterRes
+Left_Right: WaterRes
+Left_right: Grapple
 
 // Scene 125
 // Transitions: Right (125-124), Left (131-125)
 // Checks:
 Scene 125
+// No obstacles
 
 // Scene 126
 // Transitions: Right (126-123), Left (131-126)
 // Checks: Lever (Lever[30]), PowerCell (PowerCell[9])
 Scene 126
+Right_*: Lever+WaterRes
+Right_*: Lever+Grapple
+Left_Right: Grapple
 
 // Scene 127
 // Transitions: Right (127-128), Left (123-127), Repair (127Repair)
 // Checks:
 Scene 127
+Left=*: Light+Magnet
+Left=*: Light+DoubleJump
 
 // Scene 128
 // Transitions: Right0 (128-207), Right1 (128-206), Left (127-128)
 // Checks: Coolant (Coolant[0])
 Scene 128
+Right*_Left: Magnet+Light
+Right*_Left: DoubleJump+Light
+Left_Right1: Magnet+Light
+*_Right0: DoubleJump+Light
+*_Coolant: Magnet+Light
+*_Coolant: DoubleJump+Light
+Right1_Right0: Light
 
 // Scene 129
 // Transitions: Right (129-130), Left (112-129)
 // Checks: Chip (Chip[2]), Lever (Lever[37])
 Scene 129
+*_Chip: Magnet
+*_Chip: DoubleJump
+*_Lever: DoubleJump
+*_Lever: Magnet
 
 // Scene 130
 // Transitions: Left (129-130)
 // Checks: Item (Item[3])
 Scene 130
+Left_Item: Grapple+WaterRes
 
 // Scene 131
 // Transitions: Right0 (131-125), Right1 (131-126), Left (132-131bottom)
@@ -1363,6 +1496,7 @@ Left0_*: Ball+Light
 // Transitions: 24-166 (24-166)
 // Checks:
 Scene 166
+//No obsacles
 
 // Scene 167 : Mainframe repair
 // Transitions: Left (62-167), Repair (167Repair)
@@ -1414,11 +1548,19 @@ Scene 173
 *1_*: DoubleJump
 // TODO: *1_* is doable with bomb jumps or BLJs.
 
-// Scene 174
+// Scene 174 : Mundo (Factory Big Elevator)
 // Transitions: Left2 (180-174), Left3 (173-174), Left1 (182-174), Left0 (187-174), Right2 (174-175), Right1 (174-183), Right0 (174-186)
 // Checks:
 Scene 174
-// TODO: Mundo Moment (leaving this room for jarlyk)
+$F0 {Left3}
+$F1 {Left2, Right2}
+$F2 {Left1, Right1}
+$F3 {Left0, Right0}
+//Mundo levers aren't in pool, so we just presume downward movement okay for logic, upward no
+//The exception is F0_F1, as there's no gate there
+F1_F2: false
+F1_F3: false
+F2_F3: false
 
 // Scene 175
 // Transitions: Right (175-176), Left (174-175)
@@ -1612,7 +1754,6 @@ Scene 194
 *_Right: Ball
 Right_*: Ball
 
-
 // Scene 195
 // Transitions: Left (185-195), Repair (195Repair)
 // Checks:
@@ -1667,12 +1808,12 @@ Scene 201
 Scene 202
 Left1_Left0: Magnet
 
-// Scene 203
+// Scene 203: Kitchen Room in Bunker
 // Transitions: Right (203-40)
 // Checks:
 Scene 203
 
-// Scene 204
+// Scene 204: Piano Room in Bunker
 // Transitions: Right (204-43)
 // Checks: Item (Item[6])
 Scene 204
@@ -1686,16 +1827,22 @@ Scene 205
 // Transitions: Left (128-206)
 // Checks: DoubleJump (Ability[4])
 Scene 206
+Left_DoubleJump: Light
 
 // Scene 207
 // Transitions: Left0 (120-207), Left1 (128-207)
 // Checks: Chip (Chip[6])
 Scene 207
+Left1_Left0: DoubleJump+Magnet+Light
+Left1_Chip: DoubleJump+Magnet+Ball+Light
+Left0_Chip: Ball+Light
+Left0_Left1: Light
 
 // Scene 208
 // Transitions: Left (120-208), Door (208-223)
 // Checks:
 Scene 208
+Left_Door: DoubleJump
 
 // Scene 209
 // Transitions: Right (209-114), Train (209-Train)
@@ -1707,8 +1854,9 @@ Right_Train: Clock+TrainStation
 // Transitions: Left (117-210)
 // Checks: Slot (ChipSlot[7])
 Scene 210
+Left_Slot: WaterRes
 
-// Scene 211
+// Scene 211: Melody Room in Ruins
 // Transitions: Right (211-134)
 // Checks:
 Scene 211
@@ -1717,7 +1865,7 @@ Scene 211
 // Transitions: Left (230-212)
 // Checks: PowerCell (PowerCell[8])
 Scene 212
-// TODO: Defeating Big Brother gives access to PowerCell
+// No obstacles: defeating Big Brother gives access to PowerCell
 
 // Scene 213
 // Transitions: Left0 (214-213), Left1 (186-213)
@@ -1772,37 +1920,40 @@ Scene 217
 Scene 218
 *_*: FireRes
 
-// Scene 220
+// Scene 220: Echo shop in core
 // Transitions: 220-169 (220-169)
 // Checks: ShopItem0 (Chip[16]), ShopItem1 (Chip[13]), ShopItem2 (Chip[12])
 Scene 220
 
-// Scene 221
+// Scene 221: Room to catacombs in Factory
 // Transitions: Right (221-229), Left (199-221)
 // Checks: Item (Item[0])
 Scene 221
 
-// Scene 222
+// Scene 222: Storage Room in Bunker (the one that requires a rusty key)
 // Transitions: 222-46 (222-46)
 // Checks:
 Scene 222
 
-// Scene 223
+// Scene 223: Snailbot Burrow House
 // Transitions: 208-223 (208-223)
 // Checks: PowerCell (PowerCell[6])
 Scene 223
+*_PowerCell: Magnet
 
-// Scene 224
+// Scene 224: Reaper shop in Surface
 // Transitions: 197-224 (197-224)
 // Checks: ShopItem0 (Item[5]), ShopItem1 (Item[2]), ShopItem2 (Item[8]), ShopItem3 (Chip[23]), ShopItem4 (Chip[17])
 Scene 224
+// No obstacles
 
-// Scene 225
+
+// Scene 225: Lume Room in Ruins
 // Transitions: Left (133-225top)
 // Checks:
 Scene 225
 
-// Scene 227
+// Scene 227: Tree Room in Ruins
 // Transitions: 138-227 (138-227)
 // Checks:
 Scene 227
@@ -1833,7 +1984,7 @@ Scene 230
 Right1_Right0: Magnet+DoubleJump
 // TODO: Pretty sure there's several skips here
 
-// Scene 231
+// Scene 231: Room right of Surface
 // Transitions: Right (231-188), Left (198-231)
 // Checks:
 Scene 231
@@ -1847,7 +1998,7 @@ Right_Disruptor: DoubleJump+FireRes+Grapple+Magnet
 Right_Lever: FireRes+Lever
 Right_Lever: DoubleJump+FireRes+Grapple+Magnet
 
-// Scene 233
+// Scene 233: Chip room in Catacombs
 // Transitions: Right (233-199)
 // Checks: Chip (Chip[3])
 Scene 233

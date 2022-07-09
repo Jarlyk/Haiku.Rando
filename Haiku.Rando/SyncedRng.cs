@@ -18,7 +18,7 @@ namespace Haiku.Rando
 
         public Xoroshiro128Plus Random => _random;
 
-        void Start()
+        private void Configure()
         {
             var objName = gameObject.name;
             var seed = !string.IsNullOrEmpty(objName) ? objName.GetHashCode() : 1234;
@@ -32,6 +32,7 @@ namespace Haiku.Rando
             if (!rng)
             {
                 rng = owner.AddComponent<SyncedRng>();
+                rng.Configure();
             }
 
             return rng;

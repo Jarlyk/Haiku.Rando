@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 
 namespace Haiku.Rando
 {
-    [BepInPlugin("haiku.rando", "Haiku Rando", "1.0.0.0")]
+    [BepInPlugin("haiku.rando", "Haiku Rando", "0.1.0.0")]
     [BepInDependency("haiku.mapi", "1.0")]
     public sealed class RandoPlugin : BaseUnityPlugin
     {
@@ -44,6 +44,7 @@ namespace Haiku.Rando
 
             IL.LoadGame.Start += LoadGame_Start;
             On.PCSaveManager.Load += PCSaveManager_Load;
+            On.PCSaveManager.Save += PCSaveManager_Save;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 
             //TODO: Add bosses as logic conditions
@@ -61,6 +62,17 @@ namespace Haiku.Rando
             }
         }
 
+        private void PCSaveManager_Save(On.PCSaveManager.orig_Save orig, PCSaveManager self, string filePath)
+        {
+            orig(self, filePath);
+            if (_savedSeed != null && Settings.RandoLevel.Value != RandomizationLevel.None)
+            {
+                self.es3SaveFile.Save("hasRandoData", true);
+                self.es3SaveFile.Save("randoSeed", _savedSeed.Value);
+                self.es3SaveFile.Sync();
+            }
+        }
+
         private void LoadGame_Start(ILContext il)
         {
             var c = new ILCursor(il);
@@ -70,10 +82,16 @@ namespace Haiku.Rando
 
         private void BeginRando()
         {
-            var evaluator = new LogicEvaluator(new[] { _baseLogic });
-            _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed);
-            _randomizer.Randomize();
-            CheckManager.Instance.Randomizer = _randomizer;
+            var level = Settings.RandoLevel.Value;
+
+            if (level != RandomizationLevel.None)
+            {
+                var evaluator = new LogicEvaluator(new[] { _baseLogic });
+                _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed);
+                _savedSeed = _randomizer.Seed;
+                _randomizer.Randomize();
+                CheckManager.Instance.Randomizer = _randomizer;
+            }
         }
 
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)

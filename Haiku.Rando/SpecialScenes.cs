@@ -8,5 +8,6 @@ namespace Haiku.Rando
     {
         public const int Train = 9;
         public const int GameStart = 10;
+        public const int Quatern = 170;
     }
 }

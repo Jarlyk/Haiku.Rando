@@ -18,7 +18,7 @@ namespace Haiku.Rando
         public static ConfigEntry<bool> IncludeChips { get; private set; }
         public static ConfigEntry<bool> IncludeChipSlots { get; private set; }
         public static ConfigEntry<bool> IncludeMapDisruptors { get; private set; }
-        public static ConfigEntry<bool> IncludeLevers { get; private set; }
+        //public static ConfigEntry<bool> IncludeLevers { get; private set; }
         public static ConfigEntry<bool> IncludePowerCells { get; private set; }
         public static ConfigEntry<bool> IncludeCoolant { get; private set; }
         public static ConfigEntry<bool> IncludeSealants { get; private set; }
@@ -46,7 +46,7 @@ namespace Haiku.Rando
             IncludeChips = config.Bind(Pool, "Chips", true);
             IncludeChipSlots = config.Bind(Pool, "Chip Slots", true);
             IncludeMapDisruptors = config.Bind(Pool, "Map Disruptors", true);
-            IncludeLevers = config.Bind(Pool, "Levers", false);
+            //IncludeLevers = config.Bind(Pool, "Levers", false);
             IncludePowerCells = config.Bind(Pool, "Power Cells", true);
             IncludeCoolant = config.Bind(Pool, "Coolant", true);
             IncludeSealants = config.Bind(Pool, "Sealants", true);
