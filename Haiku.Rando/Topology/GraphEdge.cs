@@ -6,9 +6,9 @@
 
         public int SceneId { get; }
 
-        public IRandoNode Origin { get; }
+        public IRandoNode Origin { get; set; }
 
-        public IRandoNode Destination { get; }
+        public IRandoNode Destination { get; set; }
 
         public GraphEdge(int sceneId, IRandoNode origin, IRandoNode destination)
         {

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using FMODUnity;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Steamworks;
@@ -18,6 +20,9 @@ namespace Haiku.Rando
         {
             //Haiku Fast Wake
             On.IntroSequence.Intro += IntroSequence_Intro;
+
+            //Remove elevator log spam
+            IL.ElevatorPlayerLocManager.PlayerInRange += ElevatorPlayerLocManager_PlayerInRange;
 
             //Fast Money
             IL.SmallMoneyPile.TakeDamage += SmallMoneyPile_TakeDamage; 
@@ -55,6 +60,19 @@ namespace Haiku.Rando
             yield return new WaitForSeconds(0.2f);
             self.anim.SetTrigger("5");
             yield break;
+        }
+
+        private static void ElevatorPlayerLocManager_PlayerInRange(ILContext il)
+        {
+            var c = new ILCursor(il);
+
+            c.GotoNext(i => i.MatchLdstr(out _),
+                       i => i.MatchCall("UnityEngine.Debug", "Log"));
+            var skipLog = c.DefineLabel();
+            c.Emit(OpCodes.Br, skipLog);
+
+            c.GotoNext(i => i.MatchRet());
+            c.MarkLabel(skipLog);
         }
 
         private static void SmallMoneyPile_TakeDamage(ILContext il)

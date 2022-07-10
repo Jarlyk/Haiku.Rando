@@ -170,6 +170,12 @@ namespace Haiku.Rando.Checks
             else
             {
                 oldObject.SetActive(false);
+                var oldPickup = oldObject.GetComponent<PickupItem>();
+                if (oldPickup)
+                {
+                    oldPickup.saveID = replacement.SaveId;
+                }
+
                 newObject = Object.Instantiate(HaikuResources.PrefabGenericPickup, oldObject.transform.position, oldObject.transform.rotation);
 
                 if (original.Type == CheckType.Bulblet && !GameManager.instance.bosses[2].defeated)
@@ -184,6 +190,9 @@ namespace Haiku.Rando.Checks
                 var universalPickup = newObject.AddComponent<UniversalPickup>();
                 universalPickup.check = replacement;
                 universalPickup.midAir = midAir;
+
+                var pickup = newObject.GetComponent<PickupItem>();
+                pickup.saveID = replacement.SaveId;
 
                 //Special-case: Car Battery death object linkage
                 if (sceneId == 69 && original.Type == CheckType.Chip)

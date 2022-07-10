@@ -19,25 +19,10 @@ namespace Haiku.Rando.Logic
         private readonly Xoroshiro128Plus _random;
         private bool _randomized;
 
-        public CheckRandomizer(RandoTopology topology, LogicEvaluator logic, ulong? savedSeed)
+        public CheckRandomizer(RandoTopology topology, LogicEvaluator logic, ulong seed)
         {
             _topology = topology;
             _logic = logic;
-
-            ulong seed;
-            if (savedSeed != null)
-            {
-                seed = savedSeed.Value;
-            }
-            else if (string.IsNullOrEmpty(Settings.Seed.Value))
-            {
-                var tempRandom = new Xoroshiro128Plus();
-                seed = tempRandom.NextULong();
-            }
-            else if (!ulong.TryParse(Settings.Seed.Value, out seed))
-            {
-                seed = (ulong)((long)Settings.Seed.Value.GetHashCode() - int.MinValue);
-            }
 
             Seed = seed;
             _random = new Xoroshiro128Plus(seed);

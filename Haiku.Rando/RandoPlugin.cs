@@ -20,26 +20,18 @@ namespace Haiku.Rando
         private RandoTopology _topology;
         private LogicLayer _baseLogic;
         private CheckRandomizer _randomizer;
+        private TransitionRandomizer _transRandomizer;
         private ulong? _savedSeed;
 
         public void Start()
         {
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Haiku.Rando.Resources.HaikuTopology.json"))
-            {
-                _topology = RandoTopology.Deserialize(new StreamReader(stream));
-            }
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Haiku.Rando.Resources.BaseLogic.txt"))
-            using (var reader = new StreamReader(stream))
-            {
-                _baseLogic = LogicLayer.Deserialize(_topology, reader);
-            }
-
             Settings.Init(Config);
 
             HaikuResources.Init();
             UniversalPickup.InitHooks();
             ShopItemReplacer.InitHooks();
             CheckManager.InitHooks();
+            TransitionManager.InitHooks();
             QoL.InitHooks();
 
             IL.LoadGame.Start += LoadGame_Start;
@@ -49,6 +41,22 @@ namespace Haiku.Rando
 
             //TODO: Add bosses as logic conditions
             //This impacts some transitions
+        }
+
+        private void ReloadTopology()
+        {
+            using (var stream = Assembly.GetExecutingAssembly()
+                                        .GetManifestResourceStream("Haiku.Rando.Resources.HaikuTopology.json"))
+            {
+                _topology = RandoTopology.Deserialize(new StreamReader(stream));
+            }
+
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Haiku.Rando.Resources.BaseLogic.txt"))
+            using (var reader = new StreamReader(stream))
+            {
+                _baseLogic = LogicLayer.Deserialize(_topology, reader);
+            }
+
         }
 
         private void PCSaveManager_Load(On.PCSaveManager.orig_Load orig, PCSaveManager self, string filePath)
@@ -82,16 +90,52 @@ namespace Haiku.Rando
 
         private void BeginRando()
         {
-            var level = Settings.RandoLevel.Value;
+            _randomizer = null;
+            _transRandomizer = null;
+            CheckManager.Instance.Randomizer = null;
+            TransitionManager.Instance.Randomizer = null;
 
+            var level = Settings.RandoLevel.Value;
             if (level != RandomizationLevel.None)
             {
+                ReloadTopology();
+                _savedSeed = GetSeed(_savedSeed);
+                if (level == RandomizationLevel.Rooms)
+                {
+                    Debug.Log("** Configuring transition randomization **");
+                    _transRandomizer = new TransitionRandomizer(_topology, _savedSeed.Value);
+                    _transRandomizer.Randomize();
+                    TransitionManager.Instance.Randomizer = _transRandomizer;
+                }
+
+                Debug.Log("** Configuring check randomization **");
                 var evaluator = new LogicEvaluator(new[] { _baseLogic });
-                _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed);
+                _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed.Value);
                 _savedSeed = _randomizer.Seed;
                 _randomizer.Randomize();
                 CheckManager.Instance.Randomizer = _randomizer;
+                Debug.Log("** Randomization complete **");
             }
+        }
+
+        private ulong GetSeed(ulong? savedSeed)
+        {
+            ulong seed;
+            if (savedSeed != null)
+            {
+                seed = savedSeed.Value;
+            }
+            else if (string.IsNullOrEmpty(Settings.Seed.Value))
+            {
+                var tempRandom = new Xoroshiro128Plus();
+                seed = tempRandom.NextULong();
+            }
+            else if (!ulong.TryParse(Settings.Seed.Value, out seed))
+            {
+                seed = (ulong)((long)Settings.Seed.Value.GetHashCode() - int.MinValue);
+            }
+
+            return seed;
         }
 
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)

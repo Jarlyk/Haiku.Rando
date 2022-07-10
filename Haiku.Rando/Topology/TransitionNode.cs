@@ -17,9 +17,9 @@ namespace Haiku.Rando.Topology
 
         public TransitionType Type { get; }
 
-        public int SceneId1 { get; }
+        public int SceneId1 { get; set; }
 
-        public int SceneId2 { get; }
+        public int SceneId2 { get; set; }
                                                                                            
         public Vector2 Position1 { get; set; }
 
