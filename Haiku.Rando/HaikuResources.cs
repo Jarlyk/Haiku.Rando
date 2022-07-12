@@ -82,7 +82,7 @@ namespace Haiku.Rando
             return _itemDescObject.GetComponent<ItemDescriptionManager>();
         }
 
-        private static GameObject[] GetDontDestroyOnLoadObjects()
+        public static GameObject[] GetDontDestroyOnLoadObjects()
         {
             GameObject temp = null;
             try

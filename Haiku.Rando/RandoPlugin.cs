@@ -33,6 +33,7 @@ namespace Haiku.Rando
             CheckManager.InitHooks();
             TransitionManager.InitHooks();
             QoL.InitHooks();
+            RepairStationWarp.InitHooks();
 
             IL.LoadGame.Start += LoadGame_Start;
             On.PCSaveManager.Load += PCSaveManager_Load;

@@ -11,11 +11,15 @@
   <ItemGroup>
     <None Remove="Resources\BaseLogic.txt" />
     <None Remove="Resources\HaikuTopology.json" />
+    <None Remove="Resources\HaikuWake.png" />
+    <None Remove="Resources\WarpPanel.png" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\BaseLogic.txt" />
     <EmbeddedResource Include="Resources\HaikuTopology.json" />
+    <EmbeddedResource Include="Resources\HaikuWake.png" />
+    <EmbeddedResource Include="Resources\WarpPanel.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +50,9 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>..\lib\Game\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\lib\Game\UnityEngine.dll</HintPath>
     </Reference>
@@ -73,11 +80,17 @@
     <Reference Include="UnityEngine.Physics2DModule">
       <HintPath>..\lib\Game\UnityEngine.Physics2DModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>..\lib\Game\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TilemapModule">
       <HintPath>..\lib\Game\UnityEngine.TilemapModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\lib\Game\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\lib\Game\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
