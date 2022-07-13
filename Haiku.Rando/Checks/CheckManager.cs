@@ -22,16 +22,21 @@ namespace Haiku.Rando.Checks
 
         private const float PickupTextDuration = 4f;
 
+        private readonly Dictionary<RandoCheck, GameObject> _checkObjects = new Dictionary<RandoCheck, GameObject>();
         private RandoCheck _fireResReplacement;
         private RandoCheck _waterResReplacement;
 
         public CheckRandomizer Randomizer { get; set; }
 
+
         public static void InitHooks()
         {
             IL.e7FireWaterTrigger.Start += E7FireWaterTrigger_Start;
             On.e7UpgradeShop.TriggerUpgrade += E7UpgradeShop_TriggerUpgrade;
+            On.BeeHive.Start += BeeHive_Start;
             On.BeeHive.TriggerBulbItem += BeeHive_TriggerBulbItem;
+            On.e29Portal.GiveRewardsGradually += E29Portal_GiveRewardsGradually;
+            On.e29PortalRewardChecker.CheckReward += E29PortalRewardChecker_CheckReward;
         }
 
         public void OnSceneLoaded(int sceneId)
@@ -48,6 +53,7 @@ namespace Haiku.Rando.Checks
                 return;
             }
 
+            _checkObjects.Clear();
             foreach (var original in scene.Nodes.OfType<RandoCheck>())
             {
                 if (Randomizer.CheckMapping.TryGetValue(original, out var replacement))
@@ -100,16 +106,8 @@ namespace Haiku.Rando.Checks
                     midAir = true;
                     break;
                 case CheckType.Item:
-                    if (sceneId == SpecialScenes.Quatern)
-                    {
-                        oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.itemID == original.CheckId && p.saveID == original.SaveId)?.gameObject;
-                        reuseObject = true;
-                    }
-                    else
-                    {
-                        oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.itemID == original.CheckId && p.saveID == original.SaveId)?.gameObject;
-                        reuseObject = original.CheckId != (int)ItemId.CapsuleFragment;
-                    }
+                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.itemID == original.CheckId && p.saveID == original.SaveId)?.gameObject;
+                    reuseObject = original.CheckId != (int)ItemId.CapsuleFragment;
                     break;
                 case CheckType.Chip:
                     oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.triggerChip && GameManager.instance.getChipNumber(p.chipIdentifier) == original.CheckId)?.gameObject;
@@ -207,6 +205,14 @@ namespace Haiku.Rando.Checks
                     newObject.layer = (int)LayerId.GroundCollision;
                     //TODO: Go to Car Battery and find the actual settings for this
                 }
+
+                //Special case: Quatern checks start disabled
+                if (sceneId == SpecialScenes.Quatern)
+                {
+                    newObject.SetActive(false);
+                }
+
+                _checkObjects.Add(replacement, newObject);
             }
         }
 
@@ -294,6 +300,22 @@ namespace Haiku.Rando.Checks
             }
         }
 
+        private static void BeeHive_Start(On.BeeHive.orig_Start orig, BeeHive self)
+        {
+            if (Instance.Randomizer != null)
+            {
+                if (!GameManager.instance.bosses[self.bossID].defeated)
+                {
+                    var oldCheck = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Type == CheckType.Bulblet);
+                    if (oldCheck != null && !AlreadyGotCheck(Instance.Randomizer.CheckMapping[oldCheck]))
+                    {
+                        self.bulbObject.SetActive(false);
+                    }
+                }
+            }
+            orig(self);
+        }
+
         private static void BeeHive_TriggerBulbItem(On.BeeHive.orig_TriggerBulbItem orig, BeeHive self)
         {
             if (Instance.Randomizer == null)
@@ -307,11 +329,93 @@ namespace Haiku.Rando.Checks
             {
                 //Instead of activating the original pickup object, we want to activate the new one instead
                 var newCheck = Instance.Randomizer.CheckMapping[bulbCheck];
-                self.bulbPickup = SceneUtils.FindObjectsOfType<UniversalPickup>()
-                                            .First(p => p.check == newCheck).gameObject;
+                self.bulbPickup = Instance._checkObjects[newCheck];
             }
 
             orig(self);
+        }
+
+        private static IEnumerator E29Portal_GiveRewardsGradually(On.e29Portal.orig_GiveRewardsGradually orig, e29Portal self, int startCount)
+        {
+            if (Instance.Randomizer == null)
+            {
+                var result = orig(self, startCount);
+                while (result.MoveNext())
+                {
+                    yield return result.Current;
+                }
+
+                yield break;
+            }
+
+            for (int i = startCount; i < self.cachedCount; i++)
+            {
+                yield return new WaitForSeconds(1.6f);
+                self.miniTeleporterAnim.SetTrigger("reward");
+                SoundManager.instance.PlayOneShot(self.giveRewardSound);
+                GameManager.instance.lastPowercellCount = i + 1;
+                if (self.rewardObjects[i].name.Contains("_Chip"))
+                {
+                    var check = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Type == CheckType.Chip && c.SceneId == SpecialScenes.Quatern);
+                    if (check != null && Instance.Randomizer.CheckMapping.TryGetValue(check, out var replacement))
+                    {
+                        Instance._checkObjects[replacement].SetActive(!AlreadyGotCheck(replacement));
+                    }
+                    else
+                    {
+                        self.rewardObjects[i].SetActive(!GameManager.instance.worldObjects[self.chipSaveID].collected);
+                    }
+                }
+                else if (self.rewardObjects[i].name.Contains("_Health fragment 1"))
+                {
+                    var check = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Alias == "Item[3]0" && c.SceneId == SpecialScenes.Quatern);
+                    if (check != null && Instance.Randomizer.CheckMapping.TryGetValue(check, out var replacement))
+                    {
+                        Instance._checkObjects[replacement].SetActive(!AlreadyGotCheck(replacement));
+                    }
+                    else
+                    {
+                        self.rewardObjects[i].SetActive(!GameManager.instance.worldObjects[self.healthFragment1SaveID].collected);
+                    }
+                }
+                else if (self.rewardObjects[i].name.Contains("_Health fragment 2"))
+                {
+                    var check = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Alias == "Item[3]1" && c.SceneId == SpecialScenes.Quatern);
+                    if (check != null && Instance.Randomizer.CheckMapping.TryGetValue(check, out var replacement))
+                    {
+                        Instance._checkObjects[replacement].SetActive(!AlreadyGotCheck(replacement));
+                    }
+                    else
+                    {
+                        self.rewardObjects[i].SetActive(!GameManager.instance.worldObjects[self.healthFragment2SaveID].collected);
+                    }
+                }
+                else
+                {
+                    self.rewardObjects[i].SetActive(true);
+                }
+            }
+        }
+
+        private static void E29PortalRewardChecker_CheckReward(On.e29PortalRewardChecker.orig_CheckReward orig, e29PortalRewardChecker self)
+        {
+            if (Instance.Randomizer == null)
+            {
+                orig(self);
+                return;
+            }
+
+            var oldCheck = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.SaveId == self.objectSaveID);
+            if (oldCheck != null && Instance.Randomizer.CheckMapping.TryGetValue(oldCheck, out var newCheck))
+            {
+                bool enoughCells = self.neededPowercells <= GameManager.instance.lastPowercellCount;
+                Instance._checkObjects[newCheck].SetActive(enoughCells && !AlreadyGotCheck(newCheck));
+            }
+            else
+            {
+                //Not a mapped check; fall back to standard behavior
+                orig(self);
+            }
         }
 
         public static bool AlreadyGotCheck(RandoCheck check)

@@ -32,6 +32,30 @@ namespace Haiku.Rando
             IL.ChildColliderHealth.TakeDamage += ChildColliderHealth_TakeDamage;
             IL.EnemyHealth.TakeDamage += EnemyHealth_TakeDamage;
             On.SwingingGarbageMagnet.SpawnCurrency += SwingingGarbageMagnet_SpawnCurrency;
+
+            //Pre-Broken Doors
+            On.BreakableDoor.Start += BreakableDoor_Start;
+            On.BreakableDoorWithBackgroundObject.Start += BreakableDoorWithBackgroundObject_Start;
+        }
+
+        private static void BreakableDoorWithBackgroundObject_Start(On.BreakableDoorWithBackgroundObject.orig_Start orig, BreakableDoorWithBackgroundObject self)
+        {
+            if (Settings.PreBrokenDoors.Value)
+            {
+                GameManager.instance.doors[self.doorID].opened = true;
+            }
+
+            orig(self);
+        }
+
+        private static void BreakableDoor_Start(On.BreakableDoor.orig_Start orig, BreakableDoor self)
+        {
+            if (Settings.PreBrokenDoors.Value)
+            {
+                GameManager.instance.doors[self.ID].opened = true;
+            }
+
+            orig(self);
         }
 
         private static IEnumerator IntroSequence_Intro(On.IntroSequence.orig_Intro orig, IntroSequence self)
