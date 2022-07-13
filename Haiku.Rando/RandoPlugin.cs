@@ -64,6 +64,7 @@ namespace Haiku.Rando
         {
             orig(self, filePath);
             _savedSeed = null;
+            RepairStationWarp.LoadFromFile(self.es3SaveFile);
             var hasRandoData = self.es3SaveFile.Load<bool>("hasRandoData", false);
             if (hasRandoData)
             {
@@ -74,12 +75,13 @@ namespace Haiku.Rando
         private void PCSaveManager_Save(On.PCSaveManager.orig_Save orig, PCSaveManager self, string filePath)
         {
             orig(self, filePath);
+            RepairStationWarp.SaveToFile(self.es3SaveFile);
             if (_savedSeed != null && Settings.RandoLevel.Value != RandomizationLevel.None)
             {
                 self.es3SaveFile.Save("hasRandoData", true);
                 self.es3SaveFile.Save("randoSeed", _savedSeed.Value);
-                self.es3SaveFile.Sync();
             }
+            self.es3SaveFile.Sync();
         }
 
         private void LoadGame_Start(ILContext il)
@@ -142,6 +144,7 @@ namespace Haiku.Rando
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
         {
             CheckManager.Instance.OnSceneLoaded(scene.buildIndex);
+            RepairStationWarp.OnSceneLoaded(scene.buildIndex);
         }
 
         public void Update()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Haiku.Rando
@@ -25,7 +26,22 @@ namespace Haiku.Rando
 
         private void OnClick()
         {
-            Debug.Log($"Clicked on {gameObject.name}");
+            //We pretend the game was just loaded so that we load in from the save point
+            GameManager.instance.gameLoaded = true;
+            if (isHaikuWake)
+            {
+                Debug.Log($"Station Warp: Haiku Wake");
+                GameManager.instance.introPlayed = false;
+                SceneManager.LoadScene(SpecialScenes.GameStart);
+            }
+            else
+            {
+                CameraBehavior.instance.TransitionState(true);
+                Debug.Log($"Station Warp: Scene {sceneId}");
+                SceneManager.LoadScene(sceneId);
+            }
+
+            CameraBehavior.instance.ResumeHideUI();
         }
     }
 }
