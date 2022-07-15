@@ -11,15 +11,12 @@
   <ItemGroup>
     <None Remove="Resources\BaseLogic.txt" />
     <None Remove="Resources\HaikuTopology.json" />
-    <None Remove="Resources\HaikuWake.png" />
     <None Remove="Resources\WarpPanel.png" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\BaseLogic.txt" />
     <EmbeddedResource Include="Resources\HaikuTopology.json" />
-    <EmbeddedResource Include="Resources\HaikuWake.png" />
-    <EmbeddedResource Include="Resources\WarpPanel.png" />
   </ItemGroup>
 
   <ItemGroup>

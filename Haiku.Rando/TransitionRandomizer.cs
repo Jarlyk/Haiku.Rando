@@ -58,6 +58,12 @@ namespace Haiku.Rando
                 //In particular, we don't want swaps that reenter the same room
                 int sceneId1 = node1.SceneId1;
                 var matchingNodes = availableNodes.Where(n => !n.InScene(sceneId1)).ToList();
+                if (matchingNodes.Count == 0)
+                {
+                    //We've run out of nodes that can be swapped, so we're done
+                    break;
+                }
+
                 int pick2 = _random.NextRange(0, matchingNodes.Count);
                 var node2 = matchingNodes[pick2];
                 availableNodes.Remove(node2);
@@ -87,7 +93,7 @@ namespace Haiku.Rando
                 scene2.Nodes.Add(node2);
                 scene4.Nodes.Remove(node2);
                 scene4.Nodes.Add(node1);
-                var swap = node1.Alias2;
+                var swap = node2.Alias2;
                 node2.Alias2 = node1.Alias2;
                 node1.Alias2 = swap;
                 node1.SceneId2 = sceneId4;

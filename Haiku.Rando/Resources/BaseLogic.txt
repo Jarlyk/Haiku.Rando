@@ -770,10 +770,13 @@ Right0_Left0: Clock
 // Checks: Item (Item[3]), TrainStation (TrainStation[1]), Clock (Clock[0])
 Scene 88
 $Bottom {Left, Right1}
-$Checks {Item, Clock}
+$RightArea {Right0, Clock}
 *_Train: Clock+TrainStation
-Bottom_Checks: DoubleJump
-Bottom_Checks: Clock
+Bottom_Item: DoubleJump
+Bottom_Item: Clock
+Bottom_RightArea: DoubleJump
+Bottom_RightArea: Clock+Blink
+Bottom_RightArea: Clock+Grapple
 
 // Scene 89
 // Transitions: Right (89-90), Left (87-89)

@@ -33,8 +33,7 @@ namespace Haiku.Rando
             CheckManager.InitHooks();
             TransitionManager.InitHooks();
             QoL.InitHooks();
-            RepairStationWarp.InitHooks();
-
+            
             IL.LoadGame.Start += LoadGame_Start;
             On.PCSaveManager.Load += PCSaveManager_Load;
             On.PCSaveManager.Save += PCSaveManager_Save;
@@ -64,7 +63,6 @@ namespace Haiku.Rando
         {
             orig(self, filePath);
             _savedSeed = null;
-            RepairStationWarp.LoadFromFile(self.es3SaveFile);
             var hasRandoData = self.es3SaveFile.Load<bool>("hasRandoData", false);
             if (hasRandoData)
             {
@@ -75,7 +73,6 @@ namespace Haiku.Rando
         private void PCSaveManager_Save(On.PCSaveManager.orig_Save orig, PCSaveManager self, string filePath)
         {
             orig(self, filePath);
-            RepairStationWarp.SaveToFile(self.es3SaveFile);
             if (_savedSeed != null && Settings.RandoLevel.Value != RandomizationLevel.None)
             {
                 self.es3SaveFile.Save("hasRandoData", true);
@@ -101,24 +98,52 @@ namespace Haiku.Rando
             var level = Settings.RandoLevel.Value;
             if (level != RandomizationLevel.None)
             {
-                ReloadTopology();
                 _savedSeed = GetSeed(_savedSeed);
-                if (level == RandomizationLevel.Rooms)
-                {
-                    Debug.Log("** Configuring transition randomization **");
-                    _transRandomizer = new TransitionRandomizer(_topology, _savedSeed.Value);
-                    _transRandomizer.Randomize();
-                    TransitionManager.Instance.Randomizer = _transRandomizer;
-                }
 
-                Debug.Log("** Configuring check randomization **");
-                var evaluator = new LogicEvaluator(new[] { _baseLogic });
-                _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed.Value);
-                _savedSeed = _randomizer.Seed;
-                _randomizer.Randomize();
+                const int maxRetries = 10;
+                for (int i = 0; i < maxRetries; i++)
+                {
+                    if (TryRandomize(level))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Randomization failed: attempt {i+1} of {maxRetries}");
+
+                        //Iterate the seed
+                        var tmpRandom = new Xoroshiro128Plus(_savedSeed.Value);
+                        _savedSeed = tmpRandom.NextULong();
+                    }
+                }
+            }
+        }
+
+        private bool TryRandomize(RandomizationLevel level)
+        {
+            ReloadTopology();
+
+            if (level == RandomizationLevel.Rooms)
+            {
+                Debug.Log("** Configuring transition randomization **");
+                _transRandomizer = new TransitionRandomizer(_topology, _savedSeed.Value);
+                _transRandomizer.Randomize();
+                TransitionManager.Instance.Randomizer = _transRandomizer;
+            }
+
+            Debug.Log("** Configuring check randomization **");
+            var evaluator = new LogicEvaluator(new[] { _baseLogic });
+            _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed.Value);
+            _savedSeed = _randomizer.Seed;
+            bool success = _randomizer.Randomize();
+
+            if (success)
+            {
                 CheckManager.Instance.Randomizer = _randomizer;
                 Debug.Log("** Randomization complete **");
             }
+
+            return success;
         }
 
         private ulong GetSeed(ulong? savedSeed)
@@ -144,15 +169,14 @@ namespace Haiku.Rando
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
         {
             CheckManager.Instance.OnSceneLoaded(scene.buildIndex);
-            RepairStationWarp.OnSceneLoaded(scene.buildIndex);
         }
 
         public void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Y) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
-            {
-                StartCoroutine(RunMapping());
-            }
+            //if (Input.GetKeyDown(KeyCode.Y) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+            //{
+            //    StartCoroutine(RunMapping());
+            //}
         }
 
         private IEnumerator RunMapping()

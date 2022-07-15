@@ -35,7 +35,7 @@ namespace Haiku.Rando.Logic
 
         public IReadOnlyDictionary<RandoCheck, RandoCheck> CheckMapping => _checkMapping;
 
-        public void Randomize()
+        public bool Randomize()
         {
             if (_randomized)
             {
@@ -44,9 +44,10 @@ namespace Haiku.Rando.Logic
 
             SyncedRng.SequenceSeed = _random.NextULong();
             BuildPool();
-            ArrangeChecks();
+            bool success = ArrangeChecks();
 
             _randomized = true;
+            return success;
         }
 
         private bool ArrangeChecks()
