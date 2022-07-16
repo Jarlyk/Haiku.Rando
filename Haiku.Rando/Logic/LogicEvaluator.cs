@@ -60,6 +60,20 @@ namespace Haiku.Rando.Logic
             return group[pick];
         }
 
+        /// <summary>
+        /// Returns true if all logic related to the edge returns a constant 'false'
+        /// This is used to represent inaccessible paths
+        /// </summary>
+        /// <param name="edge">Edge for which to check the true</param>
+        /// <returns>True iff all logic is constant 'false'</returns>
+        public bool IsFalse(GraphEdge edge)
+        {
+            var sets = GetAllLogic(edge);
+            return sets.Count > 0 && sets.All(s => s.Conditions.Count == 1 &&
+                                                   s.Conditions[0].StateName
+                                                    .Equals("false", StringComparison.InvariantCultureIgnoreCase));
+        }
+
         private IReadOnlyList<LogicCondition> GetMissingLogic(LogicSet set)
         {
             var result = new List<LogicCondition>();
@@ -86,7 +100,7 @@ namespace Haiku.Rando.Logic
             if (condition.StateName.Equals("true", StringComparison.InvariantCultureIgnoreCase)) return true;
 
             var result = Context.GetCount(condition.StateName) >= condition.Count;
-            Debug.Log($"Checking condition {condition} => {result}");
+            //Debug.Log($"Checking condition {condition} => {result}");
             return result;
         }
 

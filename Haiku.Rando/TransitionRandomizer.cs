@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
 using Haiku.Rando.Util;
 using UnityEngine;
@@ -12,14 +13,16 @@ namespace Haiku.Rando
     public sealed class TransitionRandomizer
     {
         private readonly RandoTopology _topology;
+        private readonly LogicEvaluator _logic;
         private readonly Xoroshiro128Plus _random;
         private readonly Dictionary<TransitionNode, TransitionNode> _swaps = new Dictionary<TransitionNode, TransitionNode>();
 
         public IReadOnlyDictionary<TransitionNode, TransitionNode> Swaps => _swaps;
 
-        public TransitionRandomizer(RandoTopology topology, ulong seed)
+        public TransitionRandomizer(RandoTopology topology, LogicEvaluator logic, ulong seed)
         {
             _topology = topology;
+            _logic = logic;
             _random = new Xoroshiro128Plus(seed);
         }
 
@@ -32,7 +35,9 @@ namespace Haiku.Rando
         private bool TryRandomize()
         {
             //We only want to swap transition nodes that change scenes, ignoring the Train
-            var availableNodes = _topology.Nodes.OfType<TransitionNode>().Where(n => !n.InScene(SpecialScenes.Train) && n.SceneId1 != n.SceneId2).ToList();
+            //We're also only looking at Edge and Door transitions; things get weird with stuff like elevators
+            var availableNodes = _topology.Nodes.OfType<TransitionNode>().Where(n => !n.InScene(SpecialScenes.Train) && n.SceneId1 != n.SceneId2
+            && (n.Type == TransitionType.RoomEdge || n.Type == TransitionType.Door)).ToList();
 
             //The 'save the children' transition is kept intact, as the logic gets funky here
             availableNodes.RemoveAll(n => n.SceneId1 == 95 && n.SceneId2 == 97);
@@ -42,6 +47,23 @@ namespace Haiku.Rando
 
             //TE fight entrance kept intact
             availableNodes.RemoveAll(n => n.SceneId1 == 139 && n.SceneId2 == 144);
+
+            //Don't randomize MM drop (not enough drops to make things line up well)
+            availableNodes.RemoveAll(n => n.SceneId1 == 98 && n.SceneId2 == 91);
+
+            //Don't randomize drop into starting area (same reason as MM drop)
+            availableNodes.RemoveAll(n => n.SceneId1 == 34 && n.SceneId2 == 10);
+
+            //Surface drop left
+            availableNodes.RemoveAll(n => n.SceneId1 == 50 && n.SceneId2 == 196);
+
+            //Don't swap with the TE cutscene trigger
+            availableNodes.RemoveAll(n => n.SceneId2 == 5);
+
+            //There are also several invalid edges in the topology from leftover transitions that are no longer used
+            //We can detect these by looking for all 'false' logic
+            availableNodes.RemoveAll(n => (n.Incoming.Count > 0 && n.Incoming.All(e => _logic.IsFalse(e)) ||
+                                           n.Outgoing.Count > 0 && n.Outgoing.All(e => _logic.IsFalse(e))));
 
             const int swapCount = 200;
             for (int i = 0; i < swapCount; i++)
@@ -64,8 +86,21 @@ namespace Haiku.Rando
                     break;
                 }
 
-                int pick2 = _random.NextRange(0, matchingNodes.Count);
-                var node2 = matchingNodes[pick2];
+                //Check if we've formed mutually disjoint graphs
+                //If so, we'll try to pick in a way that rejoins them
+                var accessible = GetAllAccessibleNodes(node1);
+                var remainder = matchingNodes.Except(accessible).ToList();
+                TransitionNode node2;
+                if (remainder.Count > 0)
+                {
+                    int pick2 = _random.NextRange(0, remainder.Count);
+                    node2 = remainder[pick2];
+                }
+                else
+                {
+                    int pick2 = _random.NextRange(0, matchingNodes.Count);
+                    node2 = matchingNodes[pick2];
+                }
                 availableNodes.Remove(node2);
 
                 //Save the mapping, as the TransitionManager needs to know this to actually swap the transition during gameplay
@@ -74,7 +109,7 @@ namespace Haiku.Rando
                 _swaps.Add(node1, node2);
 
                 //We're going to track the transitions involved here as 1_2 and 3_4
-                //Our goal is change the topology so that we end up with 1_3 and 3_2
+                //Our goal is change the topology so that we end up with 1_4 and 3_2
                 int sceneId2 = node1.SceneId2;
                 int sceneId3 = node2.SceneId1;
                 int sceneId4 = node2.SceneId2;
@@ -102,6 +137,29 @@ namespace Haiku.Rando
 
             //TODO: Sanity check the resulting topology
             return true;
+        }
+
+        private IEnumerable<TransitionNode> GetAllAccessibleNodes(TransitionNode start)
+        {
+            var visited = new HashSet<TransitionNode>();
+            var pending = new Stack<TransitionNode>();
+
+            pending.Push(start);
+            while (pending.Count > 0)
+            {
+                var node = pending.Pop();
+                visited.Add(node);
+
+                foreach (var edge in node.Outgoing)
+                {
+                    if (edge.Destination is TransitionNode next && !visited.Contains(next) && !pending.Contains(next))
+                    {
+                        pending.Push(next);
+                    }
+                }
+            }
+
+            return visited;
         }
 
         private void AdjustEdges(TransitionNode oldNode, TransitionNode newNode, RoomScene scene)

@@ -12,6 +12,7 @@ namespace Haiku.Rando.Logic
     {
         private readonly RandoTopology _topology;
         private readonly LogicEvaluator _logic;
+        private readonly int? _startScene;
         private readonly HashSet<string> _acquiredStates = new HashSet<string>();
         private readonly Dictionary<RandoCheck, RandoCheck> _checkMapping = new Dictionary<RandoCheck, RandoCheck>();
         private readonly CheckPool _pool = new CheckPool();
@@ -19,10 +20,11 @@ namespace Haiku.Rando.Logic
         private readonly Xoroshiro128Plus _random;
         private bool _randomized;
 
-        public CheckRandomizer(RandoTopology topology, LogicEvaluator logic, ulong seed)
+        public CheckRandomizer(RandoTopology topology, LogicEvaluator logic, ulong seed, int? startScene)
         {
             _topology = topology;
             _logic = logic;
+            _startScene = startScene;
 
             Seed = seed;
             _random = new Xoroshiro128Plus(seed);
@@ -60,10 +62,19 @@ namespace Haiku.Rando.Logic
             _visitedChecks.Clear();
 
             //Populate our initial frontier based on our start point
-            //TODO: Support other start locations besides standard wake
-            var startTrans = _topology.Transitions.First(t => t.Name == $"{SpecialScenes.GameStart}Wake");
+            TransitionNode startTrans;
+            if (_startScene == null)
+            {
+                startTrans = _topology.Transitions.First(t => t.Name == $"{SpecialScenes.GameStart}Wake");
+            }
+            else
+            {
+                startTrans = _topology.Scenes[_startScene.Value].Nodes.OfType<TransitionNode>()
+                                      .First(n => n.Type == TransitionType.RepairStation);
+            }
+
             frontier.AddRange(startTrans.Outgoing.Select(e => new FrontierEdge(e, 0)));
-            Debug.Log($"Rando: Starting frontier with {frontier.Count} edges starting at Wake");
+            Debug.Log($"Rando: Starting frontier with {frontier.Count} edges starting at {startTrans.Name}");
 
             //We want to keep exploring and populating checks for as long as we have remaining checks in our pools
             int depth = 1;
@@ -82,15 +93,13 @@ namespace Haiku.Rando.Logic
                 }
 
                 //Compute what checks we have available for each pool
-                Debug.Log($"Rando: All available checks to replace: {ListToString(checksToReplace)}");
-                Debug.Log($"Rando: Updating frontier logic for available checks");
                 UpdateFrontierLogic(frontier, depth);
 
                 //Determine possible frontier edges we want to unlock and score them to weight random selection
                 var frontierSet = WeightedSet<FrontierEdge>.Build(frontier.Where(e => e.CanUnlock), WeighFrontier);
                 if (frontierSet.Count == 0)
                 {
-                    Debug.LogWarning("Frontier has run out of checks that can be unlocked; logic may not be solvable");
+                    Debug.LogWarning("Frontier has run out of checks that can be unlocked");
                     PlaceAllRemainingChecks(checksToReplace);
                     break;
                 }
@@ -104,6 +113,16 @@ namespace Haiku.Rando.Logic
                 {
                     if (!PlaceChecksToSatisfyCondition(checksToReplace, condition, remainingChecks)) return false;
                 }
+            }
+
+            if (_pool.Count > 10)
+            {
+                Debug.LogWarning($"There are still {_pool.Count} checks not yet placed; this is too many, so rerolling");
+                return false;
+            }
+            else if (_pool.Count > 0)
+            {
+                Debug.LogWarning($"Completed with {_pool.Count} checks not yet placed; this is low enough that will still attempt to use this seed");
             }
 
             //Successfully arranged all checks
@@ -296,7 +315,7 @@ namespace Haiku.Rando.Logic
                     {
                         foreach (var edgeOut in node.Outgoing.Where(e => explored.All(x => x.Edge != e) && pendingExploration.All(x => x.Edge != e)))
                         {
-                            Debug.Log($"Adding to exploration: {edgeOut.SceneId}:{edgeOut.Name} from {edgeOut.Origin.Name} to {edgeOut.Destination.Name}");
+                            //Debug.Log($"Adding to exploration: {edgeOut.SceneId}:{edgeOut.Name} from {edgeOut.Origin.Name} to {edgeOut.Destination.Name}");
                             pendingExploration.Push(new FrontierEdge(edgeOut, depth));
                         }
                     }
@@ -305,7 +324,7 @@ namespace Haiku.Rando.Logic
                 {
                     if (!frontier.Contains(edge))
                     {
-                        Debug.Log($"Cannot traverse {edge.Edge}; adding to frontier");
+                        //Debug.Log($"Cannot traverse {edge.Edge}; adding to frontier");
                         frontier.Add(edge);
                     }
                 }

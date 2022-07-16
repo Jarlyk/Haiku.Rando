@@ -34,17 +34,18 @@ Scene 9
 *_Exit136: TrainStation[5]
 *_Exit28: TrainStation[0]
 
-// Scene 10
+// Scene 10 : Starting area; Left0 is drop in from above
 // Transitions: Right1 (10-23bottom), Right0 (10-23top), Left1 (11-10), Left0 (34-10), Repair (10Repair), Wake (10Wake)
 // Checks: Lever (Lever[4])
 Scene 10
 *_Right0: Magnet
-*_Right0: DoubleJump
-*_Right0: Blink
+Wake_Right0: DoubleJump
+Wake_Right0: Blink
 //Chip[1] == Gyro Accelerator
-*_Right0: Ball+Chip[1]
+Wake_Right0: Ball+Chip[1]
 *_Left1: Lever
 Left1_Lever: Lever
+*_Left0: false
 
 // Scene 11
 // Transitions: Right0 (11-10), Right1 (11-12), Left (14-11)
@@ -119,7 +120,8 @@ Scene 20
 // Transitions: Right1 (21-20), Right0 (21-22), Repair (21Repair)
 // Checks: Disruptor (MapDisruptor[1])
 Scene 21
-Right1_*: Magnet
+$BottomRight {Right1, Repair}
+BottomRight_*: Magnet
 Right0_Disruptor: Magnet
 Right0_Disruptor: DoubleJump
 
@@ -1455,6 +1457,7 @@ Right1_Repair: Light
 Right1_Right2: Blink+Ball+Light
 Right1_Right0: Blink+Magnet+Ball+Light
 Right1_Right0: Blink+DoubleJump+Ball+Light
+Right2_Repair: Light
 Right2_Right1: Ball+Light
 Right2_Right0: Ball+Magnet+Light
 Right2_Right0: Ball+DoubleJump+Light
@@ -1766,7 +1769,8 @@ Scene 195
 // Transitions: Right (196-197), Left1 (36-196), Left0 (50-196)
 // Checks:
 Scene 196
-*_*: WaterRes
+Left1=Right: WaterRes
+Left0=*: false
 
 // Scene 197 : Surface Shop
 // Transitions: Right (197-198), Left1 (199-197), Left0 (196-197), Door (197-224)
@@ -1780,7 +1784,8 @@ Left1_*: Blink+WaterRes
 // Transitions: Right0 (198-200), Right1 (198-231), Left (197-198)
 // Checks: PowerCell (PowerCell[15])
 Scene 198
-*_*: WaterRes
+Right1_Left: WaterRes
+*=Right0: false
 
 // Scene 199 : Catacombs
 // Transitions: Right1 (199-221), Right0 (199-197), Left (233-199)
@@ -1932,6 +1937,7 @@ Scene 220
 // Transitions: Right (221-229), Left (199-221)
 // Checks: Item (Item[0])
 Scene 221
+*_*: Boss[4]+Boss[5]+Boss[6]
 
 // Scene 222: Storage Room in Bunker (the one that requires a rusty key)
 // Transitions: 222-46 (222-46)

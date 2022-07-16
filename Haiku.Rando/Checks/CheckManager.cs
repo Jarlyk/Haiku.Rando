@@ -37,6 +37,8 @@ namespace Haiku.Rando.Checks
             On.BeeHive.TriggerBulbItem += BeeHive_TriggerBulbItem;
             On.e29Portal.GiveRewardsGradually += E29Portal_GiveRewardsGradually;
             On.e29PortalRewardChecker.CheckReward += E29PortalRewardChecker_CheckReward;
+
+            //TODO: MotherWindUp integration (save the children quest)
         }
 
         public void OnSceneLoaded(int sceneId)
@@ -681,6 +683,19 @@ namespace Haiku.Rando.Checks
                 default:
                     return false;
             }
+        }
+
+        public static bool HasItem(ItemId itemId)
+        {
+            for (int i = 0; i < GameManager.instance.itemSlots.Length; i++)
+            {
+                if (GameManager.instance.itemSlots[i].isFull && GameManager.instance.itemSlots[i].itemID == (int)itemId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

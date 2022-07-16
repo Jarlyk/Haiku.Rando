@@ -13,10 +13,10 @@ namespace Haiku.Rando
         [Description("Randomize pickups only")]
         Pickups,
 
-        [Description("Randomize items and area transitions")]
-        Areas,
+        //[Description("Randomize items and area transitions")]
+        //Areas,
 
-        [Description("Randomize items and room transitions")]
+        [Description("Randomize pickups and room transitions")]
         Rooms
     }
 }

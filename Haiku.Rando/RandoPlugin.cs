@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using BepInEx;
@@ -100,11 +101,14 @@ namespace Haiku.Rando
             {
                 _savedSeed = GetSeed(_savedSeed);
 
-                const int maxRetries = 10;
+                int? startScene = SpecialScenes.GameStart;
+                const int maxRetries = 100;
+                bool success = false;
                 for (int i = 0; i < maxRetries; i++)
                 {
-                    if (TryRandomize(level))
+                    if (TryRandomize(level, out startScene))
                     {
+                        success = true;
                         break;
                     }
                     else
@@ -116,24 +120,66 @@ namespace Haiku.Rando
                         _savedSeed = tmpRandom.NextULong();
                     }
                 }
+
+                if (!success)
+                {
+                    Debug.LogWarning($"** Failed to complete Randomization after all allowed attempts; it's possible the settings may not allow for completion **");
+                    //TODO?  How to notify player?
+                }
+
+                if (startScene != null)
+                {
+                    GameManager.instance.introPlayed = true;
+                    GameManager.instance.savePointSceneIndex = startScene.Value;
+                }
+            }
+
+            if (Settings.StartWithWrench.Value && !GameManager.instance.canHeal)
+            {
+                GameManager.instance.canHeal = true;
+                InventoryManager.instance.AddItem((int)ItemId.Wrench);
+            }
+
+            if (Settings.StartWithWhistle.Value && !CheckManager.HasItem(ItemId.Whistle))
+            {
+                InventoryManager.instance.AddItem((int)ItemId.Whistle);
             }
         }
 
-        private bool TryRandomize(RandomizationLevel level)
+        private bool TryRandomize(RandomizationLevel level, out int? startScene)
         {
             ReloadTopology();
+
+            if (Settings.RandomStartLocation.Value)
+            {
+                //Pick from any save station except Incinerator, Furnace and Train
+                var availScenes = new List<int>
+                    { 10, 15, 21, 71, 57, 41, 75, 195, 172, 194, 87, 113, 127, 139, 140, 161, 156, 167 };
+
+                //TODO: We need to remove dark areas, though these could be allowed if dark room skips are enabled
+                availScenes.Remove(161);
+                availScenes.Remove(156);
+
+                var tmpRandom = new Xoroshiro128Plus(_savedSeed.Value);
+                startScene = availScenes[tmpRandom.NextRange(0, availScenes.Count)];
+            }
+            else
+            {
+                startScene = null;
+            }
+
+            var evaluator = new LogicEvaluator(new[] { _baseLogic });
 
             if (level == RandomizationLevel.Rooms)
             {
                 Debug.Log("** Configuring transition randomization **");
-                _transRandomizer = new TransitionRandomizer(_topology, _savedSeed.Value);
+                _transRandomizer = new TransitionRandomizer(_topology, evaluator, _savedSeed.Value);
                 _transRandomizer.Randomize();
                 TransitionManager.Instance.Randomizer = _transRandomizer;
             }
 
             Debug.Log("** Configuring check randomization **");
-            var evaluator = new LogicEvaluator(new[] { _baseLogic });
-            _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed.Value);
+            _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed.Value, startScene);
             _savedSeed = _randomizer.Seed;
             bool success = _randomizer.Randomize();
 
@@ -169,6 +215,18 @@ namespace Haiku.Rando
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
         {
             CheckManager.Instance.OnSceneLoaded(scene.buildIndex);
+
+            if (Settings.RandoLevel.Value == RandomizationLevel.Rooms)
+            {
+                //In room rando, all rooms can disable fire
+                var detector = FindObjectOfType<FireResDetector>();
+                if (!detector)
+                {
+                    var detectorObj = new GameObject();
+                    detector = detectorObj.AddComponent<FireResDetector>();
+                    detector.disableHeat = true;
+                }
+            }
         }
 
         public void Update()

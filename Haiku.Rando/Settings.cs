@@ -10,6 +10,9 @@ namespace Haiku.Rando
     {
         public static ConfigEntry<RandomizationLevel> RandoLevel { get; private set; }
         public static ConfigEntry<string> Seed { get; private set; }
+        public static ConfigEntry<bool> RandomStartLocation { get; private set; }
+        public static ConfigEntry<bool> StartWithWrench { get; private set; }
+        public static ConfigEntry<bool> StartWithWhistle { get; private set; }
 
         public static ConfigEntry<bool> IncludeWrench { get; private set; }
         public static ConfigEntry<bool> IncludeBulblet { get; private set; }
@@ -36,6 +39,9 @@ namespace Haiku.Rando
         {
             RandoLevel = config.Bind(General, "Level", RandomizationLevel.Pickups);
             Seed = config.Bind(General, "Seed", "", "Seed (blank for auto)");
+            RandomStartLocation = config.Bind(General, "Random Start Location", false);
+            StartWithWrench = config.Bind(General, "Start With Wrench", false);
+            StartWithWhistle = config.Bind(General, "Start with Whistle", false);
             //TODO: Load/Save settings to copyable string
             //TODO: Hash display for race sync
             //ConfigManagerUtil.createButton(config, ShowHash, General, "ShowHash", "Show Hash");
