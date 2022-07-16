@@ -5,6 +5,7 @@ using System.ComponentModel.Design.Serialization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml;
 using Haiku.Rando.Logic;
@@ -12,6 +13,7 @@ using Haiku.Rando.Topology;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace Haiku.Rando.Checks
@@ -38,7 +40,8 @@ namespace Haiku.Rando.Checks
             On.e29Portal.GiveRewardsGradually += E29Portal_GiveRewardsGradually;
             On.e29PortalRewardChecker.CheckReward += E29PortalRewardChecker_CheckReward;
 
-            //TODO: MotherWindUp integration (save the children quest)
+            IL.MotherWindUp.Start += MotherWindUp_Start;
+            IL.MotherWindUp.EndDialogueAction += MotherWindUp_EndDialogueAction;
         }
 
         public void OnSceneLoaded(int sceneId)
@@ -410,14 +413,47 @@ namespace Haiku.Rando.Checks
             var oldCheck = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.SaveId == self.objectSaveID);
             if (oldCheck != null && Instance.Randomizer.CheckMapping.TryGetValue(oldCheck, out var newCheck))
             {
-                bool enoughCells = self.neededPowercells <= GameManager.instance.lastPowercellCount;
-                Instance._checkObjects[newCheck].SetActive(enoughCells && !AlreadyGotCheck(newCheck));
+                //bool enoughCells = self.neededPowercells <= GameManager.instance.lastPowercellCount;
+                //Instance._checkObjects[newCheck].SetActive(enoughCells && !AlreadyGotCheck(newCheck));
+                //Do nothing: Handle at the check level
             }
             else
             {
                 //Not a mapped check; fall back to standard behavior
                 orig(self);
             }
+        }
+
+        private static void MotherWindUp_Start(ILContext il)
+        {
+            var c = new ILCursor(il);
+
+            c.GotoNext(i => i.MatchBrfalse(out _));
+            c.Emit(OpCodes.Pop);
+            c.EmitDelegate((Func<bool>)IsMotherWindUpCollected);
+        }
+
+        private static void MotherWindUp_EndDialogueAction(ILContext il)
+        {
+            var c = new ILCursor(il);
+
+            c.GotoNext(i => i.MatchBrfalse(out _));
+            c.Emit(OpCodes.Pop);
+            c.EmitDelegate((Func<bool>)IsMotherWindUpCollected);
+        }
+
+        private static bool IsMotherWindUpCollected()
+        {
+            var sceneId = SceneManager.GetActiveScene().buildIndex;
+            var oldChecks = Instance.Randomizer.Topology.Scenes[sceneId].Nodes.OfType<RandoCheck>();
+            var oldCheck = oldChecks.First(c => c.Type == CheckType.Chip);
+            if (Instance.Randomizer.CheckMapping.TryGetValue(oldCheck, out var newCheck))
+            {
+                return AlreadyGotCheck(newCheck);
+            }
+
+            //Check wasn't replaced, so use original logic
+            return GameManager.instance.chip[GameManager.instance.getChipNumber("b_FastHeal")].collected;
         }
 
         public static bool AlreadyGotCheck(RandoCheck check)

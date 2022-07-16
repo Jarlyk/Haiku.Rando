@@ -8,13 +8,14 @@ using Haiku.Rando.Checks;
 using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
 using Haiku.Rando.Util;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Haiku.Rando
 {
-    [BepInPlugin("haiku.rando", "Haiku Rando", "0.1.0.0")]
+    [BepInPlugin("haiku.rando", "Haiku Rando", "0.2.0.0")]
     [BepInDependency("haiku.mapi", "1.0")]
     public sealed class RandoPlugin : BaseUnityPlugin
     {
@@ -96,14 +97,14 @@ namespace Haiku.Rando
             CheckManager.Instance.Randomizer = null;
             TransitionManager.Instance.Randomizer = null;
 
+            bool success = false;
             var level = Settings.RandoLevel.Value;
             if (level != RandomizationLevel.None)
             {
                 _savedSeed = GetSeed(_savedSeed);
 
                 int? startScene = SpecialScenes.GameStart;
-                const int maxRetries = 100;
-                bool success = false;
+                const int maxRetries = 200;
                 for (int i = 0; i < maxRetries; i++)
                 {
                     if (TryRandomize(level, out startScene))
@@ -124,7 +125,6 @@ namespace Haiku.Rando
                 if (!success)
                 {
                     Debug.LogWarning($"** Failed to complete Randomization after all allowed attempts; it's possible the settings may not allow for completion **");
-                    //TODO?  How to notify player?
                 }
 
                 if (startScene != null)
@@ -132,6 +132,11 @@ namespace Haiku.Rando
                     GameManager.instance.introPlayed = true;
                     GameManager.instance.savePointSceneIndex = startScene.Value;
                 }
+
+            }
+            else
+            {
+                success = true;
             }
 
             if (Settings.StartWithWrench.Value && !GameManager.instance.canHeal)
@@ -143,6 +148,13 @@ namespace Haiku.Rando
             if (Settings.StartWithWhistle.Value && !CheckManager.HasItem(ItemId.Whistle))
             {
                 InventoryManager.instance.AddItem((int)ItemId.Whistle);
+            }
+
+            if (!success)
+            {
+                //Go back to main menu if failed
+                GameManager.instance.introPlayed = true;
+                GameManager.instance.savePointSceneIndex = 0;
             }
         }
 
@@ -159,6 +171,7 @@ namespace Haiku.Rando
                 //TODO: We need to remove dark areas, though these could be allowed if dark room skips are enabled
                 availScenes.Remove(161);
                 availScenes.Remove(156);
+                availScenes.Remove(127);
 
                 var tmpRandom = new Xoroshiro128Plus(_savedSeed.Value);
                 startScene = availScenes[tmpRandom.NextRange(0, availScenes.Count)];

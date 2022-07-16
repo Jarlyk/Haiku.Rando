@@ -57,6 +57,10 @@ namespace Haiku.Rando
             //Surface drop left
             availableNodes.RemoveAll(n => n.SceneId1 == 50 && n.SceneId2 == 196);
 
+            //This is the post-Neutron transition and is only active when Neutron is dead
+            //Need to keep this intact as otherwise can get stuck in load if Neutron not dead
+            availableNodes.RemoveAll(n => n.SceneId1 == 210 && n.SceneId2 == 35);
+
             //Don't swap with the TE cutscene trigger
             availableNodes.RemoveAll(n => n.SceneId2 == 5);
 

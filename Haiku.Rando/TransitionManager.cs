@@ -35,7 +35,7 @@ namespace Haiku.Rando
                     var oldName = self.pointName;
                     var node2 = randomizer.Swaps[node1];
                     self.pointName = node2.Name;
-                    self.levelToLoad = outgoing ? node2.SceneId2 : node2.SceneId1;
+                    self.levelToLoad = outgoing ? node1.SceneId2 : node2.SceneId1;
                     Debug.Log($"Reconfiguring {oldName} door transition to {self.levelToLoad}:{self.pointName}");
                 }
             }

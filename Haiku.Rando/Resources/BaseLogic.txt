@@ -229,7 +229,7 @@ Scene 34
 Right0_Left: Magnet
 Right0_Left: DoubleJump
 
-// Scene 35
+// Scene 35 : Tall room below Bunker
 // Transitions: Right1 (35-34), Right0 (35-42), Left (201-35)
 // Checks: Chip (Chip[18])
 Scene 35
@@ -1698,7 +1698,11 @@ Left_Right0: Magnet+DoubleJump
 // Transitions: Right (187-174), Left (188-187)
 // Checks:
 Scene 187
-// No obstacles, but itemless requires some tight coyote jumps
+// For skips: itemless requires some tight coyote jumps
+Right=Left: Grapple
+Right=Left: DoubleJump
+Right=Left: Magnet
+Right=Left: Blink
 
 // Scene 188
 // Transitions: Right (188-187), Left1 (189-188), Left0 (231-188)
