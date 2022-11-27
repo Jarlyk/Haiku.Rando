@@ -37,6 +37,10 @@ namespace Haiku.Rando.Logic
 
         public IReadOnlyDictionary<RandoCheck, RandoCheck> CheckMapping => _checkMapping;
 
+        public int? StartScene => _startScene;
+
+        public IReadOnlyList<LogicLayer> Logic => _logic.Layers;
+
         public bool Randomize()
         {
             if (_randomized)
