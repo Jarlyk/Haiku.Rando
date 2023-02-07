@@ -456,59 +456,23 @@ namespace Haiku.Rando.Checks
             return GameManager.instance.chip[GameManager.instance.getChipNumber("b_FastHeal")].collected;
         }
 
-        public static bool AlreadyGotCheck(RandoCheck check)
+        public static bool AlreadyGotCheck(RandoCheck check) => check.Type switch
         {
-            bool alreadyGot = false;
-            switch (check.Type)
-            {
-                case CheckType.Wrench:
-                    alreadyGot = GameManager.instance.canHeal;
-                    break;
-                case CheckType.Bulblet:
-                    alreadyGot = GameManager.instance.lightBulb;
-                    break;
-                case CheckType.Ability:
-                    alreadyGot = HasAbility((AbilityId)check.CheckId);
-                    break;
-                case CheckType.Item:
-                case CheckType.Chip:
-                case CheckType.ChipSlot:
-                case CheckType.Coolant:
-                    alreadyGot = GameManager.instance.worldObjects[check.SaveId].collected;
-                    break;
-                case CheckType.MapDisruptor:
-                    alreadyGot = GameManager.instance.disruptors[check.CheckId].destroyed;
-                    break;
-                case CheckType.Lore:
-                    //TODO
-                    break;
-                case CheckType.Lever:
-                    alreadyGot = GameManager.instance.doors[check.CheckId].opened;
-                    break;
-                case CheckType.PartsMonument:
-                    //TODO
-                    break;
-                case CheckType.PowerCell:
-                    alreadyGot = GameManager.instance.powerCells[check.CheckId].collected;
-                    break;
-                case CheckType.FireRes:
-                    alreadyGot = GameManager.instance.fireRes;
-                    break;
-                case CheckType.WaterRes:
-                    alreadyGot = GameManager.instance.waterRes;
-                    break;
-                case CheckType.TrainStation:
-                    alreadyGot = GameManager.instance.trainStations[check.CheckId].unlockedStation;
-                    break;
-                case CheckType.Clock:
-                    //This is never randomized, but is important to logic
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            return alreadyGot;
-        }
+            CheckType.Wrench => GameManager.instance.canHeal,
+            CheckType.Bulblet => GameManager.instance.lightBulb,
+            CheckType.Ability => HasAbility((AbilityId)check.CheckId),
+            CheckType.Item or CheckType.Chip or CheckType.ChipSlot or CheckType.Coolant =>
+                GameManager.instance.worldObjects[check.SaveId].collected,
+            CheckType.MapDisruptor => GameManager.instance.disruptors[check.CheckId].destroyed,
+            CheckType.Lever => GameManager.instance.doors[check.CheckId].opened,
+            CheckType.PowerCell => GameManager.instance.powerCells[check.CheckId].collected,
+            CheckType.FireRes => GameManager.instance.fireRes,
+            CheckType.WaterRes => GameManager.instance.waterRes,
+            CheckType.TrainStation => GameManager.instance.trainStations[check.CheckId].unlockedStation,
+            CheckType.Clock => GameManager.instance.trainUnlocked,
+            CheckType.Lore or CheckType.PartsMonument => false,
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
         public static void TriggerCheck(MonoBehaviour self, RandoCheck check)
         {
