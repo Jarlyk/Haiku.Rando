@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Haiku.Rando.Checks;
 using UnityEngine;
 
 namespace Haiku.Rando.Logic
@@ -15,6 +16,7 @@ namespace Haiku.Rando.Logic
         private readonly int? _startScene;
         private readonly HashSet<string> _acquiredStates = new HashSet<string>();
         private readonly Dictionary<RandoCheck, RandoCheck> _checkMapping = new Dictionary<RandoCheck, RandoCheck>();
+        private readonly CheckPool _startingPool = new CheckPool();
         private readonly CheckPool _pool = new CheckPool();
         private readonly List<RandoCheck> _visitedChecks = new List<RandoCheck>();
         private readonly Xoroshiro128Plus _random;
@@ -55,7 +57,7 @@ namespace Haiku.Rando.Logic
         private bool ArrangeChecks()
         {
             //We're going to explore, keeping track of what we can reach and what frontier of edges are not yet passable
-            var remainingChecks = _topology.Checks.ToList();
+            var remainingChecks = _startingPool.ToList();
             var checksToReplace = new List<InLogicCheck>();
             var frontier = new List<FrontierEdge>();
             var explored = new List<FrontierEdge>();
@@ -170,6 +172,7 @@ namespace Haiku.Rando.Logic
                     candidates.Remove(original);
                 }
 
+                ApplyProximityPenalty(checksToReplace, original.Check, 3);
                 _checkMapping.Add(original.Check, match);
                 remainingChecks.Remove(match);
                 _pool.Remove(match);
@@ -244,6 +247,7 @@ namespace Haiku.Rando.Logic
                 {
                     //No more checks to place; leave the rest as vanilla
                     Debug.Log($"Ran out of checks to place with {candidates.Count} locations still remaining to populate; leaving as vanilla");
+                    //TODO: Might want to add substitute/duplicate check support
                     break;
                 }
 
@@ -255,9 +259,6 @@ namespace Haiku.Rando.Logic
                 _checkMapping.Add(original.Check, match);
                 _pool.Remove(match);
                 checksToReplace.Remove(original);
-
-                //Technically this isn't required, but might be useful for debugging
-                //_acquiredStates.Add(_logic.GetStateName(match));
             }
         }
 
@@ -271,8 +272,14 @@ namespace Haiku.Rando.Logic
 
         private double WeighCheckPlacement(InLogicCheck check)
         {
+            //We prefer placement deeper in logic
             var d = check.Depth;
-            return d*d;
+
+            //We prefer not to place progression in shops, especially when we're at low depth
+            //This is intended to bias against placements that require farming money to progress
+            var shopPenalty = check.Check.IsShopItem ? 10/check.Depth : 1;
+
+            return (double)(d*d*d)/(1 + check.ProximityPenalty + shopPenalty);
         }
 
         private void Explore(int depth, List<InLogicCheck> checksToReplace, List<FrontierEdge> frontier, List<FrontierEdge> explored)
@@ -298,7 +305,7 @@ namespace Haiku.Rando.Logic
                     {
                         if (!_visitedChecks.Contains(check))
                         {
-                            if (_pool.Any(c => c.Type == check.Type))
+                            if (_startingPool.Contains(check))
                             {
                                 Debug.Log($"Found check {check} at depth {depth} from edge {edge.Edge}; will replace from pool");
                                 checksToReplace.Add(new InLogicCheck(check, depth));
@@ -331,9 +338,44 @@ namespace Haiku.Rando.Logic
             }
         }
 
+        private void ApplyProximityPenalty(List<InLogicCheck> checksToReplace, RandoCheck origin, int startPenalty)
+        {
+            var visitedNodes = new List<IRandoNode>();
+            visitedNodes.Add(origin);
+
+            var edges = new Stack<DepthEdge>(origin.Incoming.Select(e => new DepthEdge(e, startPenalty)));
+            while (edges.Count > 0)
+            {
+                var edge = edges.Pop();
+
+                if (edge.Edge.Origin is TransitionNode node && !visitedNodes.Contains(node))
+                {
+                    visitedNodes.Add(node);
+
+                    foreach (var check in node.Outgoing.Select(e => e.Destination).OfType<RandoCheck>())
+                    {
+                        var ctr = checksToReplace.FirstOrDefault(c => c.Check == check);
+                        if (ctr != null)
+                        {
+                            ctr.ProximityPenalty += edge.Depth;
+                        }
+                    }
+
+                    if (edge.Depth > 1)
+                    {
+                        foreach (var inEdge in node.Incoming)
+                        {
+                            edges.Push(new DepthEdge(inEdge, edge.Depth - 1));
+                        }
+                    }
+                }
+            }
+        }
+
         private void BuildPool()
         {
             _pool.Clear();
+            _startingPool.Clear();
             if (Settings.IncludeWrench.Value) AddToPool(CheckType.Wrench);
             if (Settings.IncludeBulblet.Value) AddToPool(CheckType.Bulblet);
             if (Settings.IncludeAbilities.Value) AddToPool(CheckType.Ability);
@@ -346,6 +388,19 @@ namespace Haiku.Rando.Logic
             if (Settings.IncludeCoolant.Value) AddToPool(CheckType.Coolant);
             if (Settings.IncludeSealants.Value) AddToPool(CheckType.FireRes);
             if (Settings.IncludeSealants.Value) AddToPool(CheckType.WaterRes);
+
+            //Starting pool contains all the checks we're going to replace eventually
+            _startingPool.AddRange(_pool);
+
+            //We remove a few checks from the source pool based on special starting conditions
+            if (Settings.StartWithWrench.Value)
+            {
+                _pool.RemoveAll(c => c.Type == CheckType.Wrench);
+            }
+            if (Settings.StartWithWhistle.Value)
+            {
+                _pool.RemoveAll(c => c.Type == CheckType.Item && c.CheckId == (int)ItemId.Whistle);
+            }
         }
 
         private void AddToPool(CheckType checkType)
@@ -373,17 +428,12 @@ namespace Haiku.Rando.Logic
         {
         }
 
-        private sealed class FrontierEdge
+        private sealed class FrontierEdge : DepthEdge
         {
             public FrontierEdge(GraphEdge edge, int depth)
+            : base(edge, depth)
             {
-                Edge = edge;
-                Depth = depth;
             }
-
-            public GraphEdge Edge { get; }
-
-            public int Depth { get; }
 
             public IReadOnlyList<LogicCondition> MissingLogic { get; set; }
 
@@ -406,10 +456,25 @@ namespace Haiku.Rando.Logic
 
             public int Depth { get; }
 
+            public int ProximityPenalty { get; set; }
+
             public override string ToString()
             {
                 return $"D{Depth}:{Check.Name}";
             }
+        }
+
+        private class DepthEdge
+        {
+            public DepthEdge(GraphEdge edge, int depth)
+            {
+                Edge = edge;
+                Depth = depth;
+            }
+
+            public GraphEdge Edge { get; }
+
+            public int Depth { get; }
         }
     }
 }

@@ -244,7 +244,7 @@ namespace Haiku.Rando.Topology
                 transitions.Add(trans);
             }
 
-            var doorExits = SceneUtils.FindObjectsOfType<EnterRoomTrigger>();
+            var doorExits = SceneUtils.FindObjectsOfType<EnterRoomTrigger>().Where(t => !IsCorruptModeOnly(t.gameObject)).ToArray();
             for (var i = 0; i < doorExits.Length; i++)
             {
                 var exit = doorExits[i];
@@ -301,6 +301,9 @@ namespace Haiku.Rando.Topology
 
             //Create nodes for checks in the room
             var checks = FindChecks(sceneId);
+
+            //Hard-coded duplicate check removal for straggler entries (likely disabled entries from experimental moving things around?)
+
 
             //TODO: Perform reachability analysis
             //TODO: Create AStarPath, configure it and generate paths between nodes
@@ -403,7 +406,7 @@ namespace Haiku.Rando.Topology
                 checks.Add(check);
             }
 
-            var pickups = SceneUtils.FindObjectsOfType<PickupItem>();
+            var pickups = SceneUtils.FindObjectsOfType<PickupItem>().Where(p => !IsCorruptModeOnly(p.gameObject)).ToList();
             var chipCount = pickups.Count(p => p.triggerChip);
             var slotCount = pickups.Count(p => p.triggerChipSlot);
             var itemCount = pickups.Count(p => !p.triggerChip && !p.triggerChipSlot && !p.triggerCoolant && !p.triggerPin);
@@ -446,14 +449,14 @@ namespace Haiku.Rando.Topology
                 checks.Add(check);
             }
 
-            foreach (var pickup in SceneUtils.FindObjectsOfType<Disruptor>())
+            foreach (var pickup in SceneUtils.FindObjectsOfType<Disruptor>().Where(p => !IsCorruptModeOnly(p.gameObject)))
             {
                 var check = new RandoCheck(CheckType.MapDisruptor, sceneId, pickup.transform.position, pickup.disruptorID);
                 check.Alias = "Disruptor";
                 checks.Add(check);
             }
 
-            foreach (var door in SceneUtils.FindObjectsOfType<SwitchDoor>())
+            foreach (var door in SceneUtils.FindObjectsOfType<SwitchDoor>().Where(d => !IsCorruptModeOnly(d.gameObject)))
             {
                 var collider = door.GetComponent<Collider2D>();
                 if (!collider)
@@ -556,6 +559,12 @@ namespace Haiku.Rando.Topology
 
             _allNodes.AddRange(checks);
             return checks;
+        }
+
+        private bool IsCorruptModeOnly(GameObject gameObj)
+        {
+            var corruptEnable = gameObj.GetComponent<EnableIfCorruptMode>();
+            return corruptEnable && corruptEnable.setActive;
         }
     }
 }

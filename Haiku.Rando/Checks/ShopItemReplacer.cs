@@ -210,7 +210,9 @@ namespace Haiku.Rando.Checks
                     self.itemImage.sprite = HaikuResources.ItemDesc().lightBulb.image.sprite;
                     break;
                 case CheckType.Ability:
-                    //TODO: From canvas?
+                    var refUnlock = HaikuResources.RefUnlockTutorial;
+                    var ability = refUnlock.abilities[replacer.check.CheckId];
+                    self.itemImage.sprite = ability.image;
                     break;
                 case CheckType.Item:
                     self.itemImage.sprite = InventoryManager.instance.items[replacer.check.CheckId].image;

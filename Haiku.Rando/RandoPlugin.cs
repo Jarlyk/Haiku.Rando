@@ -244,10 +244,10 @@ namespace Haiku.Rando
 
         public void Update()
         {
-            //if (Input.GetKeyDown(KeyCode.Y) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
-            //{
-            //    StartCoroutine(RunMapping());
-            //}
+            if (Input.GetKeyDown(KeyCode.Y) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+            {
+                StartCoroutine(RunMapping());
+            }
         }
 
         private IEnumerator RunMapping()

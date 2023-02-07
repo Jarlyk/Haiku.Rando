@@ -24,15 +24,17 @@ Scene 5
 //Special scene; no logic here
 
 // Scene 9
-// Transitions: Repair1 (9Repair), Exit209 (209-Train), Repair1 (9Repair), Exit53 (53-Train), Exit179 (179-Train), Exit88 (88-Train), Exit136 (136-Train), Exit28 (28-Train)
+// Transitions: Repair1 (9Repair), Exit28 (28-Train), Repair1 (9Repair), Exit209 (209-Train), Exit136 (136-Train), Exit179 (179-Train), Exit88 (88-Train), Exit146 (146-Train), Exit67 (67-Train), Exit53 (53-Train)
 // Checks: ShopItem0 (Item[5]), ShopItem1 (Item[2]), ShopItem2 (Item[0]), ShopItem3 (Item[7]), ShopItem4 (Item[3]), ShopItem5 (Item[3]), ShopItem6 (Chip[4]), ShopItem7 (Chip[0]), ShopItem8 (Chip[14]), ShopItem9 (Chip[15]), ShopItem10 (Chip[10]), ShopItem11 (Chip[8]), ShopItem12 (ChipSlot[6]), ShopItem13 (ChipSlot[4])
 Scene 9
-*_Exit209: TrainStation[4]
-*_Exit53: TrainStation[3]
-*_Exit179: TrainStation[2]
-*_Exit88: TrainStation[1]
-*_Exit136: TrainStation[5]
 *_Exit28: TrainStation[0]
+*_Exit88: TrainStation[1]
+*_Exit179: TrainStation[2]
+*_Exit53: TrainStation[3]
+*_Exit209: TrainStation[4]
+*_Exit136: TrainStation[5]
+*_Exit67: TrainStation[6]
+*_Exit146: TrainStation[7]
 
 // Scene 10 : Starting area; Left0 is drop in from above
 // Transitions: Right1 (10-23bottom), Right0 (10-23top), Left1 (11-10), Left0 (34-10), Repair (10Repair), Wake (10Wake)
@@ -59,11 +61,13 @@ Scene 11
 *_Left: Blink
 Left_Item: true
 
-// Scene 12
+// Scene 12 : Tutorial area locked gate
 // Transitions: Right1 (12-16), Right0 (12-24), Left1 (13-12), Left0 (11-12)
 // Checks:
+// Note that we mark access from Right1 as blocked; this is because can only use key from left
 Scene 12
 *_Right1: Item[0]
+Right1_*: false
 
 // Scene 13
 // Transitions: Right (13-12), Left (14-13)
@@ -509,10 +513,11 @@ Right1_Right0: DoubleJump
 Scene 65
 //No obstacles
 
-// Scene 66 : Bulb Drop Room
-// Transitions: Right2 (66-69), Right1 (66-85), Right0 (66-77), Left1 (228-66), Left0 (65-66), Left2 (170-66)
+// Scene 66
+// Transitions: Right3 (66-69), Right2 (66-67), Right1 (66-85), Right0 (66-77), Left1 (228-66), Left0 (65-66), Left2 (170-66)
 // Checks:
 Scene 66
+//TODO: Add support for new Right transition (to train 67)
 //Left1 can be reached with a fairly easy enemy pogo, so no restrictions there
 //Left0,Right0 (ball exit) and Right1 are partitioned from the bottom half by vertical requirement
 Left0_Right0: Ball
@@ -529,17 +534,25 @@ Left2_Right0: Magnet+Ball
 Left2_Right0: DoubleJump+Ball
 Left2_Right1: Magnet
 Left2_Right1: DoubleJump
-Right2_Left0: Magnet
-Right2_Left0: DoubleJump
-Right2_Right0: Magnet+Ball
-Right2_Right0: DoubleJump+Ball
-Right2_Right1: Magnet
-Right2_Right1: DoubleJump
+Right3_Left0: Magnet
+Right3_Left0: DoubleJump
+Right3_Right0: Magnet+Ball
+Right3_Right0: DoubleJump+Ball
+Right3_Right1: Magnet
+Right3_Right1: DoubleJump
+
+// Scene 67
+// Transitions: Right (67-68), Left (66-67), Train (67-Train)
+// Checks: TrainStation (TrainStation[6])
+Scene 67
+//TODO: Check transitions
+*_Train: TrainStation+Clock
 
 // Scene 68 : Electrified gauntlet after Car Battery
-// Transitions: Right (68-86), Left (69-68)
+// Transitions: Right (68-86), Left0 (67-68), Left1 (69-68)
 // Checks: Lever (Lever[49]), PowerCell (PowerCell[11])
 Scene 68
+//TODO: New train transition
 Left_Lever: Lever
 Left_PowerCell: Lever
 Left_Right: Magnet
@@ -1134,20 +1147,24 @@ Right1_Left: WaterRes
 Right1_Right0: WaterRes+Magnet
 Right1_Right0: WaterRes+DoubleJump
 
-// Scene 132
+// Scene 132 : Lune up above (with 'Down' transition that's actually Left) and Ruins vertical room
 // Transitions: Right1 (132-143), Right0 (132-131bottom), Left1 (138-132), Left0 (133-132bottom), Down (133-132top)
 // Checks: Disruptor (MapDisruptor[6]), Lever (Lever[47])
 Scene 132
-*_Down: false
+*=Down: false
 *_Disruptor: Blink+Magnet
 *_Disruptor: Blink+DoubleJump+Grapple
 Right1_Right0: Magnet
 Right1_Right0: DoubleJump
 Right1_Left0: DoubleJump
+Right1_Left1: Lever
 Right0_Left0: DoubleJump
-Left1_Right0: Magnet
-Left1_Right0: DoubleJump
-Left1_Left0: DoubleJump
+Right0_Left1: Lever
+Left1_Right0: Magnet+Lever
+Left1_Right0: DoubleJump+Lever
+Left1_Left0: DoubleJump+Lever
+Left0_Left1: Lever
+!Left1_Lever: Lever
 
 // Scene 133
 // Transitions: Right0 (133-225top), Right1 (133-132bottom), Left (134-133)
@@ -1224,13 +1241,12 @@ Left1_Left0: DoubleJump
 Scene 136
 *_Train: Clock+TrainStation
 
-// Scene 137
+// Scene 137 : Door Boss
 // Transitions: Right (137-138), Left (134-137)
 // Checks:
 Scene 137
 Left_Right: Item[0]
-Right_Left: Magnet
-Right_Left: DoubleJump
+Right_Left: false
 
 // Scene 138
 // Transitions: Right1 (138-139), Right0 (138-132), Left (137-138), Door (138-227)
@@ -1286,6 +1302,12 @@ Left_PowerCell: Blink+Magnet+DoubleJump
 // Checks:
 Scene 144
 *_Right: false
+
+// Scene 146
+// Transitions: Right (146-154), Train (146-Train)
+// Checks: TrainStation (TrainStation[7])
+Scene 146
+Right_Train: Clock+TrainStation
 
 // Scene 147
 // Transitions: Right1 (147-135), Right0 (147-156), Left (153-147)
@@ -1357,21 +1379,19 @@ Left2_Chip: Grapple+Light
 // Transitions: Right0 (153-154), Right1 (153-147), Left1 (159-153), Left0 (152-153)
 // Checks:
 Scene 153
-Right1_Right0: Magnet+Blink+Light
-Right1_Left0: Magnet+Blink+Light
-Left1_Left0: Magnet+Blink+Light
-Left1_Right0: Magnet+Blink+Light
-Right0_Left1: Blink+Light
-Right0_Right1: Blink+Light
-Left0_Left1: Blink+Light
-Left0_Right1: Blink+Light
+$TopArea {Left0, Right0}
+$BottomArea {Left1, Right1}
+TopArea=TopArea: Light
+BottomArea_TopArea: Magnet+Blink+Light
+TopArea_BottomArea: Blink+Light
+BottomArea=BottomArea: Light
 
 // Scene 154
-// Transitions: Right (154-155), Left (153-154)
+// Transitions: Right (154-155), Left0 (146-154), Left1 (153-154)
 // Checks:
 Scene 154
-Right_Left: Light
-Left_Right: Light
+*_*: Light
+//TODO: Should check requirements to access train (Left0) from here
 
 // Scene 155
 // Transitions: Right (155-156), Left0 (165-155), Left1 (154-155)
@@ -1502,7 +1522,7 @@ Left0_*: Ball+Light
 // Transitions: 24-166 (24-166)
 // Checks:
 Scene 166
-//No obsacles
+//No obstacles
 
 // Scene 167 : Mainframe repair
 // Transitions: Left (62-167), Repair (167Repair)
@@ -1670,6 +1690,7 @@ Left0_Left1: Ball+Lever
 Left0_Left2: Ball
 Left0_Right: Ball
 Left1_Left0: Ball+Magnet
+Left1_Left0: Blink+Magnet
 Left1_Left2: Magnet
 Left1_Left2: Lever
 Left1_Right: Magnet
@@ -1678,7 +1699,11 @@ Right_Left0: Ball+Magnet
 Right_Left1: Magnet
 Left0_Lever: Ball+Magnet
 Left1_Lever: true
-Left2_Lever: Ball+Magnet
+Left2_Lever: Magnet
+Left2_Left1: Magnet
+Left2_Left0: Ball+Magnet
+Left2_Left0: Blink+Magnet
+Left2_Right: Magnet
 Right_Lever: Ball+Magnet
 
 // Scene 186
@@ -1965,6 +1990,11 @@ Scene 224
 // Transitions: Left (133-225top)
 // Checks:
 Scene 225
+
+// Scene 226
+// Transitions: 62-226 (62-226)
+// Checks:
+Scene 226
 
 // Scene 227: Tree Room in Ruins
 // Transitions: 138-227 (138-227)

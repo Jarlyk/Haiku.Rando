@@ -39,29 +39,23 @@ namespace Haiku.Rando
             var availableNodes = _topology.Nodes.OfType<TransitionNode>().Where(n => !n.InScene(SpecialScenes.Train) && n.SceneId1 != n.SceneId2
             && (n.Type == TransitionType.RoomEdge || n.Type == TransitionType.Door)).ToList();
 
-            //The 'save the children' transition is kept intact, as the logic gets funky here
-            availableNodes.RemoveAll(n => n.SceneId1 == 95 && n.SceneId2 == 97);
+            var blacklistedTransitions = new Dictionary<int, int>
+            {
+                { 95, 97 }, // save the children
+                { 62, 205 }, // virus entrance
+                { 139, 144 }, // TE fight entrance
+                { 98, 91 }, // MM drop
+                { 34, 10 }, // Start area drop
+                { 50, 196 }, // Surface drop left
+                { 210, 35 }, // Post-Neutron exit
+                { 117, 210 }, // Water-locked transition to right of elevator in Ducts
+                { 137, 138} // Door Boss transition
+            };
 
-            //Virus entrance kept intact
-            availableNodes.RemoveAll(n => n.SceneId1 == 62 && n.SceneId2 == 205);
+            //Remove blacklisted transitions
+            availableNodes.RemoveAll(n => blacklistedTransitions.TryGetValue(n.SceneId1, out var sceneId2) && n.SceneId2 == sceneId2);
 
-            //TE fight entrance kept intact
-            availableNodes.RemoveAll(n => n.SceneId1 == 139 && n.SceneId2 == 144);
-
-            //Don't randomize MM drop (not enough drops to make things line up well)
-            availableNodes.RemoveAll(n => n.SceneId1 == 98 && n.SceneId2 == 91);
-
-            //Don't randomize drop into starting area (same reason as MM drop)
-            availableNodes.RemoveAll(n => n.SceneId1 == 34 && n.SceneId2 == 10);
-
-            //Surface drop left
-            availableNodes.RemoveAll(n => n.SceneId1 == 50 && n.SceneId2 == 196);
-
-            //This is the post-Neutron transition and is only active when Neutron is dead
-            //Need to keep this intact as otherwise can get stuck in load if Neutron not dead
-            availableNodes.RemoveAll(n => n.SceneId1 == 210 && n.SceneId2 == 35);
-
-            //Don't swap with the TE cutscene trigger
+            //Blacklist the TE cutscene trigger
             availableNodes.RemoveAll(n => n.SceneId2 == 5);
 
             //There are also several invalid edges in the topology from leftover transitions that are no longer used
