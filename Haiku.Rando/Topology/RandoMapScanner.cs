@@ -108,7 +108,7 @@ namespace Haiku.Rando.Topology
                 }
             }
 
-            var path = System.IO.Path.Combine(Assembly.GetExecutingAssembly().Location, "..\\Haiku.Rando");
+            var path = System.IO.Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "Haiku.Rando");
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
