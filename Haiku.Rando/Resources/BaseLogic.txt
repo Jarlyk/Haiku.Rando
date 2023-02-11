@@ -2008,7 +2008,7 @@ Scene 228
 //TODO: Possible skips chaining double jump and blink
 Left_Right: Grapple
 Right_Left: Grapple
-*_PowerCell: Grapple+Magnet
+*_PowerCell: Grapple+Magnet+DoubleJump
 
 // Scene 229
 // Transitions: Right (229-193), Left0 (230-229), Left1 (221-229)
