@@ -56,7 +56,15 @@ namespace Haiku.Rando
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Haiku.Rando.Resources.BaseLogic.txt"))
             using (var reader = new StreamReader(stream))
             {
-                _baseLogic = LogicLayer.Deserialize(_topology, reader);
+                var logic = LogicLayer.Deserialize(_topology, reader);
+                if (logic == null)
+                {
+                    Logger.LogError("failed to parse logic");
+                }
+                else
+                {
+                    _baseLogic = logic;
+                }
             }
 
         }

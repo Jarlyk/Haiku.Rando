@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Haiku.Rando.Checks;
 using Haiku.Rando.Topology;
 using MonoMod.Utils;
@@ -34,137 +35,488 @@ namespace Haiku.Rando.Logic
 
         public static LogicLayer Deserialize(RandoTopology topology, StreamReader reader)
         {
-            var logicByScene = new Dictionary<int, Dictionary<GraphEdge, List<LogicSet>>>();
-            var groups = new Dictionary<string, List<string>>();
+            var tokens = TokenizeLogic(reader);
+            return tokens == null ? null : ParseLogic(topology, tokens.GetEnumerator());
+        }
 
-            int lineNumber = 0;
-            RoomScene scene = null;
-            Dictionary<GraphEdge, List<LogicSet>> logicByEdge = null;
+        private enum TokenType
+        {
+            Name,
+            MacroName,
+            Int,
+            Colon,
+            Comma,
+            RightArrow,
+            BidirArrow,
+            LeftBrace,
+            RightBrace,
+            LeftParen,
+            RightParen,
+            Not,
+            Or,
+            And,
+            Hash,
+            Terminator
+        }
+
+        private record struct Token(TokenType Type, string Content, int LineNumber);
+
+        private static readonly Regex tokenPattern =
+            new(@"^\s*(?:([\p{L}\*][\p{L}\d\[\]\*]*)|(\$\w+)|(\d+)|(:)|(,)|(_)|(=)|(\{)|(\})|(\()|(\))|(!)|(\|)|(\+)|(#))");
+        private static readonly Regex commentPattern = new(@"^\s*//");
+
+        private static List<Token> TokenizeLogic(StreamReader reader)
+        {
+            var lineno = 0;
+            var tokens = new List<Token>();
             while (!reader.EndOfStream)
             {
-                lineNumber++;
+                lineno++;
                 var line = reader.ReadLine();
-                if (string.IsNullOrEmpty(line)) continue;
-                if (line.StartsWith("//")) continue;
-
-                if (line.StartsWith("scene", StringComparison.InvariantCultureIgnoreCase))
+                while (true)
                 {
-                    if (!int.TryParse(line.Substring(5).Trim(), out var sceneId))
+                    var m = tokenPattern.Match(line);
+                    if (!m.Success)
                     {
-                        throw new FormatException(
-                            $"Invalid scene specifier in logic file at line #{lineNumber}: '{line}'");
-                    }
-
-                    scene = topology.Scenes[sceneId];
-                    if (!logicByScene.TryGetValue(sceneId, out logicByEdge))
-                    {
-                        logicByEdge = new Dictionary<GraphEdge, List<LogicSet>>();
-                        logicByScene.Add(sceneId, logicByEdge);
-                    }
-
-                    groups.Clear();
-                    continue;
-                }
-
-                if (line.StartsWith("$"))
-                {
-                    var startBrace = line.IndexOf('{');
-                    var endBrace = line.IndexOf('}');
-                    if (startBrace == -1 || endBrace == -1)
-                    {
-                        Debug.LogError($"Missing curly braces in group definition at line #{lineNumber}: '{line}'");
-                    }
-
-                    var groupName = line.Substring(1, startBrace-1).Trim();
-                    var listText = line.Substring(startBrace + 1, endBrace - startBrace - 1);
-                    var listSplit = listText.Split(',').Select(s => s.Trim()).ToList();
-                    groups.Add(groupName, listSplit);
-                    continue;
-                }
-
-                var colonIndex = line.IndexOf(':');
-                if (colonIndex == -1)
-                {
-                    Debug.LogError($"Missing colon in logic file at line #{lineNumber}: '{line}'");
-                    continue;
-                }
-
-                bool twoWay = false;
-                var edgeName = line.Substring(0, colonIndex).Trim();
-                var split = edgeName.Split('_');
-                if (split.Length != 2)
-                {
-                    split = edgeName.Split('=');
-                    if (split.Length != 2)
-                    {
-                        Debug.LogError($"Unexpected edge format in logic file at line #{lineNumber}: '{line}'");
-                        continue;
-                    }
-
-                    twoWay = true;
-                }
-
-                if (scene == null)
-                {
-                    Debug.LogError($"No scene defined yet in logic file at line #{lineNumber}: '{line}'");
-                    continue;
-                }
-
-                var nodes1 = FindNodes(scene, split[0], groups);
-                if (nodes1.Count == 0)
-                {
-                    Debug.LogError($"Unable to resolve nodes for '{split[0]}' in scene {scene.SceneId} in logic file at line #{lineNumber}: '{line}'");
-                    continue;
-                }
-
-                var nodes2 = FindNodes(scene, split[1], groups);
-                if (nodes2.Count == 0)
-                {
-                    Debug.LogError($"Unable to resolve nodes for '{split[1]}' in scene {scene.SceneId} in logic file at line #{lineNumber}: '{line}'");
-                    continue;
-                }
-
-                //Parse the actual conditions list
-                var conditionText = line.Substring(colonIndex + 1);
-                var conditionSplit = conditionText.Split('+');
-                var conditions = new List<LogicCondition>();
-                for (int i = 0; i < conditionSplit.Length; i++)
-                {
-                    var hashIndex = conditionSplit[i].IndexOf('#');
-                    string stateText;
-                    int count = 1;
-                    if (hashIndex > -1)
-                    {
-                        var countText = conditionSplit[i].Substring(0, hashIndex).Trim();
-                        stateText = conditionSplit[i].Substring(hashIndex + 1).Trim();
-                        if (!int.TryParse(countText, out count))
+                        if (string.IsNullOrWhiteSpace(line) || commentPattern.IsMatch(line))
                         {
-                            Debug.LogError($"Unexpected numeric format for condition count '{conditionSplit[i]}' in scene {scene.SceneId} in logic file at line #{lineNumber}: '{line}'");
-
+                            break;
                         }
+                        Debug.LogError($"Unexpected token at line {lineno}: {line.Trim()}");
+                        return null;
+                    }
+                    line = line.Substring(m.Length);
+                    for (var i = TokenType.Name; i < TokenType.Terminator; i++)
+                    {
+                        var g = m.Groups[(int)i + 1];
+                        if (g.Length != 0)
+                        {
+                            tokens.Add(new(i, g.Value, lineno));
+                            break;
+                        }
+                    }
+                }
+                if (tokens.Count != 0)
+                {
+                    var last = tokens[tokens.Count - 1].Type;
+                    if (last == TokenType.Name 
+                        || last == TokenType.Int
+                        || last == TokenType.RightBrace
+                        || last == TokenType.RightParen)
+                    {
+                        tokens.Add(new(TokenType.Terminator, "", lineno));
+                    }
+                }
+            }
+            return tokens;
+        }
+
+        private static void ExpectTerminator(IEnumerator<Token> input)
+        {
+            if (input.MoveNext())
+            {
+                ExpectTokenOfType(input, "end of statement", TokenType.Terminator);
+            }
+            else
+            {
+                throw new InvalidOperationException("expected terminator at the end of a statement, got EOF");
+            }
+        }
+
+        private static bool ExpectTokenOfType(IEnumerator<Token> input, string expectationName, params TokenType[] types)
+        {
+            if (types.Contains(input.Current.Type))
+            {
+                return true;
+            }
+            Debug.LogError($"logic error at line #{input.Current.LineNumber}: expected {expectationName}, got '{input.Current.Content}'");
+            if (input.Current.Type != TokenType.Terminator)
+            {
+                SkipToNextTerminator(input);
+            }
+            return false;
+        }
+
+        private static void SkipToNextTerminator(IEnumerator<Token> input)
+        {
+            while (input.MoveNext())
+            {
+                if (input.Current.Type == TokenType.Terminator)
+                {
+                    return;
+                }
+            }
+        }
+
+        private static LogicLayer ParseLogic(RandoTopology topology, IEnumerator<Token> input)
+        {
+            var logicByScene = new Dictionary<int, Dictionary<GraphEdge, List<LogicSet>>>();
+            var macros = new Dictionary<string, List<string>>();
+            RoomScene scene = null;
+            while (true)
+            {
+                if (!input.MoveNext())
+                {
+                    break;
+                }
+                var det = input.Current;
+                if (det.Type == TokenType.Name && det.Content == "Scene")
+                {
+                    if (!input.MoveNext())
+                    {
+                        Debug.LogError($"logic error at line #{det.LineNumber}: EOF within Scene declaration");
+                        break;
+                    }
+                    var num = input.Current;
+                    if ((num.Type != TokenType.Int && int.TryParse(num.Content, out var sceneId) && topology.Scenes.TryGetValue(sceneId, out scene)))
+                    {
+                        ExpectTerminator(input);
                     }
                     else
                     {
-                        stateText = conditionSplit[i].Trim();
+                        Debug.LogError($"logic error at line #{num.LineNumber}: scene '{num.Content}' does not exist");
+                        scene = null;
+                        if (num.Type != TokenType.Terminator)
+                        {
+                            SkipToNextTerminator(input);
+                        }
                     }
-
-                    stateText = ExpandAlias(stateText, scene);
-                    conditions.Add(new LogicCondition(stateText, count));
                 }
-
-                //Apply this logic set to all edges between the nodes
-                var set = new LogicSet(conditions);
-                AddLogic(nodes1, nodes2, scene, logicByEdge, set);
-                if (twoWay)
+                else if (det.Type == TokenType.MacroName)
                 {
-                    AddLogic(nodes2, nodes1, scene, logicByEdge, set);
+                    var macroName = det.Content.Substring(1);
+                    if (macros.ContainsKey(macroName))
+                    {
+                        Debug.LogError($"logic error at line #{det.LineNumber}: duplicate macro '{det.Content}'");
+                        SkipToNextTerminator(input);
+                        continue;
+                    }
+                    if (ParseMacroDefinition(input) is var def && def != null)
+                    {
+                        macros[macroName] = def;
+                    }
+                }
+                else if (det.Type == TokenType.Name)
+                {
+                    if (scene == null)
+                    {
+                        Debug.LogError("logic error at line #{det.LineNumber}: logic clause outside the scope of a scene");
+                        SkipToNextTerminator(input);
+                        continue;
+                    }
+                    var fromNodes = FindNodes(scene, det.Content, macros);
+                    if (fromNodes.Count == 0)
+                    {
+                        Debug.LogError($"logic error at line #{det.LineNumber}: cannot resolve source node '{det.Content}'");
+                    }
+                    if (!input.MoveNext())
+                    {
+                        Debug.LogError("logic error: EOF within logic clause");
+                        continue;
+                    }
+                    if (!ExpectTokenOfType(input, "edge symbol", TokenType.RightArrow, TokenType.BidirArrow))
+                    {
+                        continue;
+                    }
+                    var twoWay = input.Current.Type == TokenType.BidirArrow;
+                    if (!input.MoveNext())
+                    {
+                        Debug.LogError("logic error: EOF within logic clause");
+                        continue;
+                    }
+                    if (!ExpectTokenOfType(input, "destination node", TokenType.Name))
+                    {
+                        continue;
+                    }
+                    var toNodes = FindNodes(scene, input.Current.Content, macros);
+                    if (toNodes.Count == 0)
+                    {
+                        Debug.LogError($"logic error at line #{input.Current.LineNumber}: cannot resolve destination node '{input.Current.Content}'");
+                    }
+                    if (!ExpectTokenOfType(input, "colon", TokenType.Colon))
+                    {
+                        continue;
+                    }
+                    if (fromNodes.Count == 0 || toNodes.Count == 0)
+                    {
+                        SkipToNextTerminator(input);
+                        continue;
+                    }
+                    var rpn = ParseLogicExpression(input);
+                    if (rpn == null)
+                    {
+                        SkipToNextTerminator(input);
+                        continue;
+                    }
+                    var logicSets = EvalLogicExpression(rpn, term => ExpandAlias(term, scene));
+                    if (logicSets == null)
+                    {
+                        SkipToNextTerminator(input);
+                        continue;
+                    }
+                    if (!logicByScene.TryGetValue(scene.SceneId, out var logicByEdge))
+                    {
+                        logicByEdge = new();
+                        logicByScene[scene.SceneId] = logicByEdge;
+                    }
+                    foreach (var set in logicSets)
+                    {
+                        AddLogic(fromNodes, toNodes, scene, logicByEdge, set);
+                    }
+                    if (twoWay)
+                    {
+                        foreach (var set in logicSets)
+                        {
+                            AddLogic(toNodes, fromNodes, scene, logicByEdge, set);
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"logic error at line #{det.LineNumber}: expected Scene, term or macro name, got '{det.Content}'");
+                    SkipToNextTerminator(input);
                 }
             }
-
             //Expose final result as an immutable collection
-            return new LogicLayer(logicByScene.ToDictionary(p => p.Key,
-                                                            p => new SceneLogic(p.Value.ToDictionary(x => x.Key,
-                                                                x => (IReadOnlyList<LogicSet>)x.Value))));
+            return new(logicByScene.ToDictionary(
+                p => p.Key,
+                p => new SceneLogic(p.Value.ToDictionary(x => x.Key, x => (IReadOnlyList<LogicSet>)x.Value))));
+        }
+
+        private static List<string> ParseMacroDefinition(IEnumerator<Token> input)
+        {
+            if (!input.MoveNext())
+            {
+                Debug.LogError("logic error: EOF within macro declaration");
+                return null;
+            }
+            if (!ExpectTokenOfType(input, "opening brace", TokenType.LeftBrace))
+            {
+                return null;
+            }
+            var names = new List<string>();
+            while (true)
+            {
+                if (!input.MoveNext())
+                {
+                    Debug.LogError("logic error: EOF within macro declaration");
+                    return null;
+                }
+                if (!ExpectTokenOfType(input, "node name", TokenType.Name))
+                {
+                    return null;
+                }
+                names.Add(input.Current.Content);
+                if (!input.MoveNext())
+                {
+                    Debug.LogError("logic error: EOF within macro declaration");
+                    return null;
+                }
+                switch (input.Current.Type)
+                {
+                    case TokenType.Comma:
+                        continue;
+                    case TokenType.RightBrace:
+                        return names;
+                    default:
+                        Debug.LogError($"logic error at line #{input.Current.LineNumber}: expected comma or closing brace, got '#{input.Current.Content}'");
+                        if (input.Current.Type != TokenType.Terminator)
+                        {
+                            SkipToNextTerminator(input);
+                        }
+                        return null;
+                }
+            }
+        }
+
+        private enum OpExpectation
+        {
+            TermOrLeftParen,
+            OpOrRightParen
+        }
+
+        // Reads a logic expression from the input, and, if successful, returns it in RPN
+        // (reverse Polish notation) form.
+        private static List<Token> ParseLogicExpression(IEnumerator<Token> input)
+        {
+            // An implementation of the shunting yard algorithm follows, with added error checks
+            // to guard against multiple terms or multiple operators in a row.
+            var opStack = new Stack<Token>();
+            var output = new List<Token>();
+            var expectTerm = true;
+
+            void ErrExpectedTerm()
+            {
+                Debug.LogError($"logic error at line #{input.Current.LineNumber}: expected term, got operator '{input.Current.Content}'");
+            }
+
+            void ErrExpectedOp()
+            {
+                Debug.LogError($"logic error at line #{input.Current.LineNumber}: expected operator, got term '{input.Current.Content}'");
+            }
+
+            while (true)
+            {
+                nextToken:
+                if (!input.MoveNext())
+                {
+                    Debug.LogError("logic error: EOF within logic expression");
+                    return null;
+                }
+                switch (input.Current.Type)
+                {
+                    case TokenType.Name:
+                    case TokenType.Int:
+                        if (!expectTerm)
+                        {
+                            ErrExpectedTerm();
+                            return null;
+                        }
+                        output.Add(input.Current);
+                        expectTerm = false;
+                        break;
+                    case TokenType.Hash:
+                        if (expectTerm)
+                        {
+                            ErrExpectedOp();
+                            return null;
+                        }
+                        opStack.Push(input.Current);
+                        expectTerm = true;
+                        break;
+                    case TokenType.And:
+                        if (expectTerm)
+                        {
+                            ErrExpectedOp();
+                            return null;
+                        }
+                        while (opStack.TryPeek(out var op) && op.Type == TokenType.Hash)
+                        {
+                            output.Add(opStack.Pop());
+                        }
+                        opStack.Push(input.Current);
+                        expectTerm = true;
+                        break;
+                    case TokenType.Or:
+                        if (expectTerm)
+                        {
+                            ErrExpectedOp();
+                            return null;
+                        }
+                        while (opStack.TryPeek(out var op) && 
+                            (op.Type == TokenType.Hash || op.Type == TokenType.And))
+                        {
+                            output.Add(opStack.Pop());
+                        }
+                        opStack.Push(input.Current);
+                        expectTerm = true;
+                        break;
+                    case TokenType.LeftParen:
+                        if (!expectTerm)
+                        {
+                            ErrExpectedTerm();
+                            return null;
+                        }
+                        opStack.Push(input.Current);
+                        expectTerm = true;
+                        break;
+                    case TokenType.RightParen:
+                        if (expectTerm)
+                        {
+                            ErrExpectedOp();
+                            return null;
+                        }
+                        while (opStack.TryPop(out var op))
+                        {
+                            if (op.Type == TokenType.LeftParen)
+                            {
+                                expectTerm = false;
+                                goto nextToken;
+                            }
+                            output.Add(op);
+                        }
+                        Debug.LogError($"logic error at line #{input.Current.LineNumber}: unmatched closing parenthesis");
+                        return null;
+                    case TokenType.Terminator:
+                        while (opStack.TryPop(out var op))
+                        {
+                            if (op.Type == TokenType.LeftParen)
+                            {
+                                Debug.LogError($"logic error at line #{op.LineNumber}: unmatched opening parenthesis");
+                                return null;
+                            }
+                            output.Add(op);
+                        }
+                        return output;
+                    default:
+                        Debug.LogError($"logic error at line #{input.Current.LineNumber}: expected term or operator, got '{input.Current.Content}'");
+                        return null;
+                }
+            }
+        }
+
+        private static List<LogicSet> EvalLogicExpression(List<Token> rpn, Func<string, string> expand)
+        {
+            var stack = new Stack<object>();
+
+            foreach (var cmd in rpn)
+            {
+                switch (cmd.Type)
+                {
+                    case TokenType.Name:
+                        stack.Push(new List<LogicSet>() {new (new List<LogicCondition> { new(expand(cmd.Content)) })});
+                        break;
+                    case TokenType.Int:
+                        if (!int.TryParse(cmd.Content, out var n))
+                        {
+                            Debug.LogError($"logic error at line #{cmd.LineNumber}: integer out of range");
+                            return null;
+                        }
+                        stack.Push(n);
+                        break;
+                    case TokenType.And:
+                        if (!stack.TryPopOperands(out List<LogicSet> left, out List<LogicSet> right))
+                        {
+                            Debug.LogError($"logic error at line #{cmd.LineNumber}: expected terms as the operands of +");
+                            return null;
+                        }
+                        var result = new List<LogicSet>();
+                        foreach (var leftSet in left)
+                        {
+                            foreach (var rightSet in right)
+                            {
+                                result.Add(new(leftSet.Conditions.Concat(rightSet.Conditions).ToList()));
+                            }
+                        }
+                        stack.Push(result);
+                        break;
+                    case TokenType.Or:
+                        if (!stack.TryPopOperands(out left, out right))
+                        {
+                            Debug.LogError($"logic error at line #{cmd.LineNumber}: expected term sets as the operands of |");
+                            return null;
+                        }
+                        stack.Push(left.Concat(right).ToList());
+                        break;
+                    case TokenType.Hash:
+                        if (!stack.TryPopOperands(out left, out int rightN))
+                        {
+                            Debug.LogError($"logic error at line #{cmd.LineNumber}: expected term set and integer as the operands of #");
+                            return null;
+                        }
+                        stack.Push(left.Select(
+                            ls => new LogicSet(ls.Conditions.Select(
+                                c => new LogicCondition(c.StateName, c.Count * rightN)).ToList())).ToList());
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException($"unexpected token '{cmd.Content}' while evaluating logic expression at line #{cmd.LineNumber}");
+                }
+            }
+            if (stack.Count == 1 && stack.Pop() is List<LogicSet> finalResult)
+            {
+                return finalResult;
+            }
+            throw new InvalidOperationException($"expected stack to finish with one list of LogicSets, but it didn't");
         }
 
         private static IReadOnlyList<IRandoNode> FindNodes(RoomScene scene, string pattern, Dictionary<string, List<string>> groups)
