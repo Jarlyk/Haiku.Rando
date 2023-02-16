@@ -553,14 +553,14 @@ Scene 67
 // Checks: Lever (Lever[49]), PowerCell (PowerCell[11])
 Scene 68
 //TODO: New train transition
-Left_Lever: Lever
-Left_PowerCell: Lever
-Left_Right: Magnet
-Left_Right: Lever+DoubleJump
+Left1_Lever: Lever
+Left1_PowerCell: Lever
+Left1_Right: Magnet
+Left1_Right: Lever+DoubleJump
 Right_Lever: true
 Right_PowerCell: true
-Right_Left: Lever
-Right_Left: Magnet+DoubleJump
+Right_Left1: Lever
+Right_Left1: Magnet+DoubleJump
 //TODO: BLJ here that avoids DoubleJump for Right_Left
 
 // Scene 69 : Car Battery Room

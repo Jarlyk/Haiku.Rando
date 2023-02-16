@@ -52,7 +52,6 @@ namespace Haiku.Rando.Logic
             RightBrace,
             LeftParen,
             RightParen,
-            Not,
             Or,
             And,
             Hash,
@@ -62,7 +61,7 @@ namespace Haiku.Rando.Logic
         private record struct Token(TokenType Type, string Content, int LineNumber);
 
         private static readonly Regex tokenPattern =
-            new(@"^\s*(?:([\p{L}\*][\p{L}\d\[\]\*]*)|(\$\w+)|(\d+)|(:)|(,)|(_)|(=)|(\{)|(\})|(\()|(\))|(!)|(\|)|(\+)|(#))");
+            new(@"^\s*(?:([\p{L}\*!][\p{L}\d\[\]\*]*)|(\$\w+)|(\d+)|(:)|(,)|(_)|(=)|(\{)|(\})|(\()|(\))|(\|)|(\+)|(#))");
         private static readonly Regex commentPattern = new(@"^\s*//");
 
         private static List<Token> TokenizeLogic(StreamReader reader)
@@ -167,8 +166,9 @@ namespace Haiku.Rando.Logic
                         Debug.LogError($"logic error at line #{det.LineNumber}: EOF within Scene declaration");
                         break;
                     }
+                    macros.Clear();
                     var num = input.Current;
-                    if ((num.Type != TokenType.Int && int.TryParse(num.Content, out var sceneId) && topology.Scenes.TryGetValue(sceneId, out scene)))
+                    if (num.Type == TokenType.Int && int.TryParse(num.Content, out var sceneId) && topology.Scenes.TryGetValue(sceneId, out scene))
                     {
                         ExpectTerminator(input);
                     }
@@ -196,11 +196,12 @@ namespace Haiku.Rando.Logic
                         macros[macroName] = def;
                     }
                 }
+                // TODO: implement NOT operator
                 else if (det.Type == TokenType.Name)
                 {
                     if (scene == null)
                     {
-                        Debug.LogError("logic error at line #{det.LineNumber}: logic clause outside the scope of a scene");
+                        Debug.LogError($"logic error at line #{det.LineNumber}: logic clause outside the scope of a scene");
                         SkipToNextTerminator(input);
                         continue;
                     }
@@ -232,6 +233,11 @@ namespace Haiku.Rando.Logic
                     if (toNodes.Count == 0)
                     {
                         Debug.LogError($"logic error at line #{input.Current.LineNumber}: cannot resolve destination node '{input.Current.Content}'");
+                    }
+                    if (!input.MoveNext())
+                    {
+                        Debug.LogError("logic error: EOF within logic clause");
+                        continue;
                     }
                     if (!ExpectTokenOfType(input, "colon", TokenType.Colon))
                     {
@@ -317,6 +323,7 @@ namespace Haiku.Rando.Logic
                     case TokenType.Comma:
                         continue;
                     case TokenType.RightBrace:
+                        ExpectTerminator(input);
                         return names;
                     default:
                         Debug.LogError($"logic error at line #{input.Current.LineNumber}: expected comma or closing brace, got '#{input.Current.Content}'");
@@ -327,12 +334,6 @@ namespace Haiku.Rando.Logic
                         return null;
                 }
             }
-        }
-
-        private enum OpExpectation
-        {
-            TermOrLeftParen,
-            OpOrRightParen
         }
 
         // Reads a logic expression from the input, and, if successful, returns it in RPN
