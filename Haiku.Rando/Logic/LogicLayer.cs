@@ -61,7 +61,7 @@ namespace Haiku.Rando.Logic
         private record struct Token(TokenType Type, string Content, int LineNumber);
 
         private static readonly Regex tokenPattern =
-            new(@"^\s*(?:([\p{L}\*!][\p{L}\d\[\]\*]*)|(\$\w+)|(\d+)|(:)|(,)|(_)|(=)|(\{)|(\})|(\()|(\))|(\|)|(\+)|(#))");
+            new(@"^\s*(?:([\p{L}\*!][\p{L}\d\[\]\*]*)|(\$\w+)|(\d+)|(:)|(,)|(->)|(<->)|(\{)|(\})|(\()|(\))|(\|)|(\+)|(#))");
         private static readonly Regex commentPattern = new(@"^\s*//");
 
         private static List<Token> TokenizeLogic(StreamReader reader)
