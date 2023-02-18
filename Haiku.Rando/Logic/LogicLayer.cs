@@ -500,14 +500,14 @@ namespace Haiku.Rando.Logic
                         stack.Push(left.Concat(right).ToList());
                         break;
                     case TokenType.Hash:
-                        if (!stack.TryPopOperands(out left, out int rightN))
+                        if (!stack.TryPopOperands(out int leftN, out right))
                         {
-                            Debug.LogError($"logic error at line #{cmd.LineNumber}: expected term set and integer as the operands of #");
+                            Debug.LogError($"logic error at line #{cmd.LineNumber}: expected integer and term set as the operands of #");
                             return null;
                         }
-                        stack.Push(left.Select(
+                        stack.Push(right.Select(
                             ls => new LogicSet(ls.Conditions.Select(
-                                c => new LogicCondition(c.StateName, c.Count * rightN)).ToList())).ToList());
+                                c => new LogicCondition(c.StateName, c.Count * leftN)).ToList())).ToList());
                         break;
                     default:
                         throw new ArgumentOutOfRangeException($"unexpected token '{cmd.Content}' while evaluating logic expression at line #{cmd.LineNumber}");

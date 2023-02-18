@@ -28,8 +28,8 @@ namespace Haiku.Rando.Logic
 
         public static bool TryPopOperands<T, U>(this Stack<object> s, out T left, out U right)
         {
-            if (s.TryPop(out var leftObj) && leftObj is T leftVal && 
-                s.TryPop(out var rightObj) && rightObj is U rightVal)
+            if (s.TryPop(out var rightObj) && rightObj is U rightVal &&
+                s.TryPop(out var leftObj) && leftObj is T leftVal)
             {
                 left = leftVal;
                 right = rightVal;
