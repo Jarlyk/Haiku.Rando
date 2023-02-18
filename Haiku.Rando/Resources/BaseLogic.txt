@@ -1,18 +1,38 @@
 // This is a logic file for the Haiku Rando mod
-// Logic is specified per scene, where the passability is defined between transitions and checks in the room
-// Edge expressions are one-directional and written as From->To
-// Wildcard matching is supported, so for example, A->* means all edges from A to anywhere else in the room
-// Constrained wildcards are also possible, such as A->Lever*, indicating all edges from A to anything starting with 'Lever'
+// Logic is specified per scene, where the passability is defined between transitions and checks () 
+// (collectively called "nodes") in the room.
+
+// The logic for each edge is defined by a logic statement, which is of the form
+//   From -> To: logicexpression
+// or
+//   From <-> To: logicexpression
 //
-// For the actual logic expressions, they are written as a series of AND conditions using '+' to join them
-// For example, Ball+Bomb means that you need both the ball and bomb upgrade to travel along this edge
-// Supported ability names: Bomb,Dash,DoubleJump,Grapple,Heal,Ball,Blink,Magnet,FireRes,WaterRes,Light,Clock
+// The latter form is equivalent to:
+//   From -> To: logicexpression
+//   To -> From: logicexpression
 //
-// You can also add restrictions based on things like count of power cells found or a specific item
-// The supported countable/indexable entries are: Chip,Slot,PowerCell,Item,Disruptor,Lever,Coolant,Boss
-// To specify a minimum count, you can use an expression like 10#PowerCell to indicate at least 10 power cells
-// To specify a particular item, you can use an expression like Item[7] (this would be green skull)
-// If neither index nor count is specified, will try to match to the only instance of that check in the room; this is especially useful for Lever
+// From and To are node patterns. Node patterns may include wildcards - for example, `A -> *` denotes all edges
+// from A to anywhere else in the room, and `A -> Lever*` denotes all edges from A to any node starting with "Lever".
+// Node patterns may also be preceded with a NOT (!) operator; this matches all nodes not matched by that node pattern.
+
+// Logic expressions are composed of condition names, combined with the AND (+) and OR (|) operators; parentheses
+// may also be used for grouping.
+// For example, `Ball + Bomb + (Magnet | DoubleJump)` means that the ball and bomb upgrades, plus either magnet or
+// jump booster, are required to cross the relevant edge.
+// To denote that N of a specific item (such as power cells) is required to access a node, use the count (#) operator,
+// which takes N on the left side and the item on the right side.
+// For example, `10 # PowerCell` indicates that at least 10 power cells are required.
+//
+// The count operator has the highest precedence, followed by AND, and then OR.
+//
+// Condition names may be:
+// - Ability names - Bomb,Dash,DoubleJump,Grapple,Heal,Ball,Blink,Magnet,FireRes,WaterRes,Light,Clock
+// - Item names - Chip,Slot,PowerCell,Item,Disruptor,Lever,Coolant,Boss
+//
+// Item names may be suffixed with `[N]` (where N is an integer) to denote a specific item of a given type;
+// for instance, `Item[7]` denotes the green skull, and `Chip[25]` is Heat Drive.
+// If neither an indexing suffix nor a count operator are applied to an item, that term will match the only instance
+// of the respective check in the room, if possible; this is particularly useful for Levers.
 //
 // If this is the main logic file, the assumption is that all edges can be traversed unless restricted here
 // If this is an extension logic file for a skip category, it will only specify the edges that have an alternate traversal logic for the skips
