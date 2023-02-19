@@ -410,6 +410,14 @@ namespace Haiku.Rando.Topology
             new() {"_CANDLES_1", "_CANDLES_2"}
         };
 
+        // Unused, presumably leftover checks from development.
+        private static readonly HashSet<(int sceneId, CheckType type)> ignoredChecks = new()
+        {
+            (102, CheckType.Chip),
+            (104, CheckType.Item),
+            (132, CheckType.PowerCell)
+        };
+
         private List<RandoCheck> FindChecks(int sceneId)
         {
             var checks = new List<RandoCheck>();
@@ -496,9 +504,12 @@ namespace Haiku.Rando.Topology
                     itemId = pickup.itemID;
                     alias = itemCount == 1 ? "Item" : null;
                 }
-                var check = new RandoCheck(type, sceneId, pickup.transform.position, itemId) { SaveId = pickup.saveID };
-                check.Alias = alias ?? check.Name;
-                checks.Add(check);
+                if (!ignoredChecks.Contains((sceneId, type)))
+                {
+                    var check = new RandoCheck(type, sceneId, pickup.transform.position, itemId) { SaveId = pickup.saveID };
+                    check.Alias = alias ?? check.Name;
+                    checks.Add(check);
+                }
             }
 
             foreach (var pickup in SceneUtils.FindObjectsOfType<Disruptor>().Where(p => !IsCorruptModeOnly(p.gameObject)))
@@ -526,13 +537,16 @@ namespace Haiku.Rando.Topology
             var powerCells = SceneUtils.FindObjectsOfType<PowerCell>();
             for (var i = 0; i < powerCells.Length; i++)
             {
-                var pickup = powerCells[i];
-                var check = new RandoCheck(CheckType.PowerCell, sceneId, pickup.transform.position, pickup.saveID)
+                if (!ignoredChecks.Contains((sceneId, CheckType.PowerCell)))
                 {
-                    SaveId = pickup.saveID,
-                    Alias = powerCells.Length > 1 ? $"PowerCell{i}" : "PowerCell"
-                };
-                checks.Add(check);
+                    var pickup = powerCells[i];
+                    var check = new RandoCheck(CheckType.PowerCell, sceneId, pickup.transform.position, pickup.saveID)
+                    {
+                        SaveId = pickup.saveID,
+                        Alias = powerCells.Length > 1 ? $"PowerCell{i}" : "PowerCell"
+                    };
+                    checks.Add(check);
+                }
             }
 
             foreach (var pickup in SceneUtils.FindObjectsOfType<TrainTicket>())
