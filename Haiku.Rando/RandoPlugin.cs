@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Linq;
+using SysDiag = System.Diagnostics;
 using BepInEx;
 using Haiku.Rando.Checks;
 using Haiku.Rando.Logic;
@@ -32,7 +34,7 @@ namespace Haiku.Rando
             HaikuResources.Init();
             UniversalPickup.InitHooks();
             ShopItemReplacer.InitHooks();
-            CheckManager.InitHooks();
+            CheckManager.InitHooks(Logger.Log);
             TransitionManager.InitHooks();
             QoL.InitHooks();
             
@@ -41,8 +43,22 @@ namespace Haiku.Rando
             On.PCSaveManager.Save += PCSaveManager_Save;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 
+            // prevent CheckChipsWhenGameStarts from giving unexpected chips
+            // (only a partial solution; the real cause of the bug is deeper)
+            On.ReplenishHealth.CheckChipsWhenGameStarts += WarnCheckChips;
+
             //TODO: Add bosses as logic conditions
             //This impacts some transitions
+        }
+
+        private void WarnCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
+        {
+            if (_randomizer == null) orig(self);
+            if (!GameManager.instance.corruptMode)
+            {
+                Logger.LogInfo("CheckChipsWhenGameStarts invoked");
+                Logger.LogInfo(new SysDiag.StackTrace(1).ToString());
+            }
         }
 
         private void ReloadTopology()
