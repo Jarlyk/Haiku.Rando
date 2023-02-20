@@ -438,7 +438,7 @@ namespace Haiku.Rando.Topology
 
             foreach (var lore in SceneUtils.FindObjectsOfType<DialogueTrigger>())
             {
-                var checkId = loreTablets.FindIndex(t => t.SequenceEqual(lore.dialogue.sentences));
+                var checkId = CheckManager.LoreTabletText.FindIndex(t => t.SequenceEqual(lore.dialogue.sentences));
                 if (checkId != -1)
                 {
                     var check = new RandoCheck(CheckType.Lore, sceneId, lore.transform.position, checkId);
@@ -450,7 +450,7 @@ namespace Haiku.Rando.Topology
             foreach (var lore in SceneUtils.FindObjectsOfType<MultipleDialogueTrigger>())
             {
                 var sentences = lore.dialogueGroups.SelectMany(d => d.sentences).ToList();
-                var checkId = loreTablets.FindIndex(t => t.SequenceEqual(sentences));
+                var checkId = CheckManager.LoreTabletText.FindIndex(t => t.SequenceEqual(sentences));
                 if (checkId != -1)
                 {
                     var check = new RandoCheck(CheckType.Lore, sceneId, lore.transform.position, checkId);
