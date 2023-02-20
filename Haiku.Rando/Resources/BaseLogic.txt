@@ -215,8 +215,12 @@ Right->Lore: true
 // Transitions: Left0 (32-31), Left2 (23-31), Left1 (30-31)
 // Checks:
 Scene 31
-Left2->*: Magnet
-*->Left1: Magnet + (Blink | DoubleJump | Grapple)
+Left2->Left0: Magnet
+Left2->Left1: Magnet + (Blink | DoubleJump | Grapple)
+Left1->Left0: Magnet
+Left1->Left2: true
+Left0->Left1: Blink | DoubleJump | Grapple
+Left0->Left2: true
 
 // Scene 32 : Hand Room
 // Transitions: Right0 (32-33), Right1 (32-31), Left (34-32)
