@@ -21,6 +21,7 @@ namespace Haiku.Rando
         private void Configure()
         {
             var objName = gameObject.name;
+            // GetHashCode shouldn't be used here, docs say it's not guaranteed to be consistent between processes
             var seed = !string.IsNullOrEmpty(objName) ? objName.GetHashCode() : 1234;
             seed ^= SceneManager.GetActiveScene().buildIndex;
             _random = new Xoroshiro128Plus(SequenceSeed ^ (ulong)((long)seed - int.MinValue));

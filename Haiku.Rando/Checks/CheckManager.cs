@@ -31,11 +31,13 @@ namespace Haiku.Rando.Checks
 
         public CheckRandomizer Randomizer { get; set; }
 
-        private static Action<LogLevel, string> Log = (_, _) => {};
+        private Action<LogLevel, string> Log = (_, _) => {};
+        private Func<SaveData> GetCurrentSaveData;
 
-        public static void InitHooks(Action<LogLevel, string> logger)
+        internal void InitHooks(Action<LogLevel, string> logger, Func<SaveData> getSaveData)
         {
             Log = logger;
+            GetCurrentSaveData = getSaveData;
             IL.e7FireWaterTrigger.Start += E7FireWaterTrigger_Start;
             On.e7UpgradeShop.TriggerUpgrade += E7UpgradeShop_TriggerUpgrade;
             On.BeeHive.Start += BeeHive_Start;
@@ -465,7 +467,9 @@ namespace Haiku.Rando.Checks
             return GameManager.instance.chip[GameManager.instance.getChipNumber("b_FastHeal")].collected;
         }
 
-        public static bool AlreadyGotCheck(RandoCheck check) => check.Type switch
+        public static bool AlreadyGotCheck(RandoCheck check) => Instance._AlreadyGotCheck(check);
+
+        private bool _AlreadyGotCheck(RandoCheck check) => check.Type switch
         {
             CheckType.Wrench => GameManager.instance.canHeal,
             CheckType.Bulblet => GameManager.instance.lightBulb,
@@ -479,7 +483,8 @@ namespace Haiku.Rando.Checks
             CheckType.WaterRes => GameManager.instance.waterRes,
             CheckType.TrainStation => GameManager.instance.trainStations[check.CheckId].unlockedStation,
             CheckType.Clock => GameManager.instance.trainUnlocked,
-            CheckType.Lore or CheckType.PartsMonument => false,
+            CheckType.Lore => GetCurrentSaveData().IsLoreCollected(check.CheckId),
+            CheckType.PartsMonument => false,
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -512,7 +517,7 @@ namespace Haiku.Rando.Checks
             new() {"_CANDLES_1", "_CANDLES_2"}
         };
 
-        private static void ShowLoreTabletText(int checkId)
+        private void ShowLoreTabletText(int checkId)
         {
             if (!(checkId >= 0 && checkId < LoreTabletText.Count))
             {
@@ -521,6 +526,7 @@ namespace Haiku.Rando.Checks
             }
 
             var dm = DialogueManager.instance;
+            dm.StopAllCoroutines();
             dm.isOpen = true;
             dm.dialogueAnim.SetBool("isOpen", true);
             IEnumerator TypeAllSentences()
@@ -537,6 +543,11 @@ namespace Haiku.Rando.Checks
         }
 
         public static void TriggerCheck(MonoBehaviour self, RandoCheck check)
+        {
+            Instance.DoTriggerCheck(self, check);
+        }
+
+        private void DoTriggerCheck(MonoBehaviour self, RandoCheck check)
         {
             var refPickup = HaikuResources.RefPickupItem;
             bool hasWorldObject = true;
@@ -590,6 +601,7 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.Lore:
                     ShowLoreTabletText(check.CheckId);
+                    GetCurrentSaveData().MarkLoreCollected(check.CheckId);
                     break;
                 case CheckType.Lever:
                     //TODO
