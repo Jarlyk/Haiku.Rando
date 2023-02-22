@@ -38,6 +38,7 @@ namespace Haiku.Rando
             CheckManager.Instance.InitHooks(Logger.Log, () => _saveData);
             TransitionManager.InitHooks();
             QoL.InitHooks();
+            Text.Hook();
             
             IL.LoadGame.Start += LoadGame_Start;
             On.PCSaveManager.Load += PCSaveManager_Load;

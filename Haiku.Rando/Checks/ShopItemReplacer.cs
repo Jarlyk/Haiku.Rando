@@ -122,7 +122,8 @@ namespace Haiku.Rando.Checks
                     image = HaikuResources.RefDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite;
                     break;
                 case CheckType.Lore:
-                    //TODO
+                    title = Text._LORE_TITLE;
+                    description = Text._LORE_DESCRIPTION;
                     break;
                 case CheckType.Lever:
                     //TODO
