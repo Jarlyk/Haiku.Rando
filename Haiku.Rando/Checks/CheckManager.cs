@@ -527,8 +527,12 @@ namespace Haiku.Rando.Checks
 
             var dm = DialogueManager.instance;
             dm.StopAllCoroutines();
-            dm.isOpen = true;
             dm.dialogueAnim.SetBool("isOpen", true);
+            // Do not set dm.isOpen to true here. If the player buys lore from a shop,
+            // DialogueManager will detect the input that confirm the purchase and, if
+            // isOpen is true, call DisplayNextSentence which overwrites the sentence
+            // we wanted to show and stops this coroutine. There is no easy way to coax
+            // DisplayNextSentence into doing what we want, so it's easier to just lie.
             IEnumerator TypeAllSentences()
             {
                 foreach (var key in LoreTabletText[checkId])
