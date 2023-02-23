@@ -257,7 +257,6 @@ namespace Haiku.Rando.Logic
                     var logicSets = EvalLogicExpression(rpn, term => ExpandAlias(term, scene));
                     if (logicSets == null)
                     {
-                        SkipToNextTerminator(input);
                         continue;
                     }
                     if (!logicByScene.TryGetValue(scene.SceneId, out var logicByEdge))
