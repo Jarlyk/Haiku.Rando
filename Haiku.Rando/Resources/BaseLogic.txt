@@ -252,8 +252,8 @@ Scene 35
 Right1->Right0: Magnet+DoubleJump
 Right1->Chip: Magnet
 Left->Right0: Ball | DoubleJump | Blink | Grapple
-Right0->Left: Boss[6] + (Ball | DoubleJump | Blink | Grapple)
-Right1->Left: Magnet+DoubleJump+Boss[6]
+Right0->Left: Transition[201][Left] + (Ball | DoubleJump | Blink | Grapple)
+Right1->Left: Magnet+DoubleJump+Transition[201][Left]
 
 // Scene 36
 // Transitions: Right (36-196), Left (37-36)
@@ -1158,8 +1158,9 @@ $Bottom {Right, Repair}
 // 2-bomb jump also works for both of these
 Bottom->Left: Magnet
 Bottom->Lore: Magnet
-Left->Right: Boss[7]
-Repair->Right: Boss[7]
+// the conditions to be able to defeat Virus
+Left->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] + Transition[62]
+Repair->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] + Transition[62]
 // TODO - not sure that works
 
 // Scene 140
@@ -1652,7 +1653,7 @@ Right1->Left: WaterRes
 // Checks:
 Scene 199
 *->Right0: Blink + WaterRes + (Magnet | DoubleJump)
-*->Right1: Boss[4]+Boss[5]+Boss[6]
+*->Right1: Transition[84][Right] + Transition[200][Right] + Transition[201][Left]
 *->Left: Item[7]+Item[8]
 
 // Scene 200 : Proton room
@@ -1792,7 +1793,7 @@ Scene 220
 // Transitions: Right (221-229), Left (199-221)
 // Checks: Item (Item[0])
 Scene 221
-*->*: Boss[4]+Boss[5]+Boss[6]
+*->*: Transition[84][Right] + Transition[200][Right] + Transition[201][Left]
 
 // Scene 222: Storage Room in Bunker (the one that requires a rusty key)
 // Transitions: 222-46 (222-46)
