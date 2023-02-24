@@ -434,20 +434,20 @@ Scene 57
 *->Right: DoubleJump | Grapple | Blink | (Ball + Magnet)
 Right->*: DoubleJump | Grapple | Blink | Ball
 
-// Scene 58
+// Scene 58: Bunk Beds
 // Transitions: Right (58-46), Left0 (57-58), Left1 (59-58)
 // Checks: Lore (Lore[1])
-Scene 58: Bunk Beds
+Scene 58
 $Bottom {Left1, Right}
 Bottom->Left0: Magnet | DoubleJump
 Bottom->Lore: Magnet | DoubleJump // | (Bomb + Ball)
 Left0->Bottom: true
 Left0->Lore: true
 
-// Scene 59
+// Scene 59: Basketball Court
 // Transitions: Right (59-58), Left (60-59)
 // Checks: Lore (Lore[0])
-Scene 59: Basketball Court
+Scene 59
 $Edge {Left, Right}
 Edge->Edge: Grapple | Blink
 Right->Lore: Grapple | Blink
@@ -1556,6 +1556,8 @@ Scene 186
 Left->Right0: Magnet + (Grapple | Blink | DoubleJump)
 *->Right1: Ball + (Magnet | DoubleJump)
 *->Item: Ball + (Magnet | DoubleJump)
+Right1->Left: Ball + Magnet
+Right0->Left: true
 // TODO: Bomb jumps can replace any instance of dj. Left->Right0 can be done with only bomb jumps or grapple+dj.
 
 // Scene 187
