@@ -1161,7 +1161,6 @@ Bottom->Lore: Magnet
 // the conditions to be able to defeat Virus
 Left->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] + Transition[62]
 Repair->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] + Transition[62]
-// TODO - not sure that works
 
 // Scene 140
 // Transitions: Right0 (140-135), Right1 (140-141), Repair (140Repair)
