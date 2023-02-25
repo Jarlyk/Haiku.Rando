@@ -302,8 +302,6 @@ namespace Haiku.Rando.Topology
             //Create nodes for checks in the room
             var checks = FindChecks(sceneId);
 
-            //Hard-coded duplicate check removal for straggler entries (likely disabled entries from experimental moving things around?)
-
 
             //TODO: Perform reachability analysis
             //TODO: Create AStarPath, configure it and generate paths between nodes
@@ -590,7 +588,6 @@ namespace Haiku.Rando.Topology
 
             //TODO: PinionBirdWhistle?
             //TODO: Parts monument detection
-            //TODO: Lore check detection
             
             //TODO: Fight-gated checks; these might just fall out naturally due to just being inactive items?
 
