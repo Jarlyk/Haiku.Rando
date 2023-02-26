@@ -1,5 +1,5 @@
 
-[//]: # ( Haiku Rando 0.4 )
+[//]: # ( Haiku Rando 0.3 )
 
 # Introduction
 This is a randomizer mod for the game Haiku, the Robot.  It is still in development, but is ready for Beta release testing.
