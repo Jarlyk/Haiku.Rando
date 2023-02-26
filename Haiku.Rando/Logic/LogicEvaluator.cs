@@ -143,19 +143,19 @@ namespace Haiku.Rando.Logic
             return check.Type == CheckType.Ability && check.CheckId == (int)id;
         }
 
-        private static bool MatchesType(string stateName, CheckType type)
+        private static bool MatchesType(string stateName, CheckType type) => type switch
         {
-            if (stateName == "Chip") return type == CheckType.Chip;
-            if (stateName == "Slot") return type == CheckType.ChipSlot;
-            if (stateName == "PowerCell") return type == CheckType.PowerCell;
-            if (stateName == "Item") return type == CheckType.Item;
-            if (stateName == "Disruptor") return type == CheckType.MapDisruptor;
-            if (stateName == "Lever") return type == CheckType.Lever;
-            if (stateName == "Coolant") return type == CheckType.Coolant;
-            if (stateName == "TrainStation") return type == CheckType.TrainStation;
-            if (stateName == "Clock") return type == CheckType.Clock;
-            return false;
-        }
+            CheckType.Chip => stateName == "Chip",
+            CheckType.ChipSlot => stateName == "Slot",
+            CheckType.PowerCell => stateName == "PowerCell",
+            CheckType.Item => stateName == "Item",
+            CheckType.MapDisruptor => stateName == "Disruptor",
+            CheckType.Lever => stateName == "Lever",
+            CheckType.Coolant => stateName == "Coolant",
+            CheckType.TrainStation => stateName == "TrainStation",
+            CheckType.Clock => stateName == "Clock",
+            _ => false
+        };
 
         public static string GetStateName(RandoCheck check)
         {
@@ -176,7 +176,7 @@ namespace Haiku.Rando.Logic
                 case CheckType.MapDisruptor:
                     return $"Disruptor[{check.CheckId}]";
                 case CheckType.Lore:
-                    return null;
+                    return $"Lore[{check.CheckId}]";
                 case CheckType.Lever:
                     return $"Lever[{check.CheckId}]";
                 case CheckType.PartsMonument:

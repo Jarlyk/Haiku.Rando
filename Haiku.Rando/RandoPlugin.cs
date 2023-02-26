@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Linq;
+using SysDiag = System.Diagnostics;
 using BepInEx;
 using Haiku.Rando.Checks;
 using Haiku.Rando.Logic;
@@ -23,7 +25,8 @@ namespace Haiku.Rando
         private LogicLayer _baseLogic;
         private CheckRandomizer _randomizer;
         private TransitionRandomizer _transRandomizer;
-        private ulong? _savedSeed;
+
+        private SaveData _saveData;
 
         public void Start()
         {
@@ -32,17 +35,32 @@ namespace Haiku.Rando
             HaikuResources.Init();
             UniversalPickup.InitHooks();
             ShopItemReplacer.InitHooks();
-            CheckManager.InitHooks();
+            CheckManager.Instance.InitHooks(Logger.Log, () => _saveData);
             TransitionManager.InitHooks();
             QoL.InitHooks();
+            Text.Hook();
             
             IL.LoadGame.Start += LoadGame_Start;
             On.PCSaveManager.Load += PCSaveManager_Load;
             On.PCSaveManager.Save += PCSaveManager_Save;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 
+            // prevent CheckChipsWhenGameStarts from giving unexpected chips
+            // (only a partial solution; the real cause of the bug is deeper)
+            On.ReplenishHealth.CheckChipsWhenGameStarts += WarnCheckChips;
+
             //TODO: Add bosses as logic conditions
             //This impacts some transitions
+        }
+
+        private void WarnCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
+        {
+            if (_randomizer == null) orig(self);
+            if (!GameManager.instance.corruptMode)
+            {
+                Logger.LogInfo("CheckChipsWhenGameStarts invoked");
+                Logger.LogInfo(new SysDiag.StackTrace(1).ToString());
+            }
         }
 
         private void ReloadTopology()
@@ -72,23 +90,30 @@ namespace Haiku.Rando
         private void PCSaveManager_Load(On.PCSaveManager.orig_Load orig, PCSaveManager self, string filePath)
         {
             orig(self, filePath);
-            _savedSeed = null;
-            var hasRandoData = self.es3SaveFile.Load<bool>("hasRandoData", false);
-            if (hasRandoData)
+            try
             {
-                _savedSeed = self.es3SaveFile.Load<ulong>("randoSeed", 0UL);
+                _saveData = SaveData.Load(self.es3SaveFile);
+            }
+            catch (Exception err)
+            {
+                Logger.LogError(err.ToString());
             }
         }
 
         private void PCSaveManager_Save(On.PCSaveManager.orig_Save orig, PCSaveManager self, string filePath)
         {
             orig(self, filePath);
-            if (_savedSeed != null && Settings.RandoLevel.Value != RandomizationLevel.None)
+            try
             {
-                self.es3SaveFile.Save("hasRandoData", true);
-                self.es3SaveFile.Save("randoSeed", _savedSeed.Value);
+                if (_saveData != null)
+                {
+                    _saveData.SaveTo(self.es3SaveFile);
+                }
             }
-            self.es3SaveFile.Sync();
+            catch (Exception err)
+            {
+                Logger.LogError(err.ToString());
+            }
         }
 
         private void LoadGame_Start(ILContext il)
@@ -109,7 +134,10 @@ namespace Haiku.Rando
             var level = Settings.RandoLevel.Value;
             if (level != RandomizationLevel.None)
             {
-                _savedSeed = GetSeed(_savedSeed);
+                if (_saveData == null)
+                {
+                    _saveData = new(PickSeed());
+                }
 
                 int? startScene = SpecialScenes.GameStart;
                 const int maxRetries = 200;
@@ -125,8 +153,7 @@ namespace Haiku.Rando
                         Debug.LogWarning($"Randomization failed: attempt {i+1} of {maxRetries}");
 
                         //Iterate the seed
-                        var tmpRandom = new Xoroshiro128Plus(_savedSeed.Value);
-                        _savedSeed = tmpRandom.NextULong();
+                        _saveData.Seed = new Xoroshiro128Plus(_saveData.Seed).NextULong();
                     }
                 }
 
@@ -181,7 +208,9 @@ namespace Haiku.Rando
                 availScenes.Remove(156);
                 availScenes.Remove(127);
 
-                var tmpRandom = new Xoroshiro128Plus(_savedSeed.Value);
+                // Xoroshiro128Plus(UInt64) already mixes the seed bits, so further preprocessing
+                // is not required.
+                var tmpRandom = new Xoroshiro128Plus(_saveData.Seed);
                 startScene = availScenes[tmpRandom.NextRange(0, availScenes.Count)];
             }
             else
@@ -194,14 +223,13 @@ namespace Haiku.Rando
             if (level == RandomizationLevel.Rooms)
             {
                 Debug.Log("** Configuring transition randomization **");
-                _transRandomizer = new TransitionRandomizer(_topology, evaluator, _savedSeed.Value);
+                _transRandomizer = new TransitionRandomizer(_topology, evaluator, _saveData.Seed);
                 _transRandomizer.Randomize();
                 TransitionManager.Instance.Randomizer = _transRandomizer;
             }
 
             Debug.Log("** Configuring check randomization **");
-            _randomizer = new CheckRandomizer(_topology, evaluator, _savedSeed.Value, startScene);
-            _savedSeed = _randomizer.Seed;
+            _randomizer = new CheckRandomizer(_topology, evaluator, _saveData.Seed, startScene);
             bool success = _randomizer.Randomize();
 
             if (success)
@@ -213,24 +241,13 @@ namespace Haiku.Rando
             return success;
         }
 
-        private ulong GetSeed(ulong? savedSeed)
+        private ulong PickSeed()
         {
-            ulong seed;
-            if (savedSeed != null)
+            if (ulong.TryParse(Settings.Seed.Value ?? "", out var seed))
             {
-                seed = savedSeed.Value;
+                return seed;
             }
-            else if (string.IsNullOrEmpty(Settings.Seed.Value))
-            {
-                var tempRandom = new Xoroshiro128Plus();
-                seed = tempRandom.NextULong();
-            }
-            else if (!ulong.TryParse(Settings.Seed.Value, out seed))
-            {
-                seed = (ulong)((long)Settings.Seed.Value.GetHashCode() - int.MinValue);
-            }
-
-            return seed;
+            return new Xoroshiro128Plus().NextULong();
         }
 
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)

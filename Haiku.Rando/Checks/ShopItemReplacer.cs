@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
 using Haiku.Rando.Topology;
@@ -122,7 +124,9 @@ namespace Haiku.Rando.Checks
                     image = HaikuResources.RefDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite;
                     break;
                 case CheckType.Lore:
-                    //TODO
+                    title = Text._LORE_TITLE;
+                    description = Text._LORE_DESCRIPTION;
+                    image = LoadSprite("LoreTablet.png", ref loreTabletSprite);
                     break;
                 case CheckType.Lever:
                     //TODO
@@ -184,6 +188,30 @@ namespace Haiku.Rando.Checks
             }
         }
 
+        private static Sprite loreTabletSprite;
+
+        private static byte[] LoadEmbeddedRes(string name)
+        {
+            using var file = Assembly.GetExecutingAssembly().GetManifestResourceStream("Haiku.Rando.Resources." + name);
+            using var mem = new MemoryStream((int)file.Length);
+            file.CopyTo(mem);
+            return mem.ToArray();
+        }
+
+        private static Sprite LoadSprite(string name, ref Sprite s)
+        {
+            if (s != null)
+            {
+                return s;
+            }
+            var imageData = LoadEmbeddedRes(name);
+            var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+            ImageConversion.LoadImage(tex, imageData, true);
+            tex.filterMode = FilterMode.Point;
+            s = Sprite.Create(tex, new(0, 0, tex.width, tex.height), new(.5f, .5f));
+            return s;
+        }
+
         private static void ShopItemButton_OnEnable(On.ShopItemButton.orig_OnEnable orig, ShopItemButton self)
         {
             var replacer = self.GetComponent<ShopItemReplacer>();
@@ -227,6 +255,7 @@ namespace Haiku.Rando.Checks
                     self.itemImage.sprite = HaikuResources.RefDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite;
                     break;
                 case CheckType.Lore:
+                    self.itemImage.sprite = LoadSprite("LoreTablet.png", ref loreTabletSprite);
                     break;
                 case CheckType.Lever:
                     break;

@@ -8,6 +8,7 @@ using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml;
+using BepInEx.Logging;
 using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
 using Mono.Cecil.Cil;
@@ -30,9 +31,13 @@ namespace Haiku.Rando.Checks
 
         public CheckRandomizer Randomizer { get; set; }
 
+        private Action<LogLevel, string> Log = (_, _) => {};
+        private Func<SaveData> GetCurrentSaveData;
 
-        public static void InitHooks()
+        internal void InitHooks(Action<LogLevel, string> logger, Func<SaveData> getSaveData)
         {
+            Log = logger;
+            GetCurrentSaveData = getSaveData;
             IL.e7FireWaterTrigger.Start += E7FireWaterTrigger_Start;
             On.e7UpgradeShop.TriggerUpgrade += E7UpgradeShop_TriggerUpgrade;
             On.BeeHive.Start += BeeHive_Start;
@@ -126,7 +131,13 @@ namespace Haiku.Rando.Checks
                     oldObject = SceneUtils.FindObjectOfType<Disruptor>().gameObject;
                     break;
                 case CheckType.Lore:
-                    //TODO
+                    var sentences = LoreTabletText[original.CheckId];
+                    oldObject = SceneUtils.FindObjectsOfType<DialogueTrigger>()
+                        .FirstOrDefault(t => t.dialogue.sentences.SequenceEqual(sentences))
+                        ?.gameObject;
+                    oldObject ??= SceneUtils.FindObjectsOfType<MultipleDialogueTrigger>()
+                        .FirstOrDefault(t => t.dialogueGroups.SelectMany(d => d.sentences).SequenceEqual(sentences))
+                        ?.gameObject;
                     break;
                 case CheckType.Lever:
                     oldObject = SceneUtils.FindObjectsOfType<SwitchDoor>().FirstOrDefault(p => p.doorID == original.CheckId)?.gameObject;
@@ -456,7 +467,9 @@ namespace Haiku.Rando.Checks
             return GameManager.instance.chip[GameManager.instance.getChipNumber("b_FastHeal")].collected;
         }
 
-        public static bool AlreadyGotCheck(RandoCheck check) => check.Type switch
+        public static bool AlreadyGotCheck(RandoCheck check) => Instance._AlreadyGotCheck(check);
+
+        private bool _AlreadyGotCheck(RandoCheck check) => check.Type switch
         {
             CheckType.Wrench => GameManager.instance.canHeal,
             CheckType.Bulblet => GameManager.instance.lightBulb,
@@ -470,11 +483,75 @@ namespace Haiku.Rando.Checks
             CheckType.WaterRes => GameManager.instance.waterRes,
             CheckType.TrainStation => GameManager.instance.trainStations[check.CheckId].unlockedStation,
             CheckType.Clock => GameManager.instance.trainUnlocked,
-            CheckType.Lore or CheckType.PartsMonument => false,
+            CheckType.Lore => GetCurrentSaveData().IsLoreCollected(check.CheckId),
+            CheckType.PartsMonument => false,
             _ => throw new ArgumentOutOfRangeException()
         };
 
+        public static readonly List<List<string>> LoreTabletText = new()
+        {
+            new() {"_HUMAN_BREAK_EQUILIBRIUM_1"},
+            new() {"_HUMAN_TECHNOFEAT_1"},
+            new() {"_HUMAN_DESTRUCTION_1"},
+            new() {"_ELEGY", "_ELEGY_1", "_ELEGY_2", "_ELEGY_3", "_ELEGY_4"},
+            new() {"_DRILLS_LORE_1", "_DRILLS_LORE_2"},
+            new() {"_SECRET_LAB_SMALL_1_1"},
+            new() {"_SECRET_LAB_BIG_1"},
+            new() {"_FIRE_ENEMIES_LORE_1"},
+            new() {"_BUNSEN_BURNER_1"},
+            new() {"_FIRE_CULT_LORE_1", "_FIRE_CULT_LORE_2"},
+            new() {"_FIRST_TREE_PROGRAM_1", "_FIRST_TREE_PROGRAM_2"},
+            new() {"_HUMAN_MEMORY_PROGRAM_1"},
+            new() {"_HISTORY_REPEATS_ITSELF_1"},
+            new() {"_THE_ARCHIVES_LORE_1", "_THE_ARCHIVES_LORE_2"},
+            new() {"_THE_ARCHIVES_TRUTH_LORE_1"},
+            new() {"_NATURE_ALWAYS_REVAILS_1", "_NATURE_ALWAYS_REVAILS_2", "_NATURE_ALWAYS_REVAILS_3", "_NATURE_ALWAYS_REVAILS_4"},
+            new() {"_SCUBA_HEAD_HIDDEN_LORE_1", "_SCUBA_HEAD_HIDDEN_LORE_2"},
+            new() {"_SCUBA_HEAD_LORE_1", "_SCUBA_HEAD_LORE_2"},
+            new() {"_WATER_ENERGY_1"},
+            new() {"_FACTORY_SENTIENT_LORE_1", "_FACTORY_SENTIENT_LORE_2"},
+            new() {"_BIG_BROTHER"},
+            new() {"_MONEY_SHRINES_EXPLANATION_1", "_MONEY_SHRINES_EXPLANATION_2", "_MONEY_SHRINES_EXPLANATION_3"},
+            new() {"_BULB_LORE_1", "_BULB_LORE_2"},
+            new() {"_SENTIENT_STATUE_1", "_SENTIENT_STATUE_2"},
+            new() {"_CANDLES_1", "_CANDLES_2"}
+        };
+
+        private void ShowLoreTabletText(int checkId)
+        {
+            if (!(checkId >= 0 && checkId < LoreTabletText.Count))
+            {
+                Log(LogLevel.Error, $"Text for lore tablet #{checkId} requested, but does not exist");
+                return;
+            }
+
+            var dm = DialogueManager.instance;
+            dm.StopAllCoroutines();
+            dm.dialogueAnim.SetBool("isOpen", true);
+            // Do not set dm.isOpen to true here. If the player buys lore from a shop,
+            // DialogueManager will detect the input that confirm the purchase and, if
+            // isOpen is true, call DisplayNextSentence which overwrites the sentence
+            // we wanted to show and stops this coroutine. There is no easy way to coax
+            // DisplayNextSentence into doing what we want, so it's easier to just lie.
+            IEnumerator TypeAllSentences()
+            {
+                foreach (var key in LoreTabletText[checkId])
+                {
+                    yield return dm.TypeSentence(LocalizationSystem.GetLocalizedValue(key));
+                    yield return new WaitForSeconds(1);
+                }
+                dm.isOpen = false;
+                dm.dialogueAnim.SetBool("isOpen", false);
+            }
+            dm.StartCoroutine(TypeAllSentences());
+        }
+
         public static void TriggerCheck(MonoBehaviour self, RandoCheck check)
+        {
+            Instance.DoTriggerCheck(self, check);
+        }
+
+        private void DoTriggerCheck(MonoBehaviour self, RandoCheck check)
         {
             var refPickup = HaikuResources.RefPickupItem;
             bool hasWorldObject = true;
@@ -527,7 +604,8 @@ namespace Haiku.Rando.Checks
                     AchievementManager.instance.CheckNumberOfDisruptorsDestroyed();
                     break;
                 case CheckType.Lore:
-                    //TODO
+                    ShowLoreTabletText(check.CheckId);
+                    GetCurrentSaveData().MarkLoreCollected(check.CheckId);
                     break;
                 case CheckType.Lever:
                     //TODO

@@ -286,6 +286,11 @@ namespace Haiku.Rando.Logic
             return (double)(d*d*d)/(1 + check.ProximityPenalty + shopPenalty);
         }
 
+        public static (string, string) TransitionNodeStates(TransitionNode node) => (
+            $"Transition[{node.SceneId1}][{node.Alias1}]",
+            $"Transition[{node.SceneId2}][{node.Alias2}]"
+        );
+
         private void Explore(int depth, List<InLogicCheck> checksToReplace, List<FrontierEdge> frontier, List<FrontierEdge> explored)
         {
             var pendingExploration = new Stack<FrontierEdge>(frontier);
@@ -324,6 +329,9 @@ namespace Haiku.Rando.Logic
                     }
                     else if (edge.Edge.Destination is TransitionNode node)
                     {
+                        var (s1, s2) = TransitionNodeStates(node);
+                        AddState(s1);
+                        AddState(s2);
                         foreach (var edgeOut in node.Outgoing.Where(e => explored.All(x => x.Edge != e) && pendingExploration.All(x => x.Edge != e)))
                         {
                             //Debug.Log($"Adding to exploration: {edgeOut.SceneId}:{edgeOut.Name} from {edgeOut.Origin.Name} to {edgeOut.Destination.Name}");
@@ -392,6 +400,7 @@ namespace Haiku.Rando.Logic
             if (Settings.IncludeCoolant.Value) AddToPool(CheckType.Coolant);
             if (Settings.IncludeSealants.Value) AddToPool(CheckType.FireRes);
             if (Settings.IncludeSealants.Value) AddToPool(CheckType.WaterRes);
+            if (Settings.IncludeLoreTablets.Value) AddToPool(CheckType.Lore);
 
             //Starting pool contains all the checks we're going to replace eventually
             _startingPool.AddRange(_pool);

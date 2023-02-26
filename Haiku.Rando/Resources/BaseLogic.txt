@@ -205,24 +205,32 @@ Right->Elevator: Light
 *->Down*: false
 Down*->*: false
 
-// Scene 30
+// Scene 30 : Candle Room
 // Transitions: Right (30-31)
-// Checks:
+// Checks: Lore (Lore[24])
 Scene 30
+Right->Lore: true
 
 // Scene 31
 // Transitions: Left0 (32-31), Left2 (23-31), Left1 (30-31)
 // Checks:
 Scene 31
-Left2->*: Magnet
-*->Left1: Magnet + (Blink | DoubleJump | Grapple)
+Left2->Left0: Magnet
+Left2->Left1: Magnet + (Blink | DoubleJump | Grapple)
+Left1->Left0: Magnet
+Left1->Left2: true
+Left0->Left1: Blink | DoubleJump | Grapple
+Left0->Left2: true
 
 // Scene 32 : Hand Room
 // Transitions: Right0 (32-33), Right1 (32-31), Left (34-32)
-// Checks:
+// Checks: Lore (Lore[23])
 Scene 32
 Right1->*: Magnet
 Left->*: Magnet
+Right0->Lore: true
+Right1->Lore: Magnet // | (Bomb + Ball)
+Left->Lore: Magnet // | (Bomb + Ball)
 
 // Scene 33 : Traps room on way to Mainframe
 // Transitions: Right (33-61), Left (32-33)
@@ -244,8 +252,8 @@ Scene 35
 Right1->Right0: Magnet+DoubleJump
 Right1->Chip: Magnet
 Left->Right0: Ball | DoubleJump | Blink | Grapple
-Right0->Left: Boss[6] + (Ball | DoubleJump | Blink | Grapple)
-Right1->Left: Magnet+DoubleJump+Boss[6]
+Right0->Left: Transition[201][Left] + (Ball | DoubleJump | Blink | Grapple)
+Right1->Left: Magnet+DoubleJump+Transition[201][Left]
 
 // Scene 36
 // Transitions: Right (36-196), Left (37-36)
@@ -350,6 +358,13 @@ Right->Left: Magnet | DoubleJump
 // Transitions: Right1 (48-52), Right0 (48-49), Left0 (54-48), Left1 (47-48)
 // Checks:
 Scene 48
+$Bottom {Left1, Right1}
+Bottom->Left0: Magnet | DoubleJump
+Bottom->Right0: (Magnet | DoubleJump) + Ball + Bomb
+Left0->Right0: Ball + Bomb
+Left0->Bottom: true
+Right0->Left0: Ball + (Magnet | DoubleJump)
+Right0->Bottom: Ball
 
 // Scene 49
 // Transitions: Right (49-50), Left (48-49)
@@ -357,12 +372,14 @@ Scene 48
 Scene 49
 *->*: Ball
 
-// Scene 50
+// Scene 50: World Map Monitor Room
 // Transitions: Right (50-196), Left1 (51-50), Left0 (49-50)
-// Checks: Item (Item[3])
+// Checks: Item (Item[3]), Lore (Lore[2])
 Scene 50
+$Checks {Item, Lore}
 Left0->Left1: Ball
-Left0->Item: Ball
+Left0->Checks: Ball
+Left1->Checks: true
 Right->*: false
 *->Left0: false
 Left0->Right: Ball+Blink
@@ -417,17 +434,24 @@ Scene 57
 *->Right: DoubleJump | Grapple | Blink | (Ball + Magnet)
 Right->*: DoubleJump | Grapple | Blink | Ball
 
-// Scene 58
+// Scene 58: Bunk Beds
 // Transitions: Right (58-46), Left0 (57-58), Left1 (59-58)
-// Checks:
+// Checks: Lore (Lore[1])
 Scene 58
-*->Left0: Magnet | DoubleJump
+$Bottom {Left1, Right}
+Bottom->Left0: Magnet | DoubleJump
+Bottom->Lore: Magnet | DoubleJump // | (Bomb + Ball)
+Left0->Bottom: true
+Left0->Lore: true
 
-// Scene 59
+// Scene 59: Basketball Court
 // Transitions: Right (59-58), Left (60-59)
-// Checks:
+// Checks: Lore (Lore[0])
 Scene 59
-*->*: Grapple | Blink
+$Edge {Left, Right}
+Edge->Edge: Grapple | Blink
+Right->Lore: Grapple | Blink
+Left->Lore: true
 
 // Scene 60
 // Transitions: Right1 (60-201), Right0 (60-59)
@@ -652,17 +676,17 @@ Left->*: Ball
 
 // Scene 83 : Bulb Hive
 // Transitions: Right (83-81), Left (63-83)
-// Checks: Bulblet (Bulblet[0]), Lever2 (Lever[21]), Lever1 (Lever[20]), Lever0 (Lever[22])
+// Checks: Bulblet (Bulblet[0]), Lever2 (Lever[21]), Lever1 (Lever[20]), Lever0 (Lever[22]), Lore (Lore[22])
 Scene 83
-Right->Bulblet: Ball + (Magnet + Lever0 | DoubleJump + Lever0 | Lever2 | Lever1)
-Right->Left: Blink + Ball + (Magnet + Lever0 | DoubleJump + Lever0 | Lever2 | Lever1)
+Right->Bulblet: Ball + (Lever0 | Lever1 | Lever2)
+Right->Lore: Ball + (Lever0 | Lever1 | Lever2)
+Right->Left: Blink + Ball + (Lever0 | Lever1 | Lever2)
 Right->Lever0: Ball
-Right->Lever1: Ball + Lever0 + (Magnet | DoubleJump) | Lever1
-Right->Lever2: Ball + (Magnet + Lever0 | DoubleJump + Lever0 | Lever2)
+Right->Lever1: Ball + (Lever0 | Lever1 | Lever2)
+Right->Lever2: Ball + (Lever0 | Lever1 | Lever2)
 Left->Bulblet: Blink
-Left->Right: Blink + Ball + (Lever2 | Bomb + Lever1)
-//TODO: BLJ can bypass the Magnet|DoubleJump requirements
-//A really easy bomb jump is included in this logic, but there's a harder one as well for skips probably
+Left->Right: Blink + Ball + (Lever0 | Lever1 | Lever2)
+Left->Lore: Blink + Ball
 
 // Scene 84 : Electron fight
 // Transitions: Right (84-75)
@@ -798,7 +822,7 @@ Scene 102
 
 // Scene 103
 // Transitions: Right (103-105), Left0 (102-103), Left1 (104-103), Repair (103Repair)
-// Checks:
+// Checks: Lore (Lore[8])
 Scene 103
 Left0->*: FireRes
 Right->*: FireRes
@@ -808,19 +832,27 @@ Repair->Left0: FireRes+Magnet
 Repair->Right: FireRes+Magnet
 Left1->Left0: FireRes+Magnet
 Left1->Right: FireRes+Magnet
+Left0->Lore: FireRes
+Right->Lore: FireRes
+Left1->Lore: FireRes + Magnet
+Repair->Lore: FireRes + Magnet
 
 // Scene 104 : Fire Wheels Incinerator Room
 // Transitions: Right1 (104-106), Right0 (104-103)
-// Checks: PowerCell (PowerCell[4])
+// Checks: PowerCell (PowerCell[4]), Lore (Lore[7])
 Scene 104
 *->Right0: FireRes+Magnet
 Right0->*: FireRes + (Magnet | DoubleJump)
 Right1->PowerCell: FireRes
+Right*->Lore: FireRes + Magnet + (DoubleJump | Blink | Grapple | Ball)
+// ball-jump may belong in another layer?
+// also Power Processor + Bomb can get there in 3 bombs
 
 // Scene 105
 // Transitions: Left (103-105)
-// Checks:
+// Checks: Lore (Lore[9])
 Scene 105
+Left->Lore: true
 
 // Scene 106
 // Transitions: Right (106-74), Left0 (104-106), Left1 (110-106)
@@ -898,12 +930,16 @@ Left->Right: Magnet | DoubleJump | Grapple | Ball | Blink
 Scene 116
 *->*: Ball
 
-// Scene 117
+// Scene 117: Water Ducts elevator
 // Transitions: Elevator (178-117), Right (117-210), Left (116-117)
-// Checks:
+// Checks: Lore (Lore[18])
 Scene 117
-Right->*: WaterRes
-*->Right: WaterRes+Magnet
+$Bottom {Elevator, Left}
+Right->Bottom: WaterRes
+Bottom->Right: WaterRes+Magnet
+Bottom->Lore: Magnet + (DoubleJump | WaterRes + Blink | WaterRes + Grapple)
+Right->Lore: WaterRes + Magnet + DoubleJump | Magnet + Blink | DoubleJump + Blink | Grapple
+// Power Processor + 3-bomb jump can do Bottom->Lore too
 
 // Scene 118
 // Transitions: Right2 (118-121), Right1 (118-119bottom), Right0 (118-119top), Left1 (122-118), Left0 (114-118)
@@ -979,11 +1015,14 @@ Scene 126
 Right->*: Lever + (Grapple | WaterRes)
 Left->Right: Grapple
 
-// Scene 127
+// Scene 127: Lower Water Ducts repair station
 // Transitions: Right (127-128), Left (123-127), Repair (127Repair)
-// Checks:
+// Checks: Lore (Lore[16])
 Scene 127
-Left<->*: Light + (Magnet | DoubleJump)
+$Transition {Left, Right, Repair}
+Transition->Transition: Light + (Magnet | DoubleJump)
+Transition->Lore: Light + (Magnet | DoubleJump)
+// bomb jump can replace Magnet or DoubleJump throughout
 
 // Scene 128
 // Transitions: Right0 (128-207), Right1 (128-206), Left (127-128)
@@ -1021,19 +1060,28 @@ Right1->Right0: WaterRes + (Magnet | DoubleJump)
 
 // Scene 132 : Lune up above (with 'Down' transition that's actually Left) and Ruins vertical room
 // Transitions: Right1 (132-143), Right0 (132-131bottom), Left1 (138-132), Left0 (133-132bottom), Down (133-132top)
-// Checks: Disruptor (MapDisruptor[6]), Lever (Lever[47])
+// Checks: Disruptor (MapDisruptor[6]), Lever (Lever[47]), Lore (Lore[10])
 Scene 132
+$BottomPastLever {Right1, Right0, Left0}
 *<->Down: false
-*->Disruptor: Blink + Magnet | Blink + DoubleJump + Grapple
+BottomPastLever->Disruptor: Blink + (Magnet | DoubleJump)
+BottomPastLever->Lore: Blink + (Magnet | DoubleJump)
+BottomPastLever->Lever: Lever
 Right1->Right0: Magnet | DoubleJump
 Right1->Left0: DoubleJump
 Right1->Left1: Lever
 Right0->Left0: DoubleJump
 Right0->Left1: Lever
+Right0->Right1: true
 Left1->Right0: Lever + (Magnet | DoubleJump)
 Left1->Left0: DoubleJump+Lever
+Left1->Right1: true
+Left1->Disruptor: Lever + Blink + (Magnet | DoubleJump)
+Left1->Lore: Lever + Blink + (Magnet | DoubleJump)
+Left1->Lever: true
 Left0->Left1: Lever
-!Left1->Lever: Lever
+Left0->Right0: true
+Left0->Right1: true
 
 // Scene 133
 // Transitions: Right0 (133-225top), Right1 (133-132bottom), Left (134-133)
@@ -1102,22 +1150,25 @@ Left->Right0: Magnet + (DoubleJump | Blink | Grapple)
 Right1->Right0: Magnet + (DoubleJump | Blink | Grapple)
 *->Item: Magnet + Blink + DoubleJump | Magnet + Grapple
 
-// Scene 139
+// Scene 139: Entrance to Lost Archives
 // Transitions: Right (139-144), Left (138-139), Repair (139Repair)
-// Checks:
+// Checks: Lore (Lore[12])
 Scene 139
-*->Left: Magnet
-*->Right: Boss[7]
-// TODO - not sure that works
+$Bottom {Right, Repair}
+// 2-bomb jump also works for both of these
+Bottom->Left: Magnet
+Bottom->Lore: Magnet
+// the conditions to be able to defeat Virus
+Left->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] + Transition[62]
+Repair->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] + Transition[62]
 
 // Scene 140
 // Transitions: Right0 (140-135), Right1 (140-141), Repair (140Repair)
-// Checks:
+// Checks: Lore (Lore[11])
 Scene 140
-Right0->Repair: Magnet | Blink
-Right0->Right1: Magnet
-Right1->Right0: Magnet
-Repair->Right0: Magnet
+$Bottom {Right1, Repair, Lore}
+Right0->Bottom: Magnet | Blink // or 2-bomb jump
+Bottom->Right0: Magnet
 
 // Scene 141
 // Transitions: Right (141-134), Left (140-141)
@@ -1133,9 +1184,9 @@ Left->PowerCell: Magnet + Grapple | Magnet + Blink + DoubleJump
 
 // Scene 144
 // Transitions: Right (144-5), Left (139-144)
-// Checks:
+// Checks: Lore0 (Lore[15]), Lore1 (Lore[13]), Lore2 (Lore[14])
 Scene 144
-*->Right: false
+Left->Right: false
 
 // Scene 146
 // Transitions: Right (146-154), Train (146-Train)
@@ -1165,31 +1216,36 @@ Left1->Left0: false
 Right1->Left1: Ball+Light
 Left1->Right1: Light
 
-// Scene 152
+// Scene 152: Amplifying Transputer room
 // Transitions: Right1 (152-153), Right0 (152-151), Left1 (161-152bottom), Left0 (161-152top), Left2 (160-152)
-// Checks: Chip (Chip[20])
+// Checks: Chip (Chip[20]), Lore (Lore[4])
 Scene 152
 Left0->Left1: Ball+Light
 Left0->Right0: Ball+Light
 Left0->Left2: Ball+Light
 Left0->Right1: Ball+Light
 Left0->Chip: Ball + Light + (Blink | Grapple)
+Left0->Lore: Light
 Left1->Left2: Ball+Light
 Left1->Right0: Ball+Light
 Left1->Left1: Ball+Light
 Left1->Left0: Ball+Light
 Left1->Chip: Ball + Light + (Blink | Grapple)
+Left1->Lore: Ball + Light
 Right0->Left1: Ball+Light
 Right0->Left0: Ball+Light
 Right0->Left2: Ball+Light
 Right0->Right1: Ball+Light
 Right0->Chip: Ball + Light + (Blink | Grapple)
+Right0->Lore: Ball + Light
 Left2->Chip: Light + (Blink | Grapple)
+Left2->Lore: Light + Ball + (Magnet | DoubleJump)
 Left2->Left0: Light + Ball + (Magnet | DoubleJump)
 Left2->Left1: Light + Ball + (Magnet | DoubleJump)
 Left2->Right0: Light + Ball + (Magnet | DoubleJump)
 Left2->Right1: Light
 Right1->Chip: Light + (Blink | Grapple) + (DoubleJump | Magnet)
+Right1->Lore: Light + Ball + (Magnet | DoubleJump)
 Right1->Left0: Light + Ball + (Magnet | DoubleJump)
 Right1->Left1: Light + Ball + (Magnet | DoubleJump)
 Right1->Left2: Light + (Magnet | DoubleJump)
@@ -1300,11 +1356,12 @@ Scene 163
 Left->Right: Blink + (Magnet | DoubleJump)
 Right->Left: Blink
 
-// Scene 164
+// Scene 164: Hidden Lab Core
 // Transitions: Right (164-163)
-// Checks: Blink (Ability[3])
+// Checks: Blink (Ability[3]), Lore0 (Lore[5]), Lore1 (Lore[6])
 Scene 164
-Right->Blink: Blink + (Magnet | DoubleJump)
+$Checks {Blink, Lore0, Lore1}
+Right->Checks: Blink + (Magnet | DoubleJump)
 
 // Scene 165
 // Transitions: Elevator (165-29), Right (165-155), Down (165-18), Left0 (151-165hidden), Left1 (151-165)
@@ -1498,6 +1555,8 @@ Scene 186
 Left->Right0: Magnet + (Grapple | Blink | DoubleJump)
 *->Right1: Ball + (Magnet | DoubleJump)
 *->Item: Ball + (Magnet | DoubleJump)
+Right1->Left: Ball + Magnet
+Right0->Left: true
 // TODO: Bomb jumps can replace any instance of dj. Left->Right0 can be done with only bomb jumps or grapple+dj.
 
 // Scene 187
@@ -1527,9 +1586,11 @@ Scene 190
 
 // Scene 191
 // Transitions: Right (191-180), Left (194-191)
-// Checks:
+// Checks: Lore (Lore[21])
 Scene 191
-*->*: Ball
+$Exit {Left, Right}
+Exit->Exit: Ball
+Exit->Lore: Ball
 
 // Scene 192
 // Transitions: Left1 (100-192), Left0 (178-192)
@@ -1593,16 +1654,16 @@ Right1->Left: WaterRes
 // Checks:
 Scene 199
 *->Right0: Blink + WaterRes + (Magnet | DoubleJump)
-*->Right1: Boss[4]+Boss[5]+Boss[6]
+*->Right1: Transition[84][Right] + Transition[200][Right] + Transition[201][Left]
 *->Left: Item[7]+Item[8]
 
 // Scene 200 : Proton room
 // Transitions: Right (200-217), Left (198-200)
-// Checks: Coolant (Coolant[0])
+// Checks: Coolant (Coolant[0]), Lore (Lore[19])
 Scene 200
-*->Coolant: FireRes + (Magnet | DoubleJump)
-Left<->*: false
-//(also lore that follows same logic)
+$Checks {Coolant, Lore}
+Right->Checks: FireRes + (Magnet | DoubleJump | Blink | Grapple)
+Left->*: false
 
 // Scene 201 : Neutron fight
 // Transitions: Right (201-35), Left (60-201)
@@ -1630,11 +1691,13 @@ Scene 204
 // Checks:
 Scene 205
 
-// Scene 206
+// Scene 206: Helm-Crawlers Refuge
 // Transitions: Left (128-206)
-// Checks: DoubleJump (Ability[4])
+// Checks: DoubleJump (Ability[4]), Lore (Lore[17])
 Scene 206
 Left->DoubleJump: Light
+Left->Lore: Light + (DoubleJump | Magnet + Blink | Magnet + Grapple)
+// (or a 1-bomb jump)
 
 // Scene 207
 // Transitions: Left0 (120-207), Left1 (128-207)
@@ -1731,7 +1794,7 @@ Scene 220
 // Transitions: Right (221-229), Left (199-221)
 // Checks: Item (Item[0])
 Scene 221
-*->*: Boss[4]+Boss[5]+Boss[6]
+*->*: Transition[84][Right] + Transition[200][Right] + Transition[201][Left]
 
 // Scene 222: Storage Room in Bunker (the one that requires a rusty key)
 // Transitions: 222-46 (222-46)
@@ -1768,12 +1831,14 @@ Scene 227
 
 // Scene 228 : Grapple gauntlet to left of Bulb Drop
 // Transitions: Right (228-66), Left (109-228)
-// Checks: PowerCell (PowerCell[17])
+// Checks: PowerCell (PowerCell[17]), Lore (Lore[3])
 Scene 228
 //TODO: Possible skips chaining double jump and blink
-Left->Right: Grapple
-Right->Left: Grapple
-*->PowerCell: Grapple+Magnet+DoubleJump
+// 2-bomb jump gives Left->Monument
+$Monument {PowerCell, Lore}
+$Exit {Left, Right}
+Exit->Exit: Grapple
+Exit->Monument: Grapple+Magnet+DoubleJump
 
 // Scene 229
 // Transitions: Right (229-193), Left0 (230-229), Left1 (221-229)
@@ -1785,9 +1850,14 @@ Right->*: Magnet | DoubleJump
 
 // Scene 230
 // Transitions: Right1 (230-229), Right0 (230-212)
-// Checks:
+// Checks: Lore (Lore[20])
 Scene 230
-Right1->Right0: Magnet+DoubleJump
+// Blink possible but a bit hazardous because it requires
+// dodging lasers in a tight space; not sure if it qualifies as a "skip"
+Right1->Right0: Magnet + (DoubleJump | Grapple | Blink)
+Right1->Lore: true
+Right0->Lore: true
+Right0->Right1: true
 // TODO: Pretty sure there's several skips here
 
 // Scene 231: Room right of Surface
