@@ -44,6 +44,7 @@ namespace Haiku.Rando.Checks
             On.BeeHive.TriggerBulbItem += BeeHive_TriggerBulbItem;
             On.e29Portal.GiveRewardsGradually += E29Portal_GiveRewardsGradually;
             On.e29PortalRewardChecker.CheckReward += E29PortalRewardChecker_CheckReward;
+            On.ReplenishHealth.CheckChipsWhenGameStarts += ReplenishHealth_CheckChipsWhenGameStarts;
 
             IL.MotherWindUp.Start += MotherWindUp_Start;
             IL.MotherWindUp.EndDialogueAction += MotherWindUp_EndDialogueAction;
@@ -435,6 +436,16 @@ namespace Haiku.Rando.Checks
             }
         }
 
+        private void ReplenishHealth_CheckChipsWhenGameStarts(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
+        {
+            //The chips check only runs when not using randomization
+            //Otherwise it will grant chips for world locations that shouldn't have been set
+            if (Instance.Randomizer == null)
+            {
+                orig(self);
+            }
+        }
+
         private static void MotherWindUp_Start(ILContext il)
         {
             var c = new ILCursor(il);
@@ -474,7 +485,8 @@ namespace Haiku.Rando.Checks
             CheckType.Wrench => GameManager.instance.canHeal,
             CheckType.Bulblet => GameManager.instance.lightBulb,
             CheckType.Ability => HasAbility((AbilityId)check.CheckId),
-            CheckType.Item or CheckType.Chip or CheckType.ChipSlot or CheckType.Coolant =>
+            CheckType.Chip => GameManager.instance.chip[check.CheckId].collected,
+            CheckType.Item or CheckType.ChipSlot or CheckType.Coolant =>
                 GameManager.instance.worldObjects[check.SaveId].collected,
             CheckType.MapDisruptor => GameManager.instance.disruptors[check.CheckId].destroyed,
             CheckType.Lever => GameManager.instance.doors[check.CheckId].opened,
@@ -620,12 +632,18 @@ namespace Haiku.Rando.Checks
                                                              "_POWERCELL",
                                                              "",
                                                              PickupTextDuration);
+
+                    //Even though power cells have a saveId, this is not actually used to update the worldObjects array
+                    //It instead uses that to track the index in the powerCells array, which we've duplicated with checkId
+                    hasWorldObject = false;
+
                     //TODO: Sound effect and particles from PowerCell?
                     AchievementManager.instance.CheckNumbersOfPowercellsCollected();
                     break;
                 case CheckType.Coolant:
                     GameManager.instance.coolingPoints++;
-                    CameraBehavior.instance.ShowLeftCornerUI(refPickup.coolantImage, refPickup.coolantTitle, "", PickupTextDuration);
+                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.RefPickupCoolant.coolantImage, 
+                                                             HaikuResources.RefPickupCoolant.coolantTitle, "", PickupTextDuration);
                     break;
                 case CheckType.FireRes:
                     CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.ItemDesc().fireRes.image.sprite,
