@@ -7,9 +7,11 @@ namespace Haiku.Rando
         private const string presenceKey = "hasRandoData";
         private const string seedKey = "randoSeed";
         private const string collectedLoreKey = "randoCollectedLoreTablets";
+        private const string collectedFillerKey = "randoCollectedFillers";
 
         public ulong Seed;
-        public ulong CollectedLore;
+        public Bitset64 CollectedLore;
+        public Bitset64 CollectedFillers;
 
         public static SaveData Load(ES3File saveFile) =>
             saveFile.Load<bool>(presenceKey, false) ? new(saveFile) : null;
@@ -21,30 +23,17 @@ namespace Haiku.Rando
         private SaveData(ES3File saveFile)
         {
             Seed = saveFile.Load<ulong>(seedKey, 0UL);
-            CollectedLore = saveFile.Load<ulong>("randoCollectedLoreTablets", 0UL);
+            CollectedLore = new(saveFile.Load<ulong>(collectedLoreKey, 0UL));
+            CollectedFillers = new(saveFile.Load<ulong>(collectedFillerKey, 0UL));
         }
 
         public void SaveTo(ES3File saveFile)
         {
             saveFile.Save(presenceKey, true);
             saveFile.Save(seedKey, Seed);
-            saveFile.Save(collectedLoreKey, CollectedLore);
+            saveFile.Save(collectedLoreKey, CollectedLore.Bits);
+            saveFile.Save(collectedFillerKey, CollectedFillers.Bits);
             saveFile.Sync();
-        }
-
-        private static ulong LoreMask(int i)
-        {
-            if (!(i >= 0 && i < 64))
-            {
-                throw new System.IndexOutOfRangeException($"index {i} for lore is out of range [0,64[");
-            }
-            return 1UL << i;
-        }
-
-        public bool IsLoreCollected(int i) => (CollectedLore & LoreMask(i)) != 0;
-        public void MarkLoreCollected(int i)
-        {
-            CollectedLore |= LoreMask(i);
         }
     }
 }

@@ -166,7 +166,8 @@ namespace Haiku.Rando.Checks
                     //These shouldn't be reached, as they're handled earlier
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    // CheckType.Filler is never supposed to be the type of an original check
+                    throw new ArgumentOutOfRangeException($"invalid check type {original.Type}");
             }
 
             if (!oldObject)
@@ -495,8 +496,9 @@ namespace Haiku.Rando.Checks
             CheckType.WaterRes => GameManager.instance.waterRes,
             CheckType.TrainStation => GameManager.instance.trainStations[check.CheckId].unlockedStation,
             CheckType.Clock => GameManager.instance.trainUnlocked,
-            CheckType.Lore => GetCurrentSaveData().IsLoreCollected(check.CheckId),
+            CheckType.Lore => GetCurrentSaveData().CollectedLore.Contains(check.CheckId),
             CheckType.PartsMonument => false,
+            CheckType.Filler => check.CheckId >= CheckRandomizer.MaxFillerChecks || GetCurrentSaveData().CollectedFillers.Contains(check.CheckId),
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -617,7 +619,7 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.Lore:
                     ShowLoreTabletText(check.CheckId);
-                    GetCurrentSaveData().MarkLoreCollected(check.CheckId);
+                    GetCurrentSaveData().CollectedLore.Add(check.CheckId);
                     break;
                 case CheckType.Lever:
                     //TODO
@@ -669,6 +671,17 @@ namespace Haiku.Rando.Checks
                 case CheckType.Clock:
                     //This is never randomized, but is important to logic
                     break;
+                case CheckType.Filler:
+                    if (check.CheckId < CheckRandomizer.MaxFillerChecks)
+                    {
+                        GetCurrentSaveData().CollectedFillers.Add(check.CheckId);
+                    }
+                    else
+                    {
+                        Log(LogLevel.Error, $"picked up excess filler check {check.CheckId}; this should never happen");
+                    }
+                    CameraBehavior.instance.ShowLeftCornerUI(null, Text._NOTHING_TITLE, "", PickupTextDuration);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -701,8 +714,7 @@ namespace Haiku.Rando.Checks
                 case CheckType.MapDisruptor:
                     return "_DISRUPTOR";
                 case CheckType.Lore:
-                    //TODO
-                    break;
+                    return Text._LORE_TITLE;
                 case CheckType.Lever:
                     //TODO
                     break;
@@ -722,6 +734,8 @@ namespace Haiku.Rando.Checks
                 case CheckType.Clock:
                     //This is never randomized, but is important to logic
                     break;
+                case CheckType.Filler:
+                    return Text._NOTHING_TITLE;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

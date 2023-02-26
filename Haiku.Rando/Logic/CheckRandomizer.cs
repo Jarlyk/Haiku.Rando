@@ -21,6 +21,7 @@ namespace Haiku.Rando.Logic
         private readonly List<RandoCheck> _visitedChecks = new List<RandoCheck>();
         private readonly Xoroshiro128Plus _random;
         private bool _randomized;
+        private int _numFillersAdded;
 
         public CheckRandomizer(RandoTopology topology, LogicEvaluator logic, ulong seed, int? startScene)
         {
@@ -239,6 +240,29 @@ namespace Haiku.Rando.Logic
             }
         }
 
+        // This is the maximum number of checks that can fit in a Bitset64.
+        // Any more than that will be left blank (not vanilla), by replacing with
+        // a check for which AlreadyHasCheck returns true always.
+        internal const int MaxFillerChecks = 64;
+
+        private RandoCheck GetArbitraryCheck()
+        {
+            if (_pool.Count > 0)
+            {
+                var last = _pool.Count - 1;
+                var item = _pool[last];
+                _pool.RemoveAt(last);
+                return item;
+            }
+            var filler = new RandoCheck(CheckType.Filler, 0, new(0, 0), _numFillersAdded);
+            if (_numFillersAdded >= MaxFillerChecks)
+            {
+                Debug.Log("Out of filler checks. Will leave placement blank.");
+            }
+            _numFillersAdded++;
+            return filler;
+        }
+
         private void PlaceAllRemainingChecks(List<InLogicCheck> checksToReplace)
         {
             //Find and weigh remaining check locations
@@ -247,21 +271,13 @@ namespace Haiku.Rando.Logic
             //Choose from weighted distribution and replace each check in turn
             while (candidates.Count > 0)
             {
-                if (_pool.Count == 0)
-                {
-                    //No more checks to place; leave the rest as vanilla
-                    Debug.Log($"Ran out of checks to place with {candidates.Count} locations still remaining to populate; leaving as vanilla");
-                    //TODO: Might want to add substitute/duplicate check support
-                    break;
-                }
-
-                var match = _pool[0];
+                // TODO: Might want to add duplicate check support
+                var match = GetArbitraryCheck();
                 var original = candidates.PickItem(_random.NextDouble());
                 candidates.Remove(original);
 
                 Debug.Log($"Remaining checks, replaced {original.Check} with {match}");
                 _checkMapping.Add(original.Check, match);
-                _pool.Remove(match);
                 checksToReplace.Remove(original);
             }
         }
