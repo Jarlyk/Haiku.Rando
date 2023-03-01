@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Linq;
-using SysDiag = System.Diagnostics;
 using BepInEx;
 using Haiku.Rando.Checks;
 using Haiku.Rando.Logic;
@@ -46,7 +45,6 @@ namespace Haiku.Rando
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 
             // prevent CheckChipsWhenGameStarts from giving unexpected chips
-            // (only a partial solution; the real cause of the bug is deeper)
             On.ReplenishHealth.CheckChipsWhenGameStarts += WarnCheckChips;
 
             //TODO: Add bosses as logic conditions
@@ -56,11 +54,6 @@ namespace Haiku.Rando
         private void WarnCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
         {
             if (_randomizer == null) orig(self);
-            if (!GameManager.instance.corruptMode)
-            {
-                Logger.LogInfo("CheckChipsWhenGameStarts invoked");
-                Logger.LogInfo(new SysDiag.StackTrace(1).ToString());
-            }
         }
 
         private void ReloadTopology()
@@ -183,6 +176,26 @@ namespace Haiku.Rando
             if (Settings.StartWithWhistle.Value && !CheckManager.HasItem(ItemId.Whistle))
             {
                 InventoryManager.instance.AddItem((int)ItemId.Whistle);
+            }
+
+            if (Settings.StartWithMaps.Value)
+            {
+                // The following is directly copied from DebugMod's GiveAllMaps.
+                for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
+                {
+                    GameManager.instance.mapTiles[i].explored = true;
+                }
+                for (int j = 0; j < GameManager.instance.disruptors.Length; j++)
+                {
+                    GameManager.instance.disruptors[j].destroyed = true;
+                }
+
+                //Turn on all map markers
+                GameManager.instance.showPowercells = true;
+                GameManager.instance.showHealthStations = true;
+                GameManager.instance.showBankStations = true;
+                GameManager.instance.showVendors = true;
+                GameManager.instance.showTrainStations = true;
             }
 
             if (!success)

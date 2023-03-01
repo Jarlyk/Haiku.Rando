@@ -44,7 +44,6 @@ namespace Haiku.Rando.Checks
             On.BeeHive.TriggerBulbItem += BeeHive_TriggerBulbItem;
             On.e29Portal.GiveRewardsGradually += E29Portal_GiveRewardsGradually;
             On.e29PortalRewardChecker.CheckReward += E29PortalRewardChecker_CheckReward;
-            On.ReplenishHealth.CheckChipsWhenGameStarts += ReplenishHealth_CheckChipsWhenGameStarts;
 
             IL.MotherWindUp.Start += MotherWindUp_Start;
             IL.MotherWindUp.EndDialogueAction += MotherWindUp_EndDialogueAction;
@@ -433,16 +432,6 @@ namespace Haiku.Rando.Checks
             else
             {
                 //Not a mapped check; fall back to standard behavior
-                orig(self);
-            }
-        }
-
-        private void ReplenishHealth_CheckChipsWhenGameStarts(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
-        {
-            //The chips check only runs when not using randomization
-            //Otherwise it will grant chips for world locations that shouldn't have been set
-            if (Instance.Randomizer == null)
-            {
                 orig(self);
             }
         }

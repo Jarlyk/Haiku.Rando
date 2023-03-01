@@ -430,6 +430,10 @@ namespace Haiku.Rando.Logic
             {
                 _pool.RemoveAll(c => c.Type == CheckType.Item && c.CheckId == (int)ItemId.Whistle);
             }
+            if (Settings.StartWithMaps.Value)
+            {
+                _pool.RemoveAll(c => c.Type == CheckType.MapDisruptor);
+            }
         }
 
         private void AddToPool(CheckType checkType)

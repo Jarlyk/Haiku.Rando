@@ -13,6 +13,7 @@ namespace Haiku.Rando
         public static ConfigEntry<bool> RandomStartLocation { get; private set; }
         public static ConfigEntry<bool> StartWithWrench { get; private set; }
         public static ConfigEntry<bool> StartWithWhistle { get; private set; }
+        public static ConfigEntry<bool> StartWithMaps { get; private set; }
 
         public static ConfigEntry<bool> IncludeWrench { get; private set; }
         public static ConfigEntry<bool> IncludeBulblet { get; private set; }
@@ -43,6 +44,7 @@ namespace Haiku.Rando
             RandomStartLocation = config.Bind(General, "Random Start Location", false);
             StartWithWrench = config.Bind(General, "Start With Wrench", false);
             StartWithWhistle = config.Bind(General, "Start with Whistle", false);
+            StartWithMaps = config.Bind(General, "Start with Maps", false);
             //TODO: Load/Save settings to copyable string
             //TODO: Hash display for race sync
             //ConfigManagerUtil.createButton(config, ShowHash, General, "ShowHash", "Show Hash");
