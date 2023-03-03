@@ -161,6 +161,10 @@ namespace Haiku.Rando.Checks
                 case CheckType.Clock:
                     //This is never randomized, but is important to logic
                     break;
+                case CheckType.Filler:
+                    title = Text._NOTHING_TITLE;
+                    description = Text._NOTHING_DESCRIPTION;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -278,6 +282,8 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.Clock:
                     //This is never randomized, but is important to logic
+                    break;
+                case CheckType.Filler:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

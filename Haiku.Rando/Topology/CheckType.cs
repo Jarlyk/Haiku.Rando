@@ -22,6 +22,7 @@ namespace Haiku.Rando.Topology
         FireRes,
         WaterRes,
         TrainStation,
-        Clock
+        Clock,
+        Filler
     }
 }
