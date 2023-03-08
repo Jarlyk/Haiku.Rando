@@ -542,6 +542,41 @@ namespace Haiku.Rando.Topology
                 checks.Add(waterCheck);
             }
 
+            foreach (var rusty in SceneUtils.FindObjectsOfType<Rusty>())
+            {
+                var kind = -1;
+                if (rusty.health)
+                {
+                    kind = (int)RustyType.Health;
+                }
+                else if (rusty.train)
+                {
+                    kind = (int)RustyType.Train;
+                }
+                else if (rusty.vendor)
+                {
+                    kind = (int)RustyType.Vendor;
+                }
+                else if (rusty.bank)
+                {
+                    kind = (int)RustyType.Bank;
+                }
+                else if (rusty.powercell)
+                {
+                    kind = (int)RustyType.PowerCell;
+                }
+                if (kind != -1)
+                {
+                    var check = new RandoCheck(CheckType.MapMarker, sceneId, rusty.transform.position, (int)kind);
+                    check.Alias = "MapMarker";
+                    checks.Add(check);
+                }
+                else
+                {
+                    Debug.Log("unknown Rusty kind");
+                }
+            }
+
             int shopItemIndex = 0;
             foreach (var shop in SceneUtils.FindObjectsOfType<ShopTrigger>())
             {
