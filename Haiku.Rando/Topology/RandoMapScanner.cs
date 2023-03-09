@@ -147,7 +147,7 @@ namespace Haiku.Rando.Topology
                 topology.Serialize(writer);
             }
 
-            //TODO: Create skeleton of logic file with names of transitions/checks in each room
+            // Create skeleton of logic file with names of transitions/checks in each room
             using (var logicFile = File.Open(System.IO.Path.Combine(path, "LogicSkeleton.txt"), FileMode.Create, FileAccess.ReadWrite))
             using (var writer = new StreamWriter(logicFile))
             {
