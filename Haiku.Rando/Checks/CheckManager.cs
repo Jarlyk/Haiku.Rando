@@ -34,6 +34,15 @@ namespace Haiku.Rando.Checks
         private Action<LogLevel, string> Log = (_, _) => {};
         private Func<SaveData> GetCurrentSaveData;
 
+        // ShinyLocation *
+        // CarBatteryLocation *
+        // SealantShopLocation
+        // BeehiveLocation
+        // QuaternLocation *
+        // ShopLocation
+        // MotherLocation
+        // RustyLocation
+
         internal void InitHooks(Action<LogLevel, string> logger, Func<SaveData> getSaveData)
         {
             Log = logger;
@@ -42,8 +51,6 @@ namespace Haiku.Rando.Checks
             On.e7UpgradeShop.TriggerUpgrade += E7UpgradeShop_TriggerUpgrade;
             On.BeeHive.Start += BeeHive_Start;
             On.BeeHive.TriggerBulbItem += BeeHive_TriggerBulbItem;
-            On.e29Portal.GiveRewardsGradually += E29Portal_GiveRewardsGradually;
-            On.e29PortalRewardChecker.CheckReward += E29PortalRewardChecker_CheckReward;
 
             IL.MotherWindUp.Start += MotherWindUp_Start;
             IL.MotherWindUp.EndDialogueAction += MotherWindUp_EndDialogueAction;
@@ -99,139 +106,25 @@ namespace Haiku.Rando.Checks
                 return;
             }
 
-            GameObject oldObject = null;
-            bool midAir = false;
-            bool reuseObject = false;
-
-            switch (original.Type)
-            {
-                case CheckType.Wrench:
-                    oldObject = SceneUtils.FindObjectOfType<PickupWrench>().gameObject;
-                    break;
-                case CheckType.Bulblet:
-                    oldObject = SceneUtils.FindObjectOfType<PickupBulb>().gameObject;
-                    break;
-                case CheckType.Ability:
-                    oldObject = SceneUtils.FindObjectOfType<UnlockTutorial>().gameObject;
-                    midAir = true;
-                    break;
-                case CheckType.Item:
-                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.itemID == original.CheckId && p.saveID == original.SaveId)?.gameObject;
-                    reuseObject = original.CheckId != (int)ItemId.CapsuleFragment;
-                    break;
-                case CheckType.Chip:
-                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.triggerChip && GameManager.instance.getChipNumber(p.chipIdentifier) == original.CheckId)?.gameObject;
-                    reuseObject = true;
-                    break;
-                case CheckType.ChipSlot:
-                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.triggerChipSlot && p.chipSlotNumber == original.CheckId)?.gameObject;
-                    reuseObject = false;
-                    break;
-                case CheckType.MapDisruptor:
-                    oldObject = SceneUtils.FindObjectOfType<Disruptor>().gameObject;
-                    break;
-                case CheckType.Lore:
-                    var sentences = LoreTabletText[original.CheckId];
-                    oldObject = SceneUtils.FindObjectsOfType<DialogueTrigger>()
-                        .FirstOrDefault(t => t.dialogue.sentences.SequenceEqual(sentences))
-                        ?.gameObject;
-                    oldObject ??= SceneUtils.FindObjectsOfType<MultipleDialogueTrigger>()
-                        .FirstOrDefault(t => t.dialogueGroups.SelectMany(d => d.sentences).SequenceEqual(sentences))
-                        ?.gameObject;
-                    break;
-                case CheckType.Lever:
-                    oldObject = SceneUtils.FindObjectsOfType<SwitchDoor>().FirstOrDefault(p => p.doorID == original.CheckId)?.gameObject;
-                    break;
-                case CheckType.PartsMonument:
-                    //TODO
-                    break;
-                case CheckType.PowerCell:
-                    oldObject = SceneUtils.FindObjectsOfType<PowerCell>().FirstOrDefault(p => p.saveID == original.SaveId)?.gameObject;
-                    midAir = true;
-                    break;
-                case CheckType.Coolant:
-                    oldObject = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(p => p.triggerCoolant && p.saveID == original.SaveId)?.gameObject;
-                    reuseObject = true;
-                    break;
-                case CheckType.TrainStation:
-                    oldObject = SceneUtils.FindObjectOfType<TrainTicket>().gameObject;
-                    //TODO
-                    break;
-                case CheckType.Clock:
-                    //This is never randomized, but is important to logic
-                    break;
-                case CheckType.FireRes:
-                case CheckType.WaterRes:
-                    //These shouldn't be reached, as they're handled earlier
-                    break;
-                default:
-                    // CheckType.Filler is never supposed to be the type of an original check
-                    throw new ArgumentOutOfRangeException($"invalid check type {original.Type}");
-            }
-
-            if (!oldObject)
-            {
-                Debug.Log($"Failed to find original object for check {original} in order to replace it");
-                var pickups = SceneUtils.FindObjectsOfType<PickupItem>();
-                Debug.Log($"Scene currently has {pickups.Length} PickupItem instances");
-                return;
-            }
-
-            GameObject newObject = null;
-            if (reuseObject)
-            {
-                newObject = oldObject;
-            }
-            else
-            {
-                oldObject.SetActive(false);
-                var oldPickup = oldObject.GetComponent<PickupItem>();
-                if (oldPickup)
-                {
-                    oldPickup.saveID = replacement.SaveId;
-                }
-
-                newObject = Object.Instantiate(HaikuResources.PrefabGenericPickup, oldObject.transform.position, oldObject.transform.rotation);
-
-                if (original.Type == CheckType.Bulblet && !GameManager.instance.bosses[2].defeated)
-                {
-                    //Bulblet pickup gets activated upon boss death
-                    newObject.SetActive(false);
-                }
-            }
-
-            if (newObject)
-            {
-                var universalPickup = newObject.AddComponent<UniversalPickup>();
-                universalPickup.check = replacement;
-                universalPickup.midAir = midAir;
-
-                var pickup = newObject.GetComponent<PickupItem>();
-                pickup.saveID = replacement.SaveId;
-
-                //Special-case: Car Battery death object linkage
-                if (sceneId == 69 && original.Type == CheckType.Chip)
-                {
-                    var carBattery = SceneUtils.FindObjectOfType<CarBattery>();
-                    carBattery.deathObject = newObject;
-
-                    var rb = newObject.AddComponent<Rigidbody2D>();
-                    rb.gravityScale = 0;
-                    var collider = newObject.AddComponent<CircleCollider2D>();
-                    collider.radius = 0.1f;
-                    newObject.layer = (int)LayerId.GroundCollision;
-                    //TODO: Go to Car Battery and find the actual settings for this
-                }
-
-                //Special case: Quatern checks start disabled
-                if (sceneId == SpecialScenes.Quatern)
-                {
-                    newObject.SetActive(false);
-                }
-
-                _checkObjects.Add(replacement, newObject);
-            }
+            Replacer(original)(replacement);
         }
+
+        private Action<RandoCheck> Replacer(RandoCheck orig) => orig.Type switch
+        {
+            CheckType.Wrench => UniversalPickup.ReplaceWrench,
+            CheckType.Bulblet => UniversalPickup.ReplaceBulblet,
+            CheckType.Ability => UniversalPickup.ReplaceAbility,
+            CheckType.Item => r => UniversalPickup.ReplaceItem(orig, r),
+            CheckType.Chip => r => UniversalPickup.ReplaceChip(orig, r),
+            CheckType.ChipSlot => r => UniversalPickup.ReplaceChipSlot(orig, r),
+            CheckType.MapDisruptor => UniversalPickup.ReplaceMapDisruptor,
+            CheckType.Lore => r => UniversalPickup.ReplaceLore(orig, r),
+            CheckType.Lever => r => UniversalPickup.ReplaceLever(orig, r),
+            CheckType.PowerCell => r => UniversalPickup.ReplaceLever(orig, r),
+            CheckType.Coolant => r => UniversalPickup.ReplaceCoolant(orig, r),
+            CheckType.TrainStation => UniversalPickup.ReplaceTrainStation,
+            _ => throw new ArgumentOutOfRangeException($"invalid check type {orig.Type}")
+        };
 
         private void ReplaceShopCheck(RandoCheck original, RandoCheck replacement)
         {
@@ -350,90 +243,6 @@ namespace Haiku.Rando.Checks
             }
 
             orig(self);
-        }
-
-        private static IEnumerator E29Portal_GiveRewardsGradually(On.e29Portal.orig_GiveRewardsGradually orig, e29Portal self, int startCount)
-        {
-            if (Instance.Randomizer == null)
-            {
-                var result = orig(self, startCount);
-                while (result.MoveNext())
-                {
-                    yield return result.Current;
-                }
-
-                yield break;
-            }
-
-            for (int i = startCount; i < self.cachedCount; i++)
-            {
-                yield return new WaitForSeconds(1.6f);
-                self.miniTeleporterAnim.SetTrigger("reward");
-                SoundManager.instance.PlayOneShot(self.giveRewardSound);
-                GameManager.instance.lastPowercellCount = i + 1;
-                if (self.rewardObjects[i].name.Contains("_Chip"))
-                {
-                    var check = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Type == CheckType.Chip && c.SceneId == SpecialScenes.Quatern);
-                    if (check != null && Instance.Randomizer.CheckMapping.TryGetValue(check, out var replacement))
-                    {
-                        Instance._checkObjects[replacement].SetActive(!AlreadyGotCheck(replacement));
-                    }
-                    else
-                    {
-                        self.rewardObjects[i].SetActive(!GameManager.instance.worldObjects[self.chipSaveID].collected);
-                    }
-                }
-                else if (self.rewardObjects[i].name.Contains("_Health fragment 1"))
-                {
-                    var check = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Alias == "Item[3]0" && c.SceneId == SpecialScenes.Quatern);
-                    if (check != null && Instance.Randomizer.CheckMapping.TryGetValue(check, out var replacement))
-                    {
-                        Instance._checkObjects[replacement].SetActive(!AlreadyGotCheck(replacement));
-                    }
-                    else
-                    {
-                        self.rewardObjects[i].SetActive(!GameManager.instance.worldObjects[self.healthFragment1SaveID].collected);
-                    }
-                }
-                else if (self.rewardObjects[i].name.Contains("_Health fragment 2"))
-                {
-                    var check = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Alias == "Item[3]1" && c.SceneId == SpecialScenes.Quatern);
-                    if (check != null && Instance.Randomizer.CheckMapping.TryGetValue(check, out var replacement))
-                    {
-                        Instance._checkObjects[replacement].SetActive(!AlreadyGotCheck(replacement));
-                    }
-                    else
-                    {
-                        self.rewardObjects[i].SetActive(!GameManager.instance.worldObjects[self.healthFragment2SaveID].collected);
-                    }
-                }
-                else
-                {
-                    self.rewardObjects[i].SetActive(true);
-                }
-            }
-        }
-
-        private static void E29PortalRewardChecker_CheckReward(On.e29PortalRewardChecker.orig_CheckReward orig, e29PortalRewardChecker self)
-        {
-            if (Instance.Randomizer == null)
-            {
-                orig(self);
-                return;
-            }
-
-            var oldCheck = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.SaveId == self.objectSaveID);
-            if (oldCheck != null && Instance.Randomizer.CheckMapping.TryGetValue(oldCheck, out var newCheck))
-            {
-                //bool enoughCells = self.neededPowercells <= GameManager.instance.lastPowercellCount;
-                //Instance._checkObjects[newCheck].SetActive(enoughCells && !AlreadyGotCheck(newCheck));
-                //Do nothing: Handle at the check level
-            }
-            else
-            {
-                //Not a mapped check; fall back to standard behavior
-                orig(self);
-            }
         }
 
         private static void MotherWindUp_Start(ILContext il)

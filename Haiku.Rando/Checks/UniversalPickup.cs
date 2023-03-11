@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Haiku.Rando.Topology;
@@ -85,6 +86,157 @@ namespace Haiku.Rando.Checks
                 if (!pickup.collected)
                     pickup.TriggerPickup();
             }
+        }
+
+        internal static void ReplaceWrench(RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectOfType<PickupWrench>().gameObject;
+            Replace(obj, replacement, false);
+        }
+
+        internal static void ReplaceBulblet(RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectOfType<PickupBulb>().gameObject;
+            var newObj = Replace(obj, replacement, false);
+
+            if (!GameManager.instance.bosses[2].defeated)
+            {
+                //Bulblet pickup gets activated upon boss death
+                newObj.SetActive(false);
+            }
+        }
+
+        internal static void ReplaceAbility(RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectOfType<UnlockTutorial>().gameObject;
+            Replace(obj, replacement, true);
+        }
+
+        internal static void ReplaceItem(RandoCheck orig, RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(
+                p => p.itemID == orig.CheckId && p.saveID == orig.SaveId)?.gameObject;
+            if (orig.CheckId == (int)ItemId.CapsuleFragment)
+            {
+                var newObj = Replace(obj, replacement, false);
+                if (orig.SceneId == SpecialScenes.Quatern)
+                {
+                    newObj.SetActive(false);
+                    QuaternRewardReplacer.ReplaceCheck(orig, replacement);
+                }
+            }
+            else
+            {
+                Attach(obj, replacement, false);
+            }
+        }
+
+        internal static void ReplaceChip(RandoCheck orig, RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(
+                p => p.triggerChip &&
+                GameManager.instance.getChipNumber(p.chipIdentifier) == orig.CheckId)?.gameObject;
+            Attach(obj, replacement, false);
+            if (orig.SceneId == 69)
+            {
+                LinkToCarBattery(obj);
+            }
+            else if (orig.SceneId == SpecialScenes.Quatern)
+            {
+                obj.SetActive(false);
+                QuaternRewardReplacer.ReplaceCheck(orig, replacement);
+            }
+        }
+
+        internal static void ReplaceChipSlot(RandoCheck orig, RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(
+                p => p.triggerChipSlot && p.chipSlotNumber == orig.CheckId)?.gameObject;
+            Replace(obj, replacement, false);
+        }
+
+        internal static void ReplaceMapDisruptor(RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectOfType<Disruptor>().gameObject;
+            Replace(obj, replacement, false);
+        }
+
+        internal static void ReplaceLore(RandoCheck orig, RandoCheck replacement)
+        {
+            var sentences = CheckManager.LoreTabletText[orig.CheckId];
+            var oldObject = SceneUtils.FindObjectsOfType<DialogueTrigger>()
+                .FirstOrDefault(t => t.dialogue.sentences.SequenceEqual(sentences))
+                ?.gameObject;
+            oldObject ??= SceneUtils.FindObjectsOfType<MultipleDialogueTrigger>()
+                .FirstOrDefault(t => t.dialogueGroups.SelectMany(d => d.sentences).SequenceEqual(sentences))
+                ?.gameObject;
+            Replace(oldObject, replacement, false);
+        }
+
+        internal static void ReplaceLever(RandoCheck orig, RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectsOfType<SwitchDoor>().FirstOrDefault(
+                p => p.doorID == orig.CheckId)?.gameObject;
+            Replace(obj, replacement, false);
+        }
+
+        internal static void ReplacePowerCell(RandoCheck orig, RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectsOfType<PowerCell>().FirstOrDefault(
+                p => p.saveID == orig.SaveId)?.gameObject;
+            Replace(obj, replacement, true);
+        }
+
+        internal static void ReplaceCoolant(RandoCheck orig, RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(
+                p => p.triggerCoolant && p.saveID == orig.SaveId)?.gameObject;
+            Attach(obj, replacement, false);
+        }
+
+        internal static void ReplaceTrainStation(RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectOfType<TrainTicket>().gameObject;
+            Replace(obj, replacement, false);
+        }
+
+        private static void Attach(GameObject obj, RandoCheck replacement, bool midAir)
+        {
+            var universalPickup = obj.AddComponent<UniversalPickup>();
+            universalPickup.check = replacement;
+            universalPickup.midAir = midAir;
+
+            var pickup = obj.GetComponent<PickupItem>();
+            pickup.saveID = replacement.SaveId;
+        }
+
+        //Special-case: Car Battery death object linkage
+        private static void LinkToCarBattery(GameObject obj)
+        {
+            var carBattery = SceneUtils.FindObjectOfType<CarBattery>();
+            carBattery.deathObject = obj;
+
+            var rb = obj.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0;
+            var collider = obj.AddComponent<CircleCollider2D>();
+            collider.radius = 0.1f;
+            obj.layer = (int)LayerId.GroundCollision;
+            //TODO: Go to Car Battery and find the actual settings for this
+        }
+
+        private static GameObject Replace(GameObject oldObject, RandoCheck replacement, bool midAir)
+        {
+            oldObject.SetActive(false);
+            var oldPickup = oldObject.GetComponent<PickupItem>();
+            if (oldPickup)
+            {
+                oldPickup.saveID = replacement.SaveId;
+            }
+
+            var newObject = UnityEngine.Object.Instantiate(HaikuResources.PrefabGenericPickup, oldObject.transform.position, oldObject.transform.rotation);
+
+            Attach(newObject, replacement, midAir);
+            return newObject;
         }
     }
 }

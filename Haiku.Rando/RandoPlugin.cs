@@ -33,6 +33,7 @@ namespace Haiku.Rando
 
             HaikuResources.Init();
             UniversalPickup.InitHooks();
+            QuaternRewardReplacer.InitHooks();
             ShopItemReplacer.InitHooks();
             CheckManager.Instance.InitHooks(Logger.Log, () => _saveData);
             TransitionManager.InitHooks();
