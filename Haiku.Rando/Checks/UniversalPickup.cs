@@ -103,6 +103,7 @@ namespace Haiku.Rando.Checks
             {
                 //Bulblet pickup gets activated upon boss death
                 newObj.SetActive(false);
+                BeeHiveItemReplacer.ReplaceCheck(replacement, newObj);
             }
         }
 
@@ -137,14 +138,18 @@ namespace Haiku.Rando.Checks
                 p => p.triggerChip &&
                 GameManager.instance.getChipNumber(p.chipIdentifier) == orig.CheckId)?.gameObject;
             Attach(obj, replacement, false);
-            if (orig.SceneId == 69)
+            switch (orig.SceneId)
             {
-                LinkToCarBattery(obj);
-            }
-            else if (orig.SceneId == SpecialScenes.Quatern)
-            {
-                obj.SetActive(false);
-                QuaternRewardReplacer.ReplaceCheck(orig, replacement);
+                case 69:
+                    LinkToCarBattery(obj);
+                    break;
+                case SpecialScenes.Quatern:
+                    obj.SetActive(false);
+                    QuaternRewardReplacer.ReplaceCheck(orig, replacement);
+                    break;
+                case 95:
+                    MotherRewardReplacer.ReplaceCheck(replacement);
+                    break;
             }
         }
 

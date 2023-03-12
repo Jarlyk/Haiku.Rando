@@ -49,11 +49,6 @@ namespace Haiku.Rando.Checks
             GetCurrentSaveData = getSaveData;
             IL.e7FireWaterTrigger.Start += E7FireWaterTrigger_Start;
             On.e7UpgradeShop.TriggerUpgrade += E7UpgradeShop_TriggerUpgrade;
-            On.BeeHive.Start += BeeHive_Start;
-            On.BeeHive.TriggerBulbItem += BeeHive_TriggerBulbItem;
-
-            IL.MotherWindUp.Start += MotherWindUp_Start;
-            IL.MotherWindUp.EndDialogueAction += MotherWindUp_EndDialogueAction;
         }
 
         public void OnSceneLoaded(int sceneId)
@@ -120,7 +115,7 @@ namespace Haiku.Rando.Checks
             CheckType.MapDisruptor => UniversalPickup.ReplaceMapDisruptor,
             CheckType.Lore => r => UniversalPickup.ReplaceLore(orig, r),
             CheckType.Lever => r => UniversalPickup.ReplaceLever(orig, r),
-            CheckType.PowerCell => r => UniversalPickup.ReplaceLever(orig, r),
+            CheckType.PowerCell => r => UniversalPickup.ReplacePowerCell(orig, r),
             CheckType.Coolant => r => UniversalPickup.ReplaceCoolant(orig, r),
             CheckType.TrainStation => UniversalPickup.ReplaceTrainStation,
             _ => throw new ArgumentOutOfRangeException($"invalid check type {orig.Type}")
@@ -208,73 +203,6 @@ namespace Haiku.Rando.Checks
             {
                 orig(self, fireWater);
             }
-        }
-
-        private static void BeeHive_Start(On.BeeHive.orig_Start orig, BeeHive self)
-        {
-            if (Instance.Randomizer != null)
-            {
-                if (!GameManager.instance.bosses[self.bossID].defeated)
-                {
-                    var oldCheck = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Type == CheckType.Bulblet);
-                    if (oldCheck != null && !AlreadyGotCheck(Instance.Randomizer.CheckMapping[oldCheck]))
-                    {
-                        self.bulbObject.SetActive(false);
-                    }
-                }
-            }
-            orig(self);
-        }
-
-        private static void BeeHive_TriggerBulbItem(On.BeeHive.orig_TriggerBulbItem orig, BeeHive self)
-        {
-            if (Instance.Randomizer == null)
-            {
-                orig(self);
-                return;
-            }
-
-            var bulbCheck = Instance.Randomizer.CheckMapping.Keys.FirstOrDefault(c => c.Type == CheckType.Bulblet);
-            if (bulbCheck != null)
-            {
-                //Instead of activating the original pickup object, we want to activate the new one instead
-                var newCheck = Instance.Randomizer.CheckMapping[bulbCheck];
-                self.bulbPickup = Instance._checkObjects[newCheck];
-            }
-
-            orig(self);
-        }
-
-        private static void MotherWindUp_Start(ILContext il)
-        {
-            var c = new ILCursor(il);
-
-            c.GotoNext(i => i.MatchBrfalse(out _));
-            c.Emit(OpCodes.Pop);
-            c.EmitDelegate((Func<bool>)IsMotherWindUpCollected);
-        }
-
-        private static void MotherWindUp_EndDialogueAction(ILContext il)
-        {
-            var c = new ILCursor(il);
-
-            c.GotoNext(i => i.MatchBrfalse(out _));
-            c.Emit(OpCodes.Pop);
-            c.EmitDelegate((Func<bool>)IsMotherWindUpCollected);
-        }
-
-        private static bool IsMotherWindUpCollected()
-        {
-            var sceneId = SceneManager.GetActiveScene().buildIndex;
-            var oldChecks = Instance.Randomizer.Topology.Scenes[sceneId].Nodes.OfType<RandoCheck>();
-            var oldCheck = oldChecks.First(c => c.Type == CheckType.Chip);
-            if (Instance.Randomizer.CheckMapping.TryGetValue(oldCheck, out var newCheck))
-            {
-                return AlreadyGotCheck(newCheck);
-            }
-
-            //Check wasn't replaced, so use original logic
-            return GameManager.instance.chip[GameManager.instance.getChipNumber("b_FastHeal")].collected;
         }
 
         public static bool AlreadyGotCheck(RandoCheck check) => Instance._AlreadyGotCheck(check);
