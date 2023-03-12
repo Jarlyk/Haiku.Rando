@@ -11,8 +11,6 @@ using System.Xml;
 using BepInEx.Logging;
 using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -24,10 +22,6 @@ namespace Haiku.Rando.Checks
         public static readonly CheckManager Instance = new CheckManager();
 
         private const float PickupTextDuration = 4f;
-
-        private readonly Dictionary<RandoCheck, GameObject> _checkObjects = new Dictionary<RandoCheck, GameObject>();
-        private RandoCheck _fireResReplacement;
-        private RandoCheck _waterResReplacement;
 
         public CheckRandomizer Randomizer { get; set; }
 
@@ -47,8 +41,6 @@ namespace Haiku.Rando.Checks
         {
             Log = logger;
             GetCurrentSaveData = getSaveData;
-            IL.e7FireWaterTrigger.Start += E7FireWaterTrigger_Start;
-            On.e7UpgradeShop.TriggerUpgrade += E7UpgradeShop_TriggerUpgrade;
         }
 
         public void OnSceneLoaded(int sceneId)
@@ -65,7 +57,6 @@ namespace Haiku.Rando.Checks
                 return;
             }
 
-            _checkObjects.Clear();
             foreach (var original in scene.Nodes.OfType<RandoCheck>())
             {
                 if (Randomizer.CheckMapping.TryGetValue(original, out var replacement))
@@ -81,23 +72,6 @@ namespace Haiku.Rando.Checks
             if (original.IsShopItem)
             {
                 ReplaceShopCheck(original, replacement);
-                return;
-            }
-
-            //Fire/water checks are injected directly into the e7 shop flow
-            if (original.Type == CheckType.FireRes)
-            {
-                _fireResReplacement = replacement;
-                var trigger = SceneUtils.FindObjectsOfType<e7FireWaterTrigger>().First(t => t.fireWater);
-                trigger.dialogue.sentence = GetSpoilerText(replacement);
-                return;
-            }
-
-            if (original.Type == CheckType.WaterRes)
-            {
-                _waterResReplacement = replacement;
-                var trigger = SceneUtils.FindObjectsOfType<e7FireWaterTrigger>().First(t => !t.fireWater);
-                trigger.dialogue.sentence = GetSpoilerText(replacement);
                 return;
             }
 
@@ -117,6 +91,8 @@ namespace Haiku.Rando.Checks
             CheckType.Lever => r => UniversalPickup.ReplaceLever(orig, r),
             CheckType.PowerCell => r => UniversalPickup.ReplacePowerCell(orig, r),
             CheckType.Coolant => r => UniversalPickup.ReplaceCoolant(orig, r),
+            CheckType.FireRes => SealantShopItemReplacer.ReplaceFire,
+            CheckType.WaterRes => SealantShopItemReplacer.ReplaceWater,
             CheckType.TrainStation => UniversalPickup.ReplaceTrainStation,
             _ => throw new ArgumentOutOfRangeException($"invalid check type {orig.Type}")
         };
@@ -152,56 +128,6 @@ namespace Haiku.Rando.Checks
                 default:
                     //Other types of checks will never show up in a standard item shop
                     return false;
-            }
-        }
-
-        private static void E7FireWaterTrigger_Start(ILContext il)
-        {
-            var c = new ILCursor(il);
-
-            //Position after reading fireWater and just before the jump
-            c.GotoNext(i => i.MatchLdarg(0),
-                       i => i.MatchLdfld(typeof(e7FireWaterTrigger), "fireWater"),
-                       i => i.MatchBrfalse(out _));
-            c.Index += 2;
-
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate<Func<bool, e7FireWaterTrigger, bool>>(HandleFireWaterCheck);
-            var end = c.DefineLabel();
-            c.Emit(OpCodes.Brtrue, end);
-            c.Emit(OpCodes.Ldarg_0);
-            c.Emit(OpCodes.Ldfld, typeof(e7FireWaterTrigger).GetField("fireWater", BindingFlags.Instance | BindingFlags.NonPublic));
-
-            c.GotoNext(i => i.MatchRet());
-            c.MarkLabel(end);
-        }
-
-        private static bool HandleFireWaterCheck(bool fireWater, e7FireWaterTrigger self)
-        {
-            RandoCheck check = fireWater ? Instance._fireResReplacement : Instance._waterResReplacement;
-            if (check == null) return false;
-
-            if (AlreadyGotCheck(check))
-            {
-                self.anim.SetTrigger("powerOn");
-                self.triggered = true;
-            }
-
-            return true;
-        }
-
-        private static void E7UpgradeShop_TriggerUpgrade(On.e7UpgradeShop.orig_TriggerUpgrade orig, e7UpgradeShop self, bool fireWater)
-        {
-            var check = fireWater ? Instance._fireResReplacement : Instance._waterResReplacement;
-
-            if (check != null)
-            {
-                if (AlreadyGotCheck(check)) return;
-                TriggerCheck(self, check);
-            }
-            else
-            {
-                orig(self, fireWater);
             }
         }
 
@@ -420,7 +346,7 @@ namespace Haiku.Rando.Checks
             SoundManager.instance.PlayOneShot(refPickup.pickupSFXPath);
         }
 
-        private static string GetSpoilerText(RandoCheck check)
+        internal static string GetSpoilerText(RandoCheck check)
         {
             switch (check.Type)
             {
