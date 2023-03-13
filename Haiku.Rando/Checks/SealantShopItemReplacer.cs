@@ -90,7 +90,7 @@ namespace Haiku.Rando.Checks
             {
                 throw new InvalidOperationException("attempted to replace fire sealant check without the shop being present");
             }
-            trigger.dialogue.sentence = CheckManager.GetSpoilerText(replacement);
+            trigger.dialogue.sentence = UIDef.Of(replacement).Name;
             var rt = trigger.gameObject.AddComponent<SealantShopItemReplacer>();
             if (!shop.gameObject.TryGetComponent<SealantShopItemReplacer>(out var rs))
             {

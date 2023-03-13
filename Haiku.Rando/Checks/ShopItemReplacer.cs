@@ -82,94 +82,8 @@ namespace Haiku.Rando.Checks
             var check = replacer.check;
             if (check == null) return;
 
-            string title = "";
-            string description = "";
-            Sprite image = null;
-            switch (check.Type)
-            {
-                case CheckType.Wrench:
-                    title = "_HEALING_WRENCH_TITLE";
-                    description = "_HEALING_WRENCH_DESCRIPTION";
-                    image = InventoryManager.instance.items[(int)ItemId.Wrench].image;
-                    break;
-                case CheckType.Bulblet:
-                    title = "_LIGHT_BULB_TITLE";
-                    description = "_LIGHT_BULB_DESCRIPTION";
-                    image = HaikuResources.ItemDesc().lightBulb.image.sprite;
-                    break;
-                case CheckType.Ability:
-                    var refUnlock = HaikuResources.RefUnlockTutorial;
-                    title = refUnlock.abilities[check.CheckId].title;
-                    description = refUnlock.abilities[check.CheckId].controls;
-                    image = refUnlock.abilities[check.CheckId].image; //TODO: Should this grab from menu canvas instead?
-                    break;
-                case CheckType.Item:
-                    title = InventoryManager.instance.items[check.CheckId].itemName;
-                    description = InventoryManager.instance.items[check.CheckId].itemDescription;
-                    image = InventoryManager.instance.items[check.CheckId].image;
-                    break;
-                case CheckType.Chip:
-                    title = GameManager.instance.chip[check.CheckId].title;
-                    description = GameManager.instance.chip[check.CheckId].description;
-                    image = GameManager.instance.chip[check.CheckId].image;
-                    break;
-                case CheckType.ChipSlot:
-                    title = "_CHIP_SLOT";
-                    description = "_CHIP_SLOT_DESC";
-                    image = HaikuResources.GetRefChipSlot(check.CheckId).chipSlotImage;
-                    break;
-                case CheckType.MapDisruptor:
-                    title = "_DISRUPTOR";
-                    description = "Add text for disruptor locations here";
-                    image = HaikuResources.RefDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite;
-                    break;
-                case CheckType.Lore:
-                    title = Text._LORE_TITLE;
-                    description = Text._LORE_DESCRIPTION;
-                    image = LoadSprite("LoreTablet.png", ref loreTabletSprite);
-                    break;
-                case CheckType.Lever:
-                    //TODO
-                    break;
-                case CheckType.PartsMonument:
-                    //TODO
-                    break;
-                case CheckType.PowerCell:
-                    title = "_POWERCELL";
-                    description = "";
-                    image = HaikuResources.RefPowerCell.GetComponentInChildren<SpriteRenderer>(true).sprite;
-                    break;
-                case CheckType.Coolant:
-                    title = "_COOLANT_TITLE";
-                    description = "_COOLANT_DESCRIPTION";
-                    image = HaikuResources.RefPickupCoolant.coolantImage;
-                    break;
-                case CheckType.TrainStation:
-                    title = GameManager.instance.trainStations[check.CheckId].title;
-                    description = GameManager.instance.trainStations[check.CheckId].stationName;
-                    break;
-                case CheckType.FireRes:
-                    title = "_FIRE_RES_TITLE";
-                    description = "_FIRE_RES_DESCRIPTION";
-                    image = HaikuResources.ItemDesc().fireRes.image.sprite;
-                    break;
-                case CheckType.WaterRes:
-                    title = "_WATER_RES_TITLE";
-                    description = "_WATER_RES_DESCRIPTION";
-                    image = HaikuResources.ItemDesc().waterRes.image.sprite;
-                    break;
-                case CheckType.Clock:
-                    //This is never randomized, but is important to logic
-                    break;
-                case CheckType.Filler:
-                    title = Text._NOTHING_TITLE;
-                    description = Text._NOTHING_DESCRIPTION;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            self.shopScript.UpdateTexts(title, description, image, self.price, 0, 0, self.gameObject, self.itemPositionInList);
+            var uidef = UIDef.Of(check);
+            self.shopScript.UpdateTexts(uidef.Name, uidef.Description, uidef.Sprite, self.price, 0, 0, self.gameObject, self.itemPositionInList);
             self.shopScript.UpdateCursor(self.transform);
         }
 
@@ -192,30 +106,6 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        private static Sprite loreTabletSprite;
-
-        private static byte[] LoadEmbeddedRes(string name)
-        {
-            using var file = Assembly.GetExecutingAssembly().GetManifestResourceStream("Haiku.Rando.Resources." + name);
-            using var mem = new MemoryStream((int)file.Length);
-            file.CopyTo(mem);
-            return mem.ToArray();
-        }
-
-        private static Sprite LoadSprite(string name, ref Sprite s)
-        {
-            if (s != null)
-            {
-                return s;
-            }
-            var imageData = LoadEmbeddedRes(name);
-            var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-            ImageConversion.LoadImage(tex, imageData, true);
-            tex.filterMode = FilterMode.Point;
-            s = Sprite.Create(tex, new(0, 0, tex.width, tex.height), new(.5f, .5f));
-            return s;
-        }
-
         private static void ShopItemButton_OnEnable(On.ShopItemButton.orig_OnEnable orig, ShopItemButton self)
         {
             var replacer = self.GetComponent<ShopItemReplacer>();
@@ -233,61 +123,7 @@ namespace Haiku.Rando.Checks
 
             if (replacer.check == null) return;
 
-            switch (replacer.check.Type)
-            {
-                case CheckType.Wrench:
-                    self.itemImage.sprite = InventoryManager.instance.items[(int)ItemId.Wrench].image;
-                    break;
-                case CheckType.Bulblet:
-                    self.itemImage.sprite = HaikuResources.ItemDesc().lightBulb.image.sprite;
-                    break;
-                case CheckType.Ability:
-                    var refUnlock = HaikuResources.RefUnlockTutorial;
-                    var ability = refUnlock.abilities[replacer.check.CheckId];
-                    self.itemImage.sprite = ability.image;
-                    break;
-                case CheckType.Item:
-                    self.itemImage.sprite = InventoryManager.instance.items[replacer.check.CheckId].image;
-                    break;
-                case CheckType.Chip:
-                    self.itemImage.sprite = GameManager.instance.chip[replacer.check.CheckId].image;
-                    break;
-                case CheckType.ChipSlot:
-                    self.itemImage.sprite = HaikuResources.GetRefChipSlot(replacer.check.CheckId).chipSlotImage;
-                    break;
-                case CheckType.MapDisruptor:
-                    self.itemImage.sprite = HaikuResources.RefDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite;
-                    break;
-                case CheckType.Lore:
-                    self.itemImage.sprite = LoadSprite("LoreTablet.png", ref loreTabletSprite);
-                    break;
-                case CheckType.Lever:
-                    break;
-                case CheckType.PartsMonument:
-                    break;
-                case CheckType.PowerCell:
-                    self.itemImage.sprite = HaikuResources.RefPowerCell.GetComponentInChildren<SpriteRenderer>(true).sprite;
-                    break;
-                case CheckType.Coolant:
-                    self.itemImage.sprite = HaikuResources.RefPickupCoolant.coolantImage;
-                    break;
-                case CheckType.TrainStation:
-                    //TODO?
-                    break;
-                case CheckType.FireRes:
-                    self.itemImage.sprite = HaikuResources.ItemDesc().fireRes.image.sprite;
-                    break;
-                case CheckType.WaterRes:
-                    self.itemImage.sprite = HaikuResources.ItemDesc().waterRes.image.sprite;
-                    break;
-                case CheckType.Clock:
-                    //This is never randomized, but is important to logic
-                    break;
-                case CheckType.Filler:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            self.itemImage.sprite = UIDef.Of(replacer.check).Sprite;
         }
     }
 }

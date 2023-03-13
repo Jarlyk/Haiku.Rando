@@ -225,48 +225,28 @@ namespace Haiku.Rando.Checks
             {
                 case CheckType.Wrench:
                     GameManager.instance.canHeal = true;
-                    CameraBehavior.instance.ShowLeftCornerUI(InventoryManager.instance.items[(int)ItemId.Wrench].image, "_HEALING_WRENCH_TITLE", "", PickupTextDuration);
                     break;
                 case CheckType.Bulblet:
                     GameManager.instance.lightBulb = true;
-                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.ItemDesc().lightBulb.image.sprite, "_LIGHT_BULB_TITLE", "", PickupTextDuration);
                     hasWorldObject = false;
                     break;
                 case CheckType.Ability:
                     GiveAbility((AbilityId)check.CheckId);
-                    var refUnlock = HaikuResources.RefUnlockTutorial;
-                    var ability = refUnlock.abilities[check.CheckId];
-                    CameraBehavior.instance.ShowLeftCornerUI(ability.image, ability.title, "", PickupTextDuration);
                     hasWorldObject = false;
                     break;
                 case CheckType.Item:
                     InventoryManager.instance.AddItem(check.CheckId);
-                    CameraBehavior.instance.ShowLeftCornerUI(InventoryManager.instance.items[check.CheckId].image,
-                                                             InventoryManager.instance.items[check.CheckId].itemName,
-                                                             "",
-                                                             PickupTextDuration);
                     break;
                 case CheckType.Chip:
                     GameManager.instance.chip[check.CheckId].collected = true;
-                    CameraBehavior.instance.ShowLeftCornerUI(GameManager.instance.chip[check.CheckId].image,
-                                                             GameManager.instance.chip[check.CheckId].title,
-                                                             "",
-                                                             PickupTextDuration);
                     AchievementManager.instance.CheckNumbersOfChipsCollected();
                     break;
                 case CheckType.ChipSlot:
                     GameManager.instance.chipSlot[check.CheckId].collected = true;
-                    var refChipSlot = HaikuResources.GetRefChipSlot(check.CheckId);
-                    CameraBehavior.instance.ShowLeftCornerUI(refChipSlot.chipSlotImage, refChipSlot.chipSlotTitle, "", PickupTextDuration);
                     break;
                 case CheckType.MapDisruptor:
                     GameManager.instance.disruptors[check.CheckId].destroyed = true;
                     CameraBehavior.instance.Shake(0.2f, 0.2f);
-                    var refDisruptor = HaikuResources.RefDisruptor;
-                    CameraBehavior.instance.ShowLeftCornerUI(refDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite, 
-                                                             "_DISRUPTOR", 
-                                                             "", 
-                                                             PickupTextDuration);
                     AchievementManager.instance.CheckNumberOfDisruptorsDestroyed();
                     break;
                 case CheckType.Lore:
@@ -282,10 +262,6 @@ namespace Haiku.Rando.Checks
                 case CheckType.PowerCell:
                     self.StartCoroutine(RemoveHeat());
                     GameManager.instance.powerCells[check.CheckId].collected = true;
-                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.RefPowerCell.GetComponentInChildren<SpriteRenderer>(true).sprite, 
-                                                             "_POWERCELL",
-                                                             "",
-                                                             PickupTextDuration);
 
                     //Even though power cells have a saveId, this is not actually used to update the worldObjects array
                     //It instead uses that to track the index in the powerCells array, which we've duplicated with checkId
@@ -296,25 +272,16 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.Coolant:
                     GameManager.instance.coolingPoints++;
-                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.RefPickupCoolant.coolantImage, 
-                                                             HaikuResources.RefPickupCoolant.coolantTitle, "", PickupTextDuration);
                     break;
                 case CheckType.FireRes:
-                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.ItemDesc().fireRes.image.sprite,
-                                                             "_FIRE_RES_TITLE", "_FIRE_RES_DESCRIPTION",
-                                                             PickupTextDuration);
                     GameManager.instance.fireRes = true;
                     hasWorldObject = false;
                     break;
                 case CheckType.WaterRes:
-                    CameraBehavior.instance.ShowLeftCornerUI(HaikuResources.ItemDesc().waterRes.image.sprite,
-                                                             "_WATER_RES_TITLE", "_WATER_RES_DESCRIPTION",
-                                                             PickupTextDuration);
                     GameManager.instance.waterRes = true;
                     hasWorldObject = false;
                     break;
                 case CheckType.TrainStation:
-                    CameraBehavior.instance.ShowLeftCornerUI(null, GameManager.instance.trainStations[check.CheckId].stationName, "", PickupTextDuration);
                     GameManager.instance.trainStations[check.CheckId].unlockedStation = true;
                     GameManager.instance.trainUnlocked = true;
                     AchievementManager.instance.CheckNumberOfTrainStationsUnlocked();
@@ -332,10 +299,13 @@ namespace Haiku.Rando.Checks
                     {
                         Log(LogLevel.Error, $"picked up excess filler check {check.CheckId}; this should never happen");
                     }
-                    CameraBehavior.instance.ShowLeftCornerUI(null, Text._NOTHING_TITLE, "", PickupTextDuration);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
+            }
+            if (check.Type != CheckType.Lore)
+            {
+                ShowCheckPopup(check);
             }
 
             if (hasWorldObject)
@@ -346,53 +316,10 @@ namespace Haiku.Rando.Checks
             SoundManager.instance.PlayOneShot(refPickup.pickupSFXPath);
         }
 
-        internal static string GetSpoilerText(RandoCheck check)
+        private static void ShowCheckPopup(RandoCheck check)
         {
-            switch (check.Type)
-            {
-                case CheckType.Wrench:
-                    return "_HEALING_WRENCH_TITLE";
-                case CheckType.Bulblet:
-                    return "_LIGHT_BULB_TITLE";
-                case CheckType.Ability:
-                    var refUnlock = HaikuResources.RefUnlockTutorial;
-                    return refUnlock.abilities[check.CheckId].title;
-                case CheckType.Item:
-                    return InventoryManager.instance.items[check.CheckId].itemName;
-                case CheckType.Chip:
-                    return GameManager.instance.chip[check.CheckId].title;
-                case CheckType.ChipSlot:
-                    return "_CHIP_SLOT";
-                case CheckType.MapDisruptor:
-                    return "_DISRUPTOR";
-                case CheckType.Lore:
-                    return Text._LORE_TITLE;
-                case CheckType.Lever:
-                    //TODO
-                    break;
-                case CheckType.PartsMonument:
-                    //TODO
-                    break;
-                case CheckType.PowerCell:
-                    return "_POWERCELL";
-                case CheckType.Coolant:
-                    return "_COOLANT_TITLE";
-                case CheckType.FireRes:
-                    return "_FIRE_RES_TITLE";
-                case CheckType.WaterRes:
-                    return "_WATER_RES_TITLE";
-                case CheckType.TrainStation:
-                    return GameManager.instance.trainStations[check.CheckId].title;
-                case CheckType.Clock:
-                    //This is never randomized, but is important to logic
-                    break;
-                case CheckType.Filler:
-                    return Text._NOTHING_TITLE;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            return "";
+            var uidef = UIDef.Of(check);
+            CameraBehavior.instance.ShowLeftCornerUI(uidef.Sprite, uidef.Name, "", PickupTextDuration);
         }
 
         public static IEnumerator RemoveHeat()
