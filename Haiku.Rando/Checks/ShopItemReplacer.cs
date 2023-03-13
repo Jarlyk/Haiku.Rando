@@ -122,8 +122,9 @@ namespace Haiku.Rando.Checks
             orig(self);
 
             if (replacer.check == null) return;
-
-            self.itemImage.sprite = UIDef.Of(replacer.check).Sprite;
+            var sprite = UIDef.Of(replacer.check).Sprite;
+            if (sprite == null) return;
+            self.itemImage.sprite = sprite;
         }
     }
 }
