@@ -94,6 +94,7 @@ namespace Haiku.Rando.Checks
             CheckType.FireRes => SealantShopItemReplacer.ReplaceFire,
             CheckType.WaterRes => SealantShopItemReplacer.ReplaceWater,
             CheckType.TrainStation => UniversalPickup.ReplaceTrainStation,
+            CheckType.MapMarker => r => RustyItemReplacer.ReplaceCheck((RustyType)orig.CheckId, r),
             _ => throw new ArgumentOutOfRangeException($"invalid check type {orig.Type}")
         };
 
@@ -151,7 +152,18 @@ namespace Haiku.Rando.Checks
             CheckType.Lore => GetCurrentSaveData().CollectedLore.Contains(check.CheckId),
             CheckType.PartsMonument => false,
             CheckType.Filler => check.CheckId >= CheckRandomizer.MaxFillerChecks || GetCurrentSaveData().CollectedFillers.Contains(check.CheckId),
+            CheckType.MapMarker => HasMapMarker((RustyType)check.CheckId),
             _ => throw new ArgumentOutOfRangeException()
+        };
+
+        private static bool HasMapMarker(RustyType t) => t switch
+        {
+            RustyType.Health => GameManager.instance.showHealthStations,
+            RustyType.Train => GameManager.instance.showTrainStations,
+            RustyType.Vendor => GameManager.instance.showVendors,
+            RustyType.Bank => GameManager.instance.showBankStations,
+            RustyType.PowerCell => GameManager.instance.showPowercells,
+            _ => throw new ArgumentOutOfRangeException($"invalid Rusty type {t}")
         };
 
         public static readonly List<List<string>> LoreTabletText = new()
@@ -300,6 +312,9 @@ namespace Haiku.Rando.Checks
                         Log(LogLevel.Error, $"picked up excess filler check {check.CheckId}; this should never happen");
                     }
                     break;
+                case CheckType.MapMarker:
+                    GiveMapMarker((RustyType)check.CheckId);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -314,6 +329,30 @@ namespace Haiku.Rando.Checks
             }
 
             SoundManager.instance.PlayOneShot(refPickup.pickupSFXPath);
+        }
+
+        private static void GiveMapMarker(RustyType t)
+        {
+            switch (t)
+            {
+                case RustyType.Health:
+                    GameManager.instance.showHealthStations = true;
+                    break;
+                case RustyType.Train:
+                    GameManager.instance.showTrainStations = true;
+                    break;
+                case RustyType.Vendor:
+                    GameManager.instance.showVendors = true;
+                    break;
+                case RustyType.Bank:
+                    GameManager.instance.showBankStations = true;
+                    break;
+                case RustyType.PowerCell:
+                    GameManager.instance.showPowercells = true;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException($"invalid Rusty type {t}");
+            }
         }
 
         private static void ShowCheckPopup(RandoCheck check)

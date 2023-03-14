@@ -417,6 +417,7 @@ namespace Haiku.Rando.Logic
             if (Settings.IncludeSealants.Value) AddToPool(CheckType.FireRes);
             if (Settings.IncludeSealants.Value) AddToPool(CheckType.WaterRes);
             if (Settings.IncludeLoreTablets.Value) AddToPool(CheckType.Lore);
+            if (Settings.IncludeMapMarkers.Value) AddToPool(CheckType.MapMarker);
 
             //Starting pool contains all the checks we're going to replace eventually
             _startingPool.AddRange(_pool);

@@ -98,6 +98,20 @@ namespace Haiku.Rando.Checks
                 Name = Text._NOTHING_TITLE,
                 Description = Text._NOTHING_DESCRIPTION
             },
+            CheckType.MapMarker => new()
+            {
+                Sprite = null,
+                Name = (RustyType)check.CheckId switch
+                {
+                    RustyType.Health => "_HEALTH_PINS",
+                    RustyType.Bank => "_BANK_PINS",
+                    RustyType.Train => "_TRAIN_PINS",
+                    RustyType.Vendor => "_VENDOR_PINS",
+                    RustyType.PowerCell => "_POWERCELL_PINS",
+                    _ => "_MARKER"
+                },
+                Description = ""
+            },
             _ => throw new ArgumentOutOfRangeException($"UIDef not defined for check type {check.Type}")
         };
 
