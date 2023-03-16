@@ -544,6 +544,13 @@ namespace Haiku.Rando.Topology
 
             foreach (var rusty in SceneUtils.FindObjectsOfType<Rusty>())
             {
+                // Ignore duplicate Rusties
+                if ((sceneId == 140 && rusty.bank) ||
+                    (sceneId == 117 && rusty.vendor) ||
+                    rusty.lastEncounter || rusty.isNote)
+                {
+                    continue;
+                }
                 var kind = -1;
                 if (rusty.health)
                 {
