@@ -90,8 +90,11 @@ namespace Haiku.Rando.Checks
             // This will cause e29PortalRewardChecker.CheckReward to do nothing
             // for checks that are randomized.
             var rewardObj = SceneUtils.FindObjectsOfType<e29PortalRewardChecker>()
-                .First(c => c.objectSaveID == orig.SaveId);
-            rewardObj.neededPowercells = 999999;
+                .FirstOrDefault(c => c.objectSaveID == orig.SaveId);
+            if (rewardObj != null)
+            {
+                rewardObj.neededPowercells = 999999;
+            }
         }
     }
 }
