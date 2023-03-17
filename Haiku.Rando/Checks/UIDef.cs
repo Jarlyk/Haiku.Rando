@@ -58,7 +58,7 @@ namespace Haiku.Rando.Checks
             },
             CheckType.Lore => new()
             {
-                Sprite = LoadSprite("LoreTablet.png", ref loreTabletSprite),
+                Sprite = loreTabletSprite.Load(),
                 Name = Text._LORE_TITLE,
                 Description = Text._LORE_DESCRIPTION
             },
@@ -98,38 +98,80 @@ namespace Haiku.Rando.Checks
                 Name = Text._NOTHING_TITLE,
                 Description = Text._NOTHING_DESCRIPTION
             },
-            CheckType.MapMarker => new()
+            CheckType.MapMarker => (RustyType)check.CheckId switch
             {
-                Sprite = null,
-                Name = (RustyType)check.CheckId switch
+                RustyType.Health => new()
                 {
-                    RustyType.Health => "_HEALTH_PINS",
-                    RustyType.Bank => "_BANK_PINS",
-                    RustyType.Train => "_TRAIN_PINS",
-                    RustyType.Vendor => "_VENDOR_PINS",
-                    RustyType.PowerCell => "_POWERCELL_PINS",
-                    _ => "_MARKER"
+                    Sprite = healthMarkerSprite.Load(),
+                    Name = "_HEALTH_PINS",
+                    Description = Text._HEALTH_MARKER_DESCRIPTION
                 },
-                Description = ""
+                RustyType.Bank => new()
+                {
+                    Sprite = bankMarkerSprite.Load(),
+                    Name = "_BANK_PINS",
+                    Description = Text._BANK_MARKER_DESCRIPTION
+                },
+                RustyType.Train => new()
+                {
+                    Sprite = trainMarkerSprite.Load(),
+                    Name = "_TRAIN_PINS",
+                    Description = Text._TRAIN_MARKER_DESCRIPTION,
+                },
+                RustyType.Vendor => new()
+                {
+                    Sprite = vendorMarkerSprite.Load(),
+                    Name = "_VENDOR_PINS",
+                    Description = Text._VENDOR_MARKER_DESCRIPTION
+                },
+                RustyType.PowerCell => new()
+                {
+                    Sprite = powerCellMarkerSprite.Load(),
+                    Name = "_POWERCELL_PINS",
+                    Description = Text._POWER_CELL_MARKER_DESCRIPTION
+                },
+                _ => new()
+                {
+                    Sprite = null,
+                    Name = "_MARKER",
+                    Description = ""
+                }
             },
             _ => throw new ArgumentOutOfRangeException($"UIDef not defined for check type {check.Type}")
         };
 
-        private static Sprite loreTabletSprite;
-
-        private static Sprite LoadSprite(string name, ref Sprite s)
+        private class LazySprite
         {
-            if (s != null)
+            private object spriteRepr;
+
+            public LazySprite(string name)
             {
+                spriteRepr = name;
+            }
+
+            public Sprite Load()
+            {
+                if (spriteRepr is Sprite s)
+                {
+                    return s;
+                }
+                var name = (string)spriteRepr;
+                var imageData = LoadEmbeddedRes(name);
+                var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+                ImageConversion.LoadImage(tex, imageData, true);
+                tex.filterMode = FilterMode.Point;
+                s = Sprite.Create(tex, new(0, 0, tex.width, tex.height), new(.5f, .5f));
+                spriteRepr = s;
                 return s;
             }
-            var imageData = LoadEmbeddedRes(name);
-            var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-            ImageConversion.LoadImage(tex, imageData, true);
-            tex.filterMode = FilterMode.Point;
-            s = Sprite.Create(tex, new(0, 0, tex.width, tex.height), new(.5f, .5f));
-            return s;
         }
+
+        private static readonly LazySprite loreTabletSprite = new("LoreTablet.png");
+        private static readonly LazySprite healthMarkerSprite = new("HealthMapMarker.png");
+        private static readonly LazySprite bankMarkerSprite = new("BankMapMarker.png");
+        private static readonly LazySprite trainMarkerSprite = new("TrainMapMarker.png");
+        private static readonly LazySprite vendorMarkerSprite = new("VendorMapMarker.png");
+        private static readonly LazySprite powerCellMarkerSprite = new("PowercellMapMarker.png");
 
         private static byte[] LoadEmbeddedRes(string name)
         {
