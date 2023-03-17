@@ -60,6 +60,7 @@ Scene 9
 // Transitions: Right1 (10-23bottom), Right0 (10-23top), Left1 (11-10), Left0 (34-10), Repair (10Repair), Wake (10Wake)
 // Checks: Lever (Lever[4])
 Scene 10
+*->Wake: false
 *->Right0: Magnet
 Wake->Right0: DoubleJump | Blink
 //Chip[1] == Gyro Accelerator
@@ -822,6 +823,7 @@ Scene 101
 // Transitions: Right1 (102-103), Right0 (102-107), Left (101-102)
 // Checks: Lever (Lever[12]), PowerCell (PowerCell[3])
 Scene 102
+// getting to the PowerCell requires a precise jump
 *->*: FireRes
 
 // Scene 103
