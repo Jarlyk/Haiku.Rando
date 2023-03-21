@@ -521,6 +521,10 @@ namespace Haiku.Rando.Logic
 
         private static IReadOnlyList<IRandoNode> FindNodes(RoomScene scene, string pattern, Dictionary<string, List<string>> groups)
         {
+            if (pattern.StartsWith("!"))
+            {
+                return scene.Nodes.Except(FindNodes(scene, pattern.Substring(1), groups)).ToList();
+            }
             return groups.TryGetValue(pattern, out var list)
                 ? list.SelectMany(scene.FindNodes).ToList()
                 : scene.FindNodes(pattern);

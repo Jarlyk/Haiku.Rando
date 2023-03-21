@@ -33,6 +33,11 @@ namespace Haiku.Rando
 
             HaikuResources.Init();
             UniversalPickup.InitHooks();
+            QuaternRewardReplacer.InitHooks();
+            MotherRewardReplacer.InitHooks();
+            BeeHiveItemReplacer.InitHooks();
+            SealantShopItemReplacer.InitHooks();
+            RustyItemReplacer.InitHooks();
             ShopItemReplacer.InitHooks();
             CheckManager.Instance.InitHooks(Logger.Log, () => _saveData);
             TransitionManager.InitHooks();
@@ -189,13 +194,6 @@ namespace Haiku.Rando
                 {
                     GameManager.instance.disruptors[j].destroyed = true;
                 }
-
-                //Turn on all map markers
-                GameManager.instance.showPowercells = true;
-                GameManager.instance.showHealthStations = true;
-                GameManager.instance.showBankStations = true;
-                GameManager.instance.showVendors = true;
-                GameManager.instance.showTrainStations = true;
             }
 
             if (!success)

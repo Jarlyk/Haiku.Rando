@@ -22,11 +22,6 @@ namespace Haiku.Rando.Topology
         {
             if (pattern == "*") return Nodes;
 
-            if (pattern.StartsWith("!"))
-            {
-                return Nodes.Except(FindNodes(pattern.Substring(1))).ToList();
-            }
-
             if (pattern.StartsWith("*"))
             {
                 return Nodes.Where(n => n.GetAlias(SceneId).EndsWith(pattern.Substring(1), StringComparison.InvariantCultureIgnoreCase))

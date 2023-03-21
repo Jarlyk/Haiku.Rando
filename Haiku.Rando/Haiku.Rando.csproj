@@ -24,7 +24,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\BaseLogic.txt" />
     <EmbeddedResource Include="Resources\HaikuTopology.json" />
-    <EmbeddedResource Include="Resources\LoreTablet.png" />
+    <EmbeddedResource Include="Resources\*.png" />
   </ItemGroup>
 
   <ItemGroup>

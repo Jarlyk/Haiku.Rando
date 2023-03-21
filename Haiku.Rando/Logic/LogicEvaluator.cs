@@ -193,6 +193,8 @@ namespace Haiku.Rando.Logic
                     return $"TrainStation[{check.CheckId}]";
                 case CheckType.Clock:
                     return "Clock";
+                case CheckType.MapMarker:
+                    return $"Marker[{check.CheckId}]";
                 default:
                     throw new ArgumentOutOfRangeException();
             }

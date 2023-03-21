@@ -45,7 +45,7 @@ Scene 5
 
 // Scene 9
 // Transitions: Repair1 (9Repair), Exit28 (28-Train), Repair1 (9Repair), Exit209 (209-Train), Exit136 (136-Train), Exit179 (179-Train), Exit88 (88-Train), Exit146 (146-Train), Exit67 (67-Train), Exit53 (53-Train)
-// Checks: ShopItem0 (Item[5]), ShopItem1 (Item[2]), ShopItem2 (Item[0]), ShopItem3 (Item[7]), ShopItem4 (Item[3]), ShopItem5 (Item[3]), ShopItem6 (Chip[4]), ShopItem7 (Chip[0]), ShopItem8 (Chip[14]), ShopItem9 (Chip[15]), ShopItem10 (Chip[10]), ShopItem11 (Chip[8]), ShopItem12 (ChipSlot[6]), ShopItem13 (ChipSlot[4])
+// Checks: ShopItem0 (Item[5]), ShopItem1 (Item[2]), ShopItem2 (Item[0]), ShopItem3 (Item[7]), ShopItem4 (Item[3]), ShopItem5 (Item[3]), ShopItem6 (Chip[4]), ShopItem7 (Chip[0]), ShopItem8 (Chip[14]), ShopItem9 (Chip[15]), ShopItem10 (Chip[10]), ShopItem11 (Chip[8]), ShopItem12 (ChipSlot[6]), ShopItem13 (ChipSlot[4]), MapMarker (MapMarker[1])
 Scene 9
 *->Exit28: TrainStation[0]
 *->Exit88: TrainStation[1]
@@ -60,6 +60,7 @@ Scene 9
 // Transitions: Right1 (10-23bottom), Right0 (10-23top), Left1 (11-10), Left0 (34-10), Repair (10Repair), Wake (10Wake)
 // Checks: Lever (Lever[4])
 Scene 10
+*->Wake: false
 *->Right0: Magnet
 Wake->Right0: DoubleJump | Blink
 //Chip[1] == Gyro Accelerator
@@ -213,14 +214,17 @@ Right->Lore: true
 
 // Scene 31
 // Transitions: Left0 (32-31), Left2 (23-31), Left1 (30-31)
-// Checks:
+// Checks: MapMarker (MapMarker[0])
 Scene 31
 Left2->Left0: Magnet
 Left2->Left1: Magnet + (Blink | DoubleJump | Grapple)
+Left2->MapMarker: Magnet
 Left1->Left0: Magnet
 Left1->Left2: true
+Left1->MapMarker: Magnet
 Left0->Left1: Blink | DoubleJump | Grapple
 Left0->Left2: true
+Left0->MapMarker: true
 
 // Scene 32 : Hand Room
 // Transitions: Right0 (32-33), Right1 (32-31), Left (34-32)
@@ -467,7 +471,7 @@ Scene 61
 
 // Scene 62 : Mainframe
 // Transitions: Right1 (62-167), Right0 (62-80), Left0 (61-62), Left1 (63-62), Door (62-205)
-// Checks:
+// Checks: MapMarker (MapMarker[4])
 Scene 62
 Left1->Left0: Magnet
 Left1->Right0: Magnet
@@ -475,6 +479,7 @@ Right1->Left0: Magnet
 Right1->Right0: Magnet
 Left0->Right0: Magnet | Grapple
 Right0->Left0: Magnet | Grapple
+*->MapMarker: Transition[144] // requires Creators to be defeated
 
 // Scene 63 : Left of Bulb Hive
 // Transitions: Right0 (63-62), Right1 (63-83), Left0 (78-63), Left1 (64-63)
@@ -818,6 +823,7 @@ Scene 101
 // Transitions: Right1 (102-103), Right0 (102-107), Left (101-102)
 // Checks: Lever (Lever[12]), PowerCell (PowerCell[3])
 Scene 102
+// getting to the PowerCell requires a precise jump
 *->*: FireRes
 
 // Scene 103
@@ -932,13 +938,15 @@ Scene 116
 
 // Scene 117: Water Ducts elevator
 // Transitions: Elevator (178-117), Right (117-210), Left (116-117)
-// Checks: Lore (Lore[18])
+// Checks: Lore (Lore[18]), MapMarker (MapMarker[3])
 Scene 117
 $Bottom {Elevator, Left}
 Right->Bottom: WaterRes
 Bottom->Right: WaterRes+Magnet
 Bottom->Lore: Magnet + (DoubleJump | WaterRes + Blink | WaterRes + Grapple)
+Bottom->MapMarker: true
 Right->Lore: WaterRes + Magnet + DoubleJump | Magnet + Blink | DoubleJump + Blink | Grapple
+Right->MapMarker: WaterRes
 // Power Processor + 3-bomb jump can do Bottom->Lore too
 
 // Scene 118
@@ -1164,11 +1172,13 @@ Repair->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][
 
 // Scene 140
 // Transitions: Right0 (140-135), Right1 (140-141), Repair (140Repair)
-// Checks: Lore (Lore[11])
+// Checks: Lore (Lore[11]), MapMarker (MapMarker[2])
 Scene 140
 $Bottom {Right1, Repair, Lore}
 Right0->Bottom: Magnet | Blink // or 2-bomb jump
+Right0->MapMarker: Magnet
 Bottom->Right0: Magnet
+Bottom->MapMarker: Magnet
 
 // Scene 141
 // Transitions: Right (141-134), Left (140-141)
@@ -1558,6 +1568,7 @@ Left->Right0: Magnet + (Grapple | Blink | DoubleJump)
 *->Right1: Ball + (Magnet | DoubleJump)
 *->Item: Ball + (Magnet | DoubleJump)
 Right1->Left: Ball + Magnet
+Right1->Right0: Ball + Magnet + (Grapple | Blink | DoubleJump)
 Right0->Left: true
 // TODO: Bomb jumps can replace any instance of dj. Left->Right0 can be done with only bomb jumps or grapple+dj.
 

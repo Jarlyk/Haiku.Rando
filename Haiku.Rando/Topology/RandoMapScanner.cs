@@ -147,7 +147,7 @@ namespace Haiku.Rando.Topology
                 topology.Serialize(writer);
             }
 
-            //TODO: Create skeleton of logic file with names of transitions/checks in each room
+            // Create skeleton of logic file with names of transitions/checks in each room
             using (var logicFile = File.Open(System.IO.Path.Combine(path, "LogicSkeleton.txt"), FileMode.Create, FileAccess.ReadWrite))
             using (var writer = new StreamWriter(logicFile))
             {
@@ -540,6 +540,48 @@ namespace Haiku.Rando.Topology
                 var waterCheck = new RandoCheck(CheckType.WaterRes, sceneId, e7Shop.transform.position, 0);
                 waterCheck.Alias = "WaterRes";
                 checks.Add(waterCheck);
+            }
+
+            foreach (var rusty in SceneUtils.FindObjectsOfType<Rusty>())
+            {
+                // Ignore duplicate Rusties
+                if ((sceneId == 140 && rusty.bank) ||
+                    (sceneId == 117 && rusty.vendor) ||
+                    rusty.lastEncounter || rusty.isNote)
+                {
+                    continue;
+                }
+                var kind = -1;
+                if (rusty.health)
+                {
+                    kind = (int)RustyType.Health;
+                }
+                else if (rusty.train)
+                {
+                    kind = (int)RustyType.Train;
+                }
+                else if (rusty.vendor)
+                {
+                    kind = (int)RustyType.Vendor;
+                }
+                else if (rusty.bank)
+                {
+                    kind = (int)RustyType.Bank;
+                }
+                else if (rusty.powercell)
+                {
+                    kind = (int)RustyType.PowerCell;
+                }
+                if (kind != -1)
+                {
+                    var check = new RandoCheck(CheckType.MapMarker, sceneId, rusty.transform.position, (int)kind);
+                    check.Alias = "MapMarker";
+                    checks.Add(check);
+                }
+                else
+                {
+                    Debug.Log("unknown Rusty kind");
+                }
             }
 
             int shopItemIndex = 0;

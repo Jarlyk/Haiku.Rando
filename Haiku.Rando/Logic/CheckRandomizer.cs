@@ -417,6 +417,7 @@ namespace Haiku.Rando.Logic
             if (Settings.IncludeSealants.Value) AddToPool(CheckType.FireRes);
             if (Settings.IncludeSealants.Value) AddToPool(CheckType.WaterRes);
             if (Settings.IncludeLoreTablets.Value) AddToPool(CheckType.Lore);
+            if (Settings.IncludeMapMarkers.Value) AddToPool(CheckType.MapMarker);
 
             //Starting pool contains all the checks we're going to replace eventually
             _startingPool.AddRange(_pool);
@@ -424,7 +425,8 @@ namespace Haiku.Rando.Logic
             //We remove a few checks from the source pool based on special starting conditions
             if (Settings.StartWithWrench.Value)
             {
-                _pool.RemoveAll(c => c.Type == CheckType.Wrench);
+                _pool.RemoveAll(c => c.Type == CheckType.Wrench ||
+                                    (c.Type == CheckType.Item && c.CheckId == (int)ItemId.Wrench));
             }
             if (Settings.StartWithWhistle.Value)
             {
