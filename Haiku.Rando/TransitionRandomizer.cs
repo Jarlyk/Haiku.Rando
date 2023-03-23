@@ -19,11 +19,11 @@ namespace Haiku.Rando
 
         public IReadOnlyDictionary<TransitionNode, TransitionNode> Swaps => _swaps;
 
-        public TransitionRandomizer(RandoTopology topology, LogicEvaluator logic, ulong seed)
+        public TransitionRandomizer(RandoTopology topology, LogicEvaluator logic, Seed128 seed)
         {
             _topology = topology;
             _logic = logic;
-            _random = new Xoroshiro128Plus(seed);
+            _random = new Xoroshiro128Plus(seed.S0, seed.S1);
         }
 
         public void Randomize()

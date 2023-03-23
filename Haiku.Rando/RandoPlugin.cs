@@ -128,20 +128,28 @@ namespace Haiku.Rando
             CheckManager.Instance.Randomizer = null;
             TransitionManager.Instance.Randomizer = null;
 
-            bool success = false;
-            var level = Settings.RandoLevel.Value;
-            if (level != RandomizationLevel.None)
+            // Add rando save data to the file if it does not already have it, and it's a
+            // newly-started file (which introPlayed is a proxy for).
+            if (_saveData == null && !GameManager.instance.introPlayed &&
+                Settings.GetGenerationSettings() is GenerationSettings s)
             {
-                if (_saveData == null)
+                if (string.IsNullOrWhiteSpace(s.Seed))
                 {
-                    _saveData = new(PickSeed());
+                    s.Seed = DateTime.Now.Ticks.ToString();
                 }
+                _saveData = new(s);
+            }
+            var gs = _saveData?.Settings;
 
+            bool success = false;
+            if (gs != null && gs.Level != RandomizationLevel.None)
+            {
                 int? startScene = SpecialScenes.GameStart;
                 const int maxRetries = 200;
+                var origSeed = gs.Seed;
                 for (int i = 0; i < maxRetries; i++)
                 {
-                    if (TryRandomize(level, out startScene))
+                    if (TryRandomize(gs, out startScene))
                     {
                         success = true;
                         break;
@@ -149,9 +157,8 @@ namespace Haiku.Rando
                     else
                     {
                         Debug.LogWarning($"Randomization failed: attempt {i+1} of {maxRetries}");
-
                         //Iterate the seed
-                        _saveData.Seed = new Xoroshiro128Plus(_saveData.Seed).NextULong();
+                        gs.Seed = $"{origSeed}__attempt{i+1}";
                     }
                 }
 
@@ -172,18 +179,18 @@ namespace Haiku.Rando
                 success = true;
             }
 
-            if (Settings.StartWithWrench.Value && !GameManager.instance.canHeal)
+            if (gs.Contains(StartingItemSet.Wrench) && !GameManager.instance.canHeal)
             {
                 GameManager.instance.canHeal = true;
                 InventoryManager.instance.AddItem((int)ItemId.Wrench);
             }
 
-            if (Settings.StartWithWhistle.Value && !CheckManager.HasItem(ItemId.Whistle))
+            if (gs.Contains(StartingItemSet.Whistle) && !CheckManager.HasItem(ItemId.Whistle))
             {
                 InventoryManager.instance.AddItem((int)ItemId.Whistle);
             }
 
-            if (Settings.StartWithMaps.Value)
+            if (gs.Contains(StartingItemSet.Maps))
             {
                 // The following is directly copied from DebugMod's GiveAllMaps.
                 for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
@@ -204,11 +211,15 @@ namespace Haiku.Rando
             }
         }
 
-        private bool TryRandomize(RandomizationLevel level, out int? startScene)
+        private bool TryRandomize(GenerationSettings gs, out int? startScene)
         {
+            // A previous room rando may have rewired the topology; make sure we start with the
+            // vanilla topology.
             ReloadTopology();
 
-            if (Settings.RandomStartLocation.Value)
+            var seed = new Seed128(gs.Seed);
+
+            if (gs.RandomStartLocation)
             {
                 //Pick from any save station except Incinerator, Furnace and Train
                 var availScenes = new List<int>
@@ -219,9 +230,7 @@ namespace Haiku.Rando
                 availScenes.Remove(156);
                 availScenes.Remove(127);
 
-                // Xoroshiro128Plus(UInt64) already mixes the seed bits, so further preprocessing
-                // is not required.
-                var tmpRandom = new Xoroshiro128Plus(_saveData.Seed);
+                var tmpRandom = new Xoroshiro128Plus(seed.S0, seed.S1);
                 startScene = availScenes[tmpRandom.NextRange(0, availScenes.Count)];
             }
             else
@@ -231,16 +240,16 @@ namespace Haiku.Rando
 
             var evaluator = new LogicEvaluator(new[] { _baseLogic });
 
-            if (level == RandomizationLevel.Rooms)
+            if (gs.Level == RandomizationLevel.Rooms)
             {
                 Debug.Log("** Configuring transition randomization **");
-                _transRandomizer = new TransitionRandomizer(_topology, evaluator, _saveData.Seed);
+                _transRandomizer = new TransitionRandomizer(_topology, evaluator, seed);
                 _transRandomizer.Randomize();
                 TransitionManager.Instance.Randomizer = _transRandomizer;
             }
 
             Debug.Log("** Configuring check randomization **");
-            _randomizer = new CheckRandomizer(_topology, evaluator, _saveData.Seed, startScene);
+            _randomizer = new CheckRandomizer(_topology, evaluator, gs, seed, startScene);
             bool success = _randomizer.Randomize();
 
             if (success)
@@ -252,20 +261,11 @@ namespace Haiku.Rando
             return success;
         }
 
-        private ulong PickSeed()
-        {
-            if (ulong.TryParse(Settings.Seed.Value ?? "", out var seed))
-            {
-                return seed;
-            }
-            return new Xoroshiro128Plus().NextULong();
-        }
-
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
         {
             CheckManager.Instance.OnSceneLoaded(scene.buildIndex);
 
-            if (Settings.RandoLevel.Value == RandomizationLevel.Rooms)
+            if (_saveData.Settings.Level == RandomizationLevel.Rooms)
             {
                 //In room rando, all rooms can disable fire
                 var detector = FindObjectOfType<FireResDetector>();

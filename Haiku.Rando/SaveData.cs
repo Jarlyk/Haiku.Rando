@@ -6,23 +6,34 @@ namespace Haiku.Rando
     {
         private const string presenceKey = "hasRandoData";
         private const string seedKey = "randoSeed";
+        private const string randoStartKey = "randoRandomStart";
+        private const string poolsKey = "randoPools";
+        private const string startingItemsKey = "randoStartingItems";
+        private const string levelKey = "randoLevel";
         private const string collectedLoreKey = "randoCollectedLoreTablets";
         private const string collectedFillerKey = "randoCollectedFillers";
 
-        public ulong Seed;
+        public GenerationSettings Settings;
         public Bitset64 CollectedLore;
         public Bitset64 CollectedFillers;
 
         public static SaveData Load(ES3File saveFile) =>
             saveFile.Load<bool>(presenceKey, false) ? new(saveFile) : null;
 
-        public SaveData(ulong seed) {
-            Seed = seed;
+        public SaveData(GenerationSettings gs) {
+            Settings = gs;
         }
 
         private SaveData(ES3File saveFile)
         {
-            Seed = saveFile.Load<ulong>(seedKey, 0UL);
+            Settings = new()
+            {
+                Seed = saveFile.Load<string>(seedKey, ""),
+                RandomStartLocation = saveFile.Load<bool>(randoStartKey, false),
+                Pools = new(saveFile.Load<ulong>(poolsKey, 0UL)),
+                StartingItems = new(saveFile.Load<ulong>(startingItemsKey, 0UL)),
+                Level = (RandomizationLevel)saveFile.Load<int>(levelKey, 0)
+            };
             CollectedLore = new(saveFile.Load<ulong>(collectedLoreKey, 0UL));
             CollectedFillers = new(saveFile.Load<ulong>(collectedFillerKey, 0UL));
         }
@@ -30,7 +41,11 @@ namespace Haiku.Rando
         public void SaveTo(ES3File saveFile)
         {
             saveFile.Save(presenceKey, true);
-            saveFile.Save(seedKey, Seed);
+            saveFile.Save(seedKey, Settings.Seed);
+            saveFile.Save(randoStartKey, Settings.RandomStartLocation);
+            saveFile.Save(poolsKey, Settings.Pools.Bits);
+            saveFile.Save(startingItemsKey, Settings.StartingItems.Bits);
+            saveFile.Save(levelKey, (int)Settings.Level);
             saveFile.Save(collectedLoreKey, CollectedLore.Bits);
             saveFile.Save(collectedFillerKey, CollectedFillers.Bits);
             saveFile.Sync();

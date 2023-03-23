@@ -23,18 +23,18 @@ namespace Haiku.Rando.Logic
         private bool _randomized;
         private int _numFillersAdded;
 
-        public CheckRandomizer(RandoTopology topology, LogicEvaluator logic, ulong seed, int? startScene)
+        public CheckRandomizer(RandoTopology topology, LogicEvaluator logic, GenerationSettings gs, Seed128 seed, int? startScene)
         {
             _topology = topology;
             _logic = logic;
             _startScene = startScene;
 
-            Seed = seed;
-            _random = new Xoroshiro128Plus(seed);
+            Settings = gs;
+            _random = new Xoroshiro128Plus(seed.S0, seed.S1);
             _logic.Context = this;
         }
 
-        public ulong Seed { get; }
+        public GenerationSettings Settings { get; }
 
         public RandoTopology Topology => _topology;
 
@@ -404,35 +404,35 @@ namespace Haiku.Rando.Logic
         {
             _pool.Clear();
             _startingPool.Clear();
-            if (Settings.IncludeWrench.Value) AddToPool(CheckType.Wrench);
-            if (Settings.IncludeBulblet.Value) AddToPool(CheckType.Bulblet);
-            if (Settings.IncludeAbilities.Value) AddToPool(CheckType.Ability);
-            if (Settings.IncludeItems.Value) AddToPool(CheckType.Item);
-            if (Settings.IncludeChips.Value) AddToPool(CheckType.Chip);
-            if (Settings.IncludeChipSlots.Value) AddToPool(CheckType.ChipSlot);
-            if (Settings.IncludeMapDisruptors.Value) AddToPool(CheckType.MapDisruptor);
+            if (Settings.Contains(Pool.Wrench)) AddToPool(CheckType.Wrench);
+            if (Settings.Contains(Pool.Bulblet)) AddToPool(CheckType.Bulblet);
+            if (Settings.Contains(Pool.Abilities)) AddToPool(CheckType.Ability);
+            if (Settings.Contains(Pool.Items)) AddToPool(CheckType.Item);
+            if (Settings.Contains(Pool.Chips)) AddToPool(CheckType.Chip);
+            if (Settings.Contains(Pool.ChipSlots)) AddToPool(CheckType.ChipSlot);
+            if (Settings.Contains(Pool.MapDisruptors)) AddToPool(CheckType.MapDisruptor);
             //if (Settings.IncludeLevers.Value) AddToPool(CheckType.Lever);
-            if (Settings.IncludePowerCells.Value) AddToPool(CheckType.PowerCell);
-            if (Settings.IncludeCoolant.Value) AddToPool(CheckType.Coolant);
-            if (Settings.IncludeSealants.Value) AddToPool(CheckType.FireRes);
-            if (Settings.IncludeSealants.Value) AddToPool(CheckType.WaterRes);
-            if (Settings.IncludeLoreTablets.Value) AddToPool(CheckType.Lore);
-            if (Settings.IncludeMapMarkers.Value) AddToPool(CheckType.MapMarker);
+            if (Settings.Contains(Pool.PowerCells)) AddToPool(CheckType.PowerCell);
+            if (Settings.Contains(Pool.Coolant)) AddToPool(CheckType.Coolant);
+            if (Settings.Contains(Pool.Sealants)) AddToPool(CheckType.FireRes);
+            if (Settings.Contains(Pool.Sealants)) AddToPool(CheckType.WaterRes);
+            if (Settings.Contains(Pool.Lore)) AddToPool(CheckType.Lore);
+            if (Settings.Contains(Pool.MapMarkers)) AddToPool(CheckType.MapMarker);
 
             //Starting pool contains all the checks we're going to replace eventually
             _startingPool.AddRange(_pool);
 
             //We remove a few checks from the source pool based on special starting conditions
-            if (Settings.StartWithWrench.Value)
+            if (Settings.Contains(StartingItemSet.Wrench))
             {
                 _pool.RemoveAll(c => c.Type == CheckType.Wrench ||
                                     (c.Type == CheckType.Item && c.CheckId == (int)ItemId.Wrench));
             }
-            if (Settings.StartWithWhistle.Value)
+            if (Settings.Contains(StartingItemSet.Whistle))
             {
                 _pool.RemoveAll(c => c.Type == CheckType.Item && c.CheckId == (int)ItemId.Whistle);
             }
-            if (Settings.StartWithMaps.Value)
+            if (Settings.Contains(StartingItemSet.Maps))
             {
                 _pool.RemoveAll(c => c.Type == CheckType.MapDisruptor);
             }
