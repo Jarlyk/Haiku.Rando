@@ -130,13 +130,14 @@ namespace Haiku.Rando
 
             // Add rando save data to the file if it does not already have it, and it's a
             // newly-started file (which introPlayed is a proxy for).
-            if (_saveData == null && !GameManager.instance.introPlayed)
+            if (_saveData == null && !GameManager.instance.introPlayed &&
+                Settings.GetGenerationSettings() is GenerationSettings s)
             {
-                var s = Settings.GetGenerationSettings();
-                if (s != null)
+                if (string.IsNullOrWhiteSpace(s.Seed))
                 {
-                    _saveData = new(s);
+                    s.Seed = DateTime.Now.Ticks.ToString();
                 }
+                _saveData = new(s);
             }
             var gs = _saveData?.Settings;
 
