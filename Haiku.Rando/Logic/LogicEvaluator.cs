@@ -117,6 +117,7 @@ namespace Haiku.Rando.Logic
             if (stateName == LogicStateNames.FireRes) return check.Type == CheckType.FireRes;
             if (stateName == LogicStateNames.WaterRes) return check.Type == CheckType.WaterRes;
             if (stateName == LogicStateNames.Light) return check.Type == CheckType.Bulblet;
+            if (stateName == LogicStateNames.PowerCell) return check.Type == CheckType.PowerCell;
 
             var bracketIndex = stateName.IndexOf('[');
             if (bracketIndex == -1)

@@ -348,7 +348,7 @@ namespace Haiku.Rando.Logic
                         var (s1, s2) = TransitionNodeStates(node);
                         AddState(s1);
                         AddState(s2);
-                        foreach (var edgeOut in node.Outgoing.Where(e => explored.All(x => x.Edge != e) && pendingExploration.All(x => x.Edge != e)))
+                        foreach (var edgeOut in node.Outgoing.Where(e => explored.All(x => x.Edge != e) && pendingExploration.All(x => x.Edge != e) && frontier.All(x => x.Edge != e)))
                         {
                             //Debug.Log($"Adding to exploration: {edgeOut.SceneId}:{edgeOut.Name} from {edgeOut.Origin.Name} to {edgeOut.Destination.Name}");
                             pendingExploration.Push(new FrontierEdge(edgeOut, depth));
@@ -357,7 +357,7 @@ namespace Haiku.Rando.Logic
                 }
                 else
                 {
-                    if (!frontier.Contains(edge))
+                    if (!frontier.Any(e => e.Edge == edge.Edge))
                     {
                         //Debug.Log($"Cannot traverse {edge.Edge}; adding to frontier");
                         frontier.Add(edge);
@@ -446,7 +446,7 @@ namespace Haiku.Rando.Logic
         private void AddState(string state)
         {
             _acquiredStates.Add(state);
-            Debug.Log($"Added logic state as reachable: {state}");
+            //Debug.Log($"Added logic state as reachable: {state}");
         }
 
         public bool HasState(string state)
