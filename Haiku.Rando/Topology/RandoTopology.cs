@@ -35,22 +35,33 @@ namespace Haiku.Rando.Topology
             dto.checks = new RandoCheckDto[Checks.Count];
             dto.edges = new EdgeDto[Edges.Count];
 
+            var nodeIndices = new Dictionary<IRandoNode, int>();
+
             Debug.Log($"Serializing topology: {dto.transitions.Length} transitions");
             for (int i = 0; i < dto.transitions.Length; i++)
             {
                 ToDto(Transitions[i], ref dto.transitions[i]);
+                nodeIndices[Transitions[i]] = i;
             }
 
             Debug.Log($"Serializing topology: {dto.checks.Length} checks");
             for (int i = 0; i < dto.checks.Length; i++)
             {
                 ToDto(Checks[i], ref dto.checks[i]);
+                nodeIndices[Checks[i]] = Transitions.Count + i;
             }
 
             Debug.Log($"Serializing topology: {dto.edges.Length} edges");
             for (int i = 0; i < dto.edges.Length; i++)
             {
-                ToDto(Edges[i], ref dto.edges[i]);
+                var e = Edges[i];
+
+                dto.edges[i] = new()
+                {
+                    sceneId = e.SceneId,
+                    originIndex = nodeIndices[e.Origin],
+                    destinationIndex = nodeIndices[e.Destination]
+                };
             }
 
             var serializer = new JsonSerializer();
@@ -82,7 +93,18 @@ namespace Haiku.Rando.Topology
             var edges = new GraphEdge[dto.edges.Length];
             for (int i = 0; i < edges.Length; i++)
             {
-                edges[i] = FromDto(nodes, ref dto.edges[i]);
+                var e = dto.edges[i];
+                var from = transitions[e.originIndex];
+                IRandoNode to;
+                if (e.destinationIndex < transitions.Length)
+                {
+                    to = transitions[e.destinationIndex];
+                }
+                else
+                {
+                    to = checks[e.destinationIndex - transitions.Length];
+                }
+                edges[i] = new(e.sceneId, from, to);
                 GetScene(scenes, edges[i].SceneId).Edges.Add(edges[i]);
             }
 
@@ -123,13 +145,6 @@ namespace Haiku.Rando.Topology
             dto.alias = data.Alias;
         }
 
-        private static void ToDto(GraphEdge edge, ref EdgeDto dto)
-        {
-            dto.sceneId = edge.SceneId;
-            dto.origin = edge.Origin.Name;
-            dto.destination = edge.Destination.Name;
-        }
-
         private static TransitionNode FromDto(ref TransitionNodeDto dto)
         {
             var data = new TransitionNode(dto.name, dto.type, dto.sceneId1, dto.sceneId2);
@@ -147,17 +162,6 @@ namespace Haiku.Rando.Topology
             data.IsShopItem = dto.isShopItem;
             data.Alias = dto.alias;
             return data;
-        }
-
-        private static GraphEdge FromDto(IReadOnlyList<IRandoNode> nodes, ref EdgeDto dto)
-        {
-            var originName = dto.origin;
-            var destinationName = dto.destination;
-            var sceneId = dto.sceneId;
-            var origin = nodes.FirstOrDefault(n => n.InScene(sceneId) && n.Name == originName);
-            var destination = nodes.FirstOrDefault(n => n.InScene(sceneId) && n.Name == destinationName);
-            var edge = new GraphEdge(sceneId, origin, destination);
-            return edge;
         }
 
         private static Vector2 Parse(string text)
@@ -207,7 +211,7 @@ namespace Haiku.Rando.Topology
     public struct EdgeDto
     {
         public int sceneId;
-        public string origin;
-        public string destination;
+        public int originIndex;
+        public int destinationIndex;
     }
 }

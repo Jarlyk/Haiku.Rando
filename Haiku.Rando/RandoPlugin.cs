@@ -173,34 +173,33 @@ namespace Haiku.Rando
                     GameManager.instance.savePointSceneIndex = startScene.Value;
                 }
 
+                if (gs.Contains(StartingItemSet.Wrench) && !GameManager.instance.canHeal)
+                {
+                    GameManager.instance.canHeal = true;
+                    InventoryManager.instance.AddItem((int)ItemId.Wrench);
+                }
+
+                if (gs.Contains(StartingItemSet.Whistle) && !CheckManager.HasItem(ItemId.Whistle))
+                {
+                    InventoryManager.instance.AddItem((int)ItemId.Whistle);
+                }
+
+                if (gs.Contains(StartingItemSet.Maps))
+                {
+                    // The following is directly copied from DebugMod's GiveAllMaps.
+                    for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
+                    {
+                        GameManager.instance.mapTiles[i].explored = true;
+                    }
+                    for (int j = 0; j < GameManager.instance.disruptors.Length; j++)
+                    {
+                        GameManager.instance.disruptors[j].destroyed = true;
+                    }
+                }
             }
             else
             {
                 success = true;
-            }
-
-            if (gs.Contains(StartingItemSet.Wrench) && !GameManager.instance.canHeal)
-            {
-                GameManager.instance.canHeal = true;
-                InventoryManager.instance.AddItem((int)ItemId.Wrench);
-            }
-
-            if (gs.Contains(StartingItemSet.Whistle) && !CheckManager.HasItem(ItemId.Whistle))
-            {
-                InventoryManager.instance.AddItem((int)ItemId.Whistle);
-            }
-
-            if (gs.Contains(StartingItemSet.Maps))
-            {
-                // The following is directly copied from DebugMod's GiveAllMaps.
-                for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
-                {
-                    GameManager.instance.mapTiles[i].explored = true;
-                }
-                for (int j = 0; j < GameManager.instance.disruptors.Length; j++)
-                {
-                    GameManager.instance.disruptors[j].destroyed = true;
-                }
             }
 
             if (!success)
