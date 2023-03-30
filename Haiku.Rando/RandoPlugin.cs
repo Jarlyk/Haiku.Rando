@@ -11,6 +11,7 @@ using Haiku.Rando.Topology;
 using Haiku.Rando.Util;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MMDetour = MonoMod.RuntimeDetour;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -49,14 +50,27 @@ namespace Haiku.Rando
             On.PCSaveManager.Save += PCSaveManager_Save;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 
-            // prevent CheckChipsWhenGameStarts from giving unexpected chips
-            On.ReplenishHealth.CheckChipsWhenGameStarts += WarnCheckChips;
+            // prevent CheckChipsWhenGameStarts and friends from giving unexpected chips, keys
+            // and coolant when warping
+            On.ReplenishHealth.CheckChipsWhenGameStarts += NoCheckChips;
+            On.ReplenishHealth.CheckKeysWhenGameStarts += NoCheckKeys;
+            new MMDetour.Hook(typeof(ReplenishHealth).GetMethod("CheckCoolantWhenGameStarts", BindingFlags.Instance | BindingFlags.NonPublic), NoCheckCoolant);
 
             //TODO: Add bosses as logic conditions
             //This impacts some transitions
         }
 
-        private void WarnCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
+        private void NoCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
+        {
+            if (_randomizer == null) orig(self);
+        }
+
+        private void NoCheckCoolant(Action<ReplenishHealth> orig, ReplenishHealth self)
+        {
+            if (_randomizer == null) orig(self);
+        }
+
+        private void NoCheckKeys(On.ReplenishHealth.orig_CheckKeysWhenGameStarts orig, ReplenishHealth self)
         {
             if (_randomizer == null) orig(self);
         }

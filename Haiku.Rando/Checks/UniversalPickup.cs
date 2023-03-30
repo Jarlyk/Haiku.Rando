@@ -123,7 +123,7 @@ namespace Haiku.Rando.Checks
                 if (orig.SceneId == SpecialScenes.Quatern)
                 {
                     newObj.SetActive(false);
-                    QuaternRewardReplacer.ReplaceCheck(orig, replacement);
+                    QuaternRewardReplacer.ReplaceCheck(orig, replacement, newObj);
                 }
             }
             else
@@ -145,7 +145,7 @@ namespace Haiku.Rando.Checks
                     break;
                 case SpecialScenes.Quatern:
                     obj.SetActive(false);
-                    QuaternRewardReplacer.ReplaceCheck(orig, replacement);
+                    QuaternRewardReplacer.ReplaceCheck(orig, replacement, obj);
                     break;
                 case 95:
                     MotherRewardReplacer.ReplaceCheck(replacement);
