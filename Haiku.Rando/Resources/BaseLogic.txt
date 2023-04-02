@@ -471,7 +471,7 @@ Scene 61
 Right0->*: Bomb
 
 // Scene 62 : Mainframe
-// Transitions: Right1 (62-167), Right0 (62-80), Left0 (61-62), Left1 (63-62), Door (62-205)
+// Transitions: Right1 (62-167), Right0 (62-80), Left0 (61-62), Left1 (63-62), Door0 (62-205)
 // Checks: MapMarker (MapMarker[4])
 Scene 62
 Left1->Left0: Magnet
@@ -480,7 +480,12 @@ Right1->Left0: Magnet
 Right1->Right0: Magnet
 Left0->Right0: Magnet | Grapple
 Right0->Left0: Magnet | Grapple
-*->Door: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] // requires the individual Creators to be defeated
+*->Door0: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] // requires the individual Creators to be defeated
+Door0->Left1: true
+Door0->Right1: true
+Door0->Left0: Magnet
+Door0->Right0: Magnet
+*->Door1: false // alternative door to Atom?
 *->MapMarker: Transition[144] // requires the Creators trio to be defeated
 
 // Scene 63 : Left of Bulb Hive
