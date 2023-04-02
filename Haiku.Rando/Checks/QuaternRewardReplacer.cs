@@ -40,13 +40,11 @@ namespace Haiku.Rando.Checks
                 // original loop
                 var i = GameManager.instance.lastPowercellCount - 1;
                 var rewardObj = self.rewardObjects[i];
-                Debug.Log($"Processing replacement for {rewardObj.name}");
                 if (rewardObj.name.Contains("_Chip"))
                 {
                     var r = replacer?.chipReplacement;
                     if (r != null)
                     {
-                        Debug.Log($"Has Check? {CheckManager.AlreadyGotCheck(r.Check)}");
                         r.Pickup.SetActive(!CheckManager.AlreadyGotCheck(r.Check));
                     }
                 }
@@ -55,7 +53,6 @@ namespace Haiku.Rando.Checks
                     var r = replacer?.capsule1Replacement;
                     if (r != null)
                     {
-                        Debug.Log($"Has Check? {CheckManager.AlreadyGotCheck(r.Check)}");
                         r.Pickup.SetActive(!CheckManager.AlreadyGotCheck(r.Check));
                     }
                 }
@@ -64,7 +61,6 @@ namespace Haiku.Rando.Checks
                     var r = replacer?.capsule2Replacement;
                     if (r != null)
                     {
-                        Debug.Log($"Has Check? {CheckManager.AlreadyGotCheck(r.Check)}");
                         r.Pickup.SetActive(!CheckManager.AlreadyGotCheck(r.Check));
                     }
                 }
