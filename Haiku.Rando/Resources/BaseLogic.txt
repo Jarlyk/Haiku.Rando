@@ -525,6 +525,12 @@ Right3->Left0: Magnet | DoubleJump
 Right3->Right0: Ball + (Magnet | DoubleJump)
 Right3->Right1: Magnet | DoubleJump
 *->Right2: false // this transition only opens after crossing it from the other side
+Right2->Left0: Magnet | DoubleJump
+Right2->Left1: true
+Right2->Left2: true
+Right2->Right0: Ball + (Magnet | DoubleJump)
+Right2->Right1: Magnet | DoubleJump
+Right2->Right3: true
 
 // Scene 67
 // Transitions: Right (67-68), Left (66-67), Train (67-Train)
