@@ -11,6 +11,7 @@ using Haiku.Rando.Topology;
 using Haiku.Rando.Util;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MMDetour = MonoMod.RuntimeDetour;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -49,14 +50,27 @@ namespace Haiku.Rando
             On.PCSaveManager.Save += PCSaveManager_Save;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 
-            // prevent CheckChipsWhenGameStarts from giving unexpected chips
-            On.ReplenishHealth.CheckChipsWhenGameStarts += WarnCheckChips;
+            // prevent CheckChipsWhenGameStarts and friends from giving unexpected chips, keys
+            // and coolant when warping
+            On.ReplenishHealth.CheckChipsWhenGameStarts += NoCheckChips;
+            On.ReplenishHealth.CheckKeysWhenGameStarts += NoCheckKeys;
+            new MMDetour.Hook(typeof(ReplenishHealth).GetMethod("CheckCoolantWhenGameStarts", BindingFlags.Instance | BindingFlags.NonPublic), NoCheckCoolant);
 
             //TODO: Add bosses as logic conditions
             //This impacts some transitions
         }
 
-        private void WarnCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
+        private void NoCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
+        {
+            if (_randomizer == null) orig(self);
+        }
+
+        private void NoCheckCoolant(Action<ReplenishHealth> orig, ReplenishHealth self)
+        {
+            if (_randomizer == null) orig(self);
+        }
+
+        private void NoCheckKeys(On.ReplenishHealth.orig_CheckKeysWhenGameStarts orig, ReplenishHealth self)
         {
             if (_randomizer == null) orig(self);
         }
@@ -173,34 +187,33 @@ namespace Haiku.Rando
                     GameManager.instance.savePointSceneIndex = startScene.Value;
                 }
 
+                if (gs.Contains(StartingItemSet.Wrench) && !GameManager.instance.canHeal)
+                {
+                    GameManager.instance.canHeal = true;
+                    InventoryManager.instance.AddItem((int)ItemId.Wrench);
+                }
+
+                if (gs.Contains(StartingItemSet.Whistle) && !CheckManager.HasItem(ItemId.Whistle))
+                {
+                    InventoryManager.instance.AddItem((int)ItemId.Whistle);
+                }
+
+                if (gs.Contains(StartingItemSet.Maps))
+                {
+                    // The following is directly copied from DebugMod's GiveAllMaps.
+                    for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
+                    {
+                        GameManager.instance.mapTiles[i].explored = true;
+                    }
+                    for (int j = 0; j < GameManager.instance.disruptors.Length; j++)
+                    {
+                        GameManager.instance.disruptors[j].destroyed = true;
+                    }
+                }
             }
             else
             {
                 success = true;
-            }
-
-            if (gs.Contains(StartingItemSet.Wrench) && !GameManager.instance.canHeal)
-            {
-                GameManager.instance.canHeal = true;
-                InventoryManager.instance.AddItem((int)ItemId.Wrench);
-            }
-
-            if (gs.Contains(StartingItemSet.Whistle) && !CheckManager.HasItem(ItemId.Whistle))
-            {
-                InventoryManager.instance.AddItem((int)ItemId.Whistle);
-            }
-
-            if (gs.Contains(StartingItemSet.Maps))
-            {
-                // The following is directly copied from DebugMod's GiveAllMaps.
-                for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
-                {
-                    GameManager.instance.mapTiles[i].explored = true;
-                }
-                for (int j = 0; j < GameManager.instance.disruptors.Length; j++)
-                {
-                    GameManager.instance.disruptors[j].destroyed = true;
-                }
             }
 
             if (!success)

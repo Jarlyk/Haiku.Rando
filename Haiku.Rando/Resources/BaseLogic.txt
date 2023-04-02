@@ -468,6 +468,7 @@ Right1->Right0: Magnet+DoubleJump
 // Checks:
 Scene 61
 *->Right0: Ball + Bomb + (Magnet | DoubleJump)
+Right0->*: Bomb
 
 // Scene 62 : Mainframe
 // Transitions: Right1 (62-167), Right0 (62-80), Left0 (61-62), Left1 (63-62), Door (62-205)
@@ -479,7 +480,8 @@ Right1->Left0: Magnet
 Right1->Right0: Magnet
 Left0->Right0: Magnet | Grapple
 Right0->Left0: Magnet | Grapple
-*->MapMarker: Transition[144] // requires Creators to be defeated
+*->Door: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] // requires the individual Creators to be defeated
+*->MapMarker: Transition[144] // requires the Creators trio to be defeated
 
 // Scene 63 : Left of Bulb Hive
 // Transitions: Right0 (63-62), Right1 (63-83), Left0 (78-63), Left1 (64-63)
@@ -509,7 +511,6 @@ Scene 65
 // Transitions: Right3 (66-69), Right2 (66-67), Right1 (66-85), Right0 (66-77), Left1 (228-66), Left0 (65-66), Left2 (170-66)
 // Checks:
 Scene 66
-//TODO: Add support for new Right transition (to train 67)
 //Left1 can be reached with a fairly easy enemy pogo, so no restrictions there
 //Left0,Right0 (ball exit) and Right1 are partitioned from the bottom half by vertical requirement
 Left0->Right0: Ball
@@ -523,6 +524,13 @@ Left2->Right1: Magnet | DoubleJump
 Right3->Left0: Magnet | DoubleJump
 Right3->Right0: Ball + (Magnet | DoubleJump)
 Right3->Right1: Magnet | DoubleJump
+*->Right2: false // this transition only opens after crossing it from the other side
+Right2->Left0: Magnet | DoubleJump
+Right2->Left1: true
+Right2->Left2: true
+Right2->Right0: Ball + (Magnet | DoubleJump)
+Right2->Right1: Magnet | DoubleJump
+Right2->Right3: true
 
 // Scene 67
 // Transitions: Right (67-68), Left (66-67), Train (67-Train)
@@ -530,18 +538,27 @@ Right3->Right1: Magnet | DoubleJump
 Scene 67
 //TODO: Check transitions
 *->Train: TrainStation+Clock
+Train->Left: true
+Train->Right: Magnet | DoubleJump
+Left->Right: Ball + (Magnet | DoubleJump)
+Right->Left: Ball
 
 // Scene 68 : Electrified gauntlet after Car Battery
 // Transitions: Right (68-86), Left0 (67-68), Left1 (69-68)
 // Checks: Lever (Lever[49]), PowerCell (PowerCell[11])
 Scene 68
-//TODO: New train transition
+Left0->Left1: Ball
+Left0->Right: Ball + (Magnet | Lever + DoubleJump)
+Left0->Lever: Lever
+Left0->PowerCell: Lever
 Left1->Lever: Lever
 Left1->PowerCell: Lever
 Left1->Right: Magnet | (Lever + DoubleJump)
+Left1->Left0: Magnet + Ball
 Right->Lever: true
 Right->PowerCell: true
 Right->Left1: Lever | (Magnet + DoubleJump)
+Right->Left0: Lever + Magnet + Ball | Magnet + DoubleJump + Ball
 //TODO: BLJ here that avoids DoubleJump for Right->Left
 
 // Scene 69 : Car Battery Room

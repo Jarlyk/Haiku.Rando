@@ -8,9 +8,15 @@ namespace Haiku.Rando.Checks
 {
     internal class QuaternRewardReplacer : MonoBehaviour
     {
-        private RandoCheck chipReplacement;
-        private RandoCheck capsule1Replacement;
-        private RandoCheck capsule2Replacement;
+        private class Replacement
+        {
+            public RandoCheck Check;
+            public GameObject Pickup;
+        }
+
+        private Replacement chipReplacement;
+        private Replacement capsule1Replacement;
+        private Replacement capsule2Replacement;
 
         public static void InitHooks()
         {
@@ -39,7 +45,7 @@ namespace Haiku.Rando.Checks
                     var r = replacer?.chipReplacement;
                     if (r != null)
                     {
-                        rewardObj.SetActive(!CheckManager.AlreadyGotCheck(r));
+                        r.Pickup.SetActive(!CheckManager.AlreadyGotCheck(r.Check));
                     }
                 }
                 else if (rewardObj.name.Contains("_Health fragment 1"))
@@ -47,7 +53,7 @@ namespace Haiku.Rando.Checks
                     var r = replacer?.capsule1Replacement;
                     if (r != null)
                     {
-                        rewardObj.SetActive(!CheckManager.AlreadyGotCheck(r));
+                        r.Pickup.SetActive(!CheckManager.AlreadyGotCheck(r.Check));
                     }
                 }
                 else if (rewardObj.name.Contains("_Health fragment 2"))
@@ -55,14 +61,14 @@ namespace Haiku.Rando.Checks
                     var r = replacer?.capsule2Replacement;
                     if (r != null)
                     {
-                        rewardObj.SetActive(!CheckManager.AlreadyGotCheck(r));
+                        r.Pickup.SetActive(!CheckManager.AlreadyGotCheck(r.Check));
                     }
                 }
             }
             while (running);
         }
 
-        public static void ReplaceCheck(RandoCheck orig, RandoCheck replacement)
+        public static void ReplaceCheck(RandoCheck orig, RandoCheck replacement, GameObject pickup)
         {
             var portal = SceneUtils.FindObjectOfType<e29Portal>();
             if (portal == null)
@@ -76,13 +82,13 @@ namespace Haiku.Rando.Checks
             switch (orig.Alias)
             {
                 case "Item[3]0":
-                    replacer.capsule1Replacement = replacement;
+                    replacer.capsule1Replacement = new() { Check = replacement, Pickup = pickup };
                     break;
                 case "Item[3]1":
-                    replacer.capsule2Replacement = replacement;
+                    replacer.capsule2Replacement = new() { Check = replacement, Pickup = pickup };
                     break;
                 case "Chip":
-                    replacer.chipReplacement = replacement;
+                    replacer.chipReplacement = new() { Check = replacement, Pickup = pickup };
                     break;
                 default:
                     throw new InvalidOperationException($"{orig.Alias} is not a Quatern check");
