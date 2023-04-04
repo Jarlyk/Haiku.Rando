@@ -1,0 +1,3 @@
+Scene 24 // Tire Village
+
+*->Left0: true

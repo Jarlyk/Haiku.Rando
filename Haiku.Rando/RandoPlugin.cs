@@ -83,20 +83,18 @@ namespace Haiku.Rando
                 _topology = RandoTopology.Deserialize(new StreamReader(stream));
             }
 
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Haiku.Rando.Resources.BaseLogic.txt"))
-            using (var reader = new StreamReader(stream))
+            _baseLogic = LoadLogicLayer("BaseLogic");
+            if (_baseLogic == null)
             {
-                var logic = LogicLayer.Deserialize(_topology, reader);
-                if (logic == null)
-                {
-                    Logger.LogError("failed to parse logic");
-                }
-                else
-                {
-                    _baseLogic = logic;
-                }
+                Logger.LogError("failed to parse logic");
             }
+        }
 
+        private LogicLayer LoadLogicLayer(string name)
+        {
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"Haiku.Rando.Resources.{name}.txt");
+            using var reader = new StreamReader(stream);
+            return LogicLayer.Deserialize(_topology, reader);
         }
 
         private void PCSaveManager_Load(On.PCSaveManager.orig_Load orig, PCSaveManager self, string filePath)
@@ -251,7 +249,10 @@ namespace Haiku.Rando
                 startScene = null;
             }
 
-            var evaluator = new LogicEvaluator(new[] { _baseLogic });
+            var logicLayers = new List<LogicLayer>() { _baseLogic };
+            if (gs.Contains(Skip.EnemyPogos)) logicLayers.Add(LoadLogicLayer("EnemyPogoLogic"));
+
+            var evaluator = new LogicEvaluator(logicLayers);
 
             if (gs.Level == RandomizationLevel.Rooms)
             {

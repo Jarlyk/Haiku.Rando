@@ -6,10 +6,12 @@ namespace Haiku.Rando
         public bool RandomStartLocation;
         internal Bitset64 Pools;
         internal Bitset64 StartingItems;
+        internal Bitset64 Skips;
         public RandomizationLevel Level;
 
         public bool Contains(Pool p) => Pools.Contains((int)p);
         public bool Contains(StartingItemSet s) => StartingItems.Contains((int)s);
+        public bool Contains(Skip s) => Skips.Contains((int)s);
     }
 
     public enum Pool
@@ -33,5 +35,15 @@ namespace Haiku.Rando
         Wrench,
         Whistle,
         Maps
+    }
+
+    public enum Skip
+    {
+        EnemyPogos,
+        BLJ,
+        BombJumps,
+        DarkRooms,
+        HazardRooms,
+        SkillChips
     }
 }

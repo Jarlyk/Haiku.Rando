@@ -8,7 +8,7 @@ using Modding;
 
 namespace Haiku.Rando
 {
-    public static  class Settings
+    public static class Settings
     {
         public static ConfigEntry<RandomizationLevel> RandoLevel { get; private set; }
         public static ConfigEntry<string> Seed { get; private set; }
@@ -16,6 +16,7 @@ namespace Haiku.Rando
 
         private static List<ConfigEntry<bool>> StartingItemToggles;
         private static List<ConfigEntry<bool>> PoolToggles;
+        private static List<ConfigEntry<bool>> SkipToggles;
 
         public static ConfigEntry<bool> FastMoney { get; private set; }
         public static ConfigEntry<bool> SyncedMoney { get; private set; }
@@ -43,6 +44,10 @@ namespace Haiku.Rando
             PoolToggles = EnumValues<Pool>()
                 .Select(c => config.Bind("Pool", SplitCamelCase(c.ToString()), c != Pool.Wrench))
                 .ToList();
+            
+            SkipToggles = EnumValues<Skip>()
+                .Select(c => config.Bind("Skips", SplitCamelCase(c.ToString()), false))
+                .ToList();
             //TODO: Load/Save settings to copyable string
             //TODO: Hash display for race sync
             //ConfigManagerUtil.createButton(config, ShowHash, General, "ShowHash", "Show Hash");
@@ -64,23 +69,29 @@ namespace Haiku.Rando
             {
                 return null;
             }
-            
-            var gs = new GenerationSettings() { Seed = Seed.Value, Level = RandoLevel.Value, RandomStartLocation = RandomStartLocation.Value };
-            for (var i = 0; i < StartingItemToggles.Count; i++)
+
+            return new()
             {
-                if (StartingItemToggles[i].Value)
+                Seed = Seed.Value,
+                Level = RandoLevel.Value,
+                RandomStartLocation = RandomStartLocation.Value,
+                StartingItems = BitsetFromToggles(StartingItemToggles),
+                Pools = BitsetFromToggles(PoolToggles),
+                Skips = BitsetFromToggles(SkipToggles)
+            };
+        }
+
+        private static Bitset64 BitsetFromToggles(List<ConfigEntry<bool>> toggles)
+        {
+            var s = new Bitset64();
+            for (var i = 0; i < toggles.Count; i++)
+            {
+                if (toggles[i].Value)
                 {
-                    gs.StartingItems.Add(i);
+                    s.Add(i);
                 }
             }
-            for (var i = 0; i < PoolToggles.Count; i++)
-            {
-                if (PoolToggles[i].Value)
-                {
-                    gs.Pools.Add(i);
-                }
-            }
-            return gs;
+            return s;
         }
 
         private static void ShowHash()
