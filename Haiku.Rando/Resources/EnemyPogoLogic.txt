@@ -1,3 +1,49 @@
 Scene 24 // Tire Village
 
 *->Left0: true
+
+Scene 63 // Left of Bulb Hive
+
+*->*: true
+
+Scene 64 // Central Core, to the right of Echo door
+
+Left->Right0: true
+Right1->Right0: true
+
+Scene 66 // Central Core tall room near Quatern
+
+Left0->Left1: true
+Right0->Left1: Ball
+Left1->Left0: true
+Left1->Right0: Ball
+Left1->Right1: true
+Left2->Left0: true
+Left2->Left1: true
+Left2->Right0: Ball
+Left2->Right1: true
+Right2->Left0: true
+Right2->Left1: true
+Right2->Right0: Ball
+Right2->Right1: true
+Right3->Left0: true
+Right3->Left1: true
+Right3->Right0: Ball
+Right3->Right1: true
+
+Scene 81 // Right of Bulb Hive
+
+Left0<->Right0: true
+
+Scene 104 // Fire Wheels Incinerator Room
+
+Right1->PowerCell: FireRes
+
+Scene 114 // Water Ducts, right of the train
+
+*1->*0: true
+
+Scene 127 // Lower Water Ducts repair station
+
+Right->Left: true
+Repair->Left: true

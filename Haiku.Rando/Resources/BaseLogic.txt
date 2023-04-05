@@ -496,7 +496,7 @@ Right1->Left0: Magnet | DoubleJump
 Right1->Right0: Magnet | DoubleJump
 Left1->Left0: Magnet | DoubleJump
 Left1->Right0: Magnet | DoubleJump
-Right1->Left1: Magnet | DoubleJump
+Right1->Left1: Magnet | DoubleJump // also possible with a precise-ish coyote jump
 
 // Scene 64
 // Transitions: Right0 (64-63), Right1 (64-65), Left (169-64)
@@ -516,14 +516,16 @@ Scene 65
 // Transitions: Right3 (66-69), Right2 (66-67), Right1 (66-85), Right0 (66-77), Left1 (228-66), Left0 (65-66), Left2 (170-66)
 // Checks:
 Scene 66
-//Left1 can be reached with a fairly easy enemy pogo, so no restrictions there
+//Left1 can be reached with a fairly easy coyote jump, so no restrictions there
 //Left0,Right0 (ball exit) and Right1 are partitioned from the bottom half by vertical requirement
 Left0->Right0: Ball
 Right1->Right0: Ball
+Right0->*: Ball
 Left1->Left0: Magnet | DoubleJump
 Left1->Right0: Ball + (Magnet | DoubleJump)
 Left1->Right1: Magnet | DoubleJump
 Left2->Left0: Magnet | DoubleJump
+Left2->Left1: true
 Left2->Right0: Ball + (Magnet | DoubleJump)
 Left2->Right1: Magnet | DoubleJump
 Right3->Left0: Magnet | DoubleJump
@@ -871,7 +873,7 @@ Repair->Lore: FireRes + Magnet
 Scene 104
 *->Right0: FireRes+Magnet
 Right0->*: FireRes + (Magnet | DoubleJump)
-Right1->PowerCell: FireRes
+Right1->PowerCell: FireRes + Magnet + DoubleJump | FireRes + Chip[25] + (Blink | Grapple)
 Right*->Lore: FireRes + Magnet + (DoubleJump | Blink | Grapple | Ball)
 // ball-jump may belong in another layer?
 // also Power Processor + Bomb can get there in 3 bombs
@@ -950,7 +952,7 @@ Scene 114
 // Transitions: Right (115-116), Left (114-115)
 // Checks:
 Scene 115
-Left->Right: Magnet | DoubleJump | Grapple | Ball | Blink
+Left->Right: Magnet | DoubleJump | Grapple | Ball | Blink // or a coyote jump
 
 // Scene 116
 // Transitions: Right (116-117), Left (115-116)
@@ -1049,8 +1051,10 @@ Left->Right: Grapple
 // Transitions: Right (127-128), Left (123-127), Repair (127Repair)
 // Checks: Lore (Lore[16])
 Scene 127
+$RightSide {Right, Repair}
 $Transition {Left, Right, Repair}
-Transition->Transition: Light + (Magnet | DoubleJump)
+Left<->RightSide: Light + (Magnet | DoubleJump)
+Repair<->Right: Light
 Transition->Lore: Light + (Magnet | DoubleJump)
 // bomb jump can replace Magnet or DoubleJump throughout
 
