@@ -2,6 +2,22 @@ Scene 24 // Tire Village
 
 *->Left0: true
 
+Scene 38 // Huge room in the middle of Bunker
+
+*->*: true
+
+Scene 39
+
+*->Left0: Blink
+
+Scene 40 // Trap room to the left of the Bunker Mid repair station
+
+*->Right0: true
+
+Scene 46
+
+Left->Right0: true
+
 Scene 63 // Left of Bulb Hive
 
 *->*: true

@@ -299,6 +299,7 @@ Left2->Left1: Magnet
 // Checks:
 Scene 39
 *->Left0: Blink + (Magnet | DoubleJump)
+Left0->*: Blink
 
 // Scene 40
 // Transitions: Right0 (40-39), Right1 (40-41), Left (203-40)
