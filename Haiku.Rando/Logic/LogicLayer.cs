@@ -33,16 +33,23 @@ namespace Haiku.Rando.Logic
 
         public IReadOnlyDictionary<GraphEdge, IReadOnlyList<LogicSet>> LogicByEdge { get; }
 
-        public static LogicLayer Deserialize(RandoTopology topology, StreamReader reader)
+        public static LogicLayer Deserialize(RandoTopology topology, Func<Skip, bool> enabledSkips, StreamReader reader)
         {
             var tokens = TokenizeLogic(reader);
-            return tokens == null ? null : ParseLogic(topology, tokens.GetEnumerator());
+            var allSkips = (Skip[])Enum.GetValues(typeof(Skip));
+            var aliases = new Dictionary<string, string>();
+            foreach (var c in allSkips)
+            {
+                aliases[c.ToString()] = enabledSkips(c) ? "true" : "false";
+            }
+
+            return tokens == null ? null : ParseLogic(topology, aliases, tokens.GetEnumerator());
         }
 
         private enum TokenType
         {
             Name,
-            MacroName,
+            GroupName,
             Int,
             Colon,
             Comma,
@@ -147,10 +154,10 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private static LogicLayer ParseLogic(RandoTopology topology, IEnumerator<Token> input)
+        private static LogicLayer ParseLogic(RandoTopology topology, Dictionary<string, string> aliases, IEnumerator<Token> input)
         {
             var logicByScene = new Dictionary<int, Dictionary<GraphEdge, List<LogicSet>>>();
-            var macros = new Dictionary<string, List<string>>();
+            var groups = new Dictionary<string, List<string>>();
             RoomScene scene = null;
             while (true)
             {
@@ -166,7 +173,7 @@ namespace Haiku.Rando.Logic
                         Debug.LogError($"logic error at line #{det.LineNumber}: EOF within Scene declaration");
                         break;
                     }
-                    macros.Clear();
+                    groups.Clear();
                     var num = input.Current;
                     if (num.Type == TokenType.Int && int.TryParse(num.Content, out var sceneId) && topology.Scenes.TryGetValue(sceneId, out scene))
                     {
@@ -182,18 +189,18 @@ namespace Haiku.Rando.Logic
                         }
                     }
                 }
-                else if (det.Type == TokenType.MacroName)
+                else if (det.Type == TokenType.GroupName)
                 {
-                    var macroName = det.Content.Substring(1);
-                    if (macros.ContainsKey(macroName))
+                    var groupName = det.Content.Substring(1);
+                    if (groups.ContainsKey(groupName))
                     {
-                        Debug.LogError($"logic error at line #{det.LineNumber}: duplicate macro '{det.Content}'");
+                        Debug.LogError($"logic error at line #{det.LineNumber}: duplicate group '{det.Content}'");
                         SkipToNextTerminator(input);
                         continue;
                     }
-                    if (ParseMacroDefinition(input) is var def && def != null)
+                    if (ParseGroupDefinition(input) is var def && def != null)
                     {
-                        macros[macroName] = def;
+                        groups[groupName] = def;
                     }
                 }
                 // TODO: implement NOT operator
@@ -205,7 +212,7 @@ namespace Haiku.Rando.Logic
                         SkipToNextTerminator(input);
                         continue;
                     }
-                    var fromNodes = FindNodes(scene, det.Content, macros);
+                    var fromNodes = FindNodes(scene, det.Content, groups);
                     if (fromNodes.Count == 0)
                     {
                         Debug.LogError($"logic error at line #{det.LineNumber}: cannot resolve source node '{det.Content}'");
@@ -229,7 +236,7 @@ namespace Haiku.Rando.Logic
                     {
                         continue;
                     }
-                    var toNodes = FindNodes(scene, input.Current.Content, macros);
+                    var toNodes = FindNodes(scene, input.Current.Content, groups);
                     if (toNodes.Count == 0)
                     {
                         Debug.LogError($"logic error at line #{input.Current.LineNumber}: cannot resolve destination node '{input.Current.Content}'");
@@ -254,7 +261,8 @@ namespace Haiku.Rando.Logic
                         SkipToNextTerminator(input);
                         continue;
                     }
-                    var logicSets = EvalLogicExpression(rpn, term => ExpandAlias(term, scene));
+                    var logicSets = EvalLogicExpression(rpn,
+                        term => aliases.TryGetValue(term, out var v) ? v : ExpandAlias(term, scene));
                     if (logicSets == null)
                     {
                         continue;
@@ -278,7 +286,7 @@ namespace Haiku.Rando.Logic
                 }
                 else
                 {
-                    Debug.LogError($"logic error at line #{det.LineNumber}: expected Scene, term or macro name, got '{det.Content}'");
+                    Debug.LogError($"logic error at line #{det.LineNumber}: expected Scene, term or group name, got '{det.Content}'");
                     SkipToNextTerminator(input);
                 }
             }
@@ -288,11 +296,11 @@ namespace Haiku.Rando.Logic
                 p => new SceneLogic(p.Value.ToDictionary(x => x.Key, x => (IReadOnlyList<LogicSet>)x.Value))));
         }
 
-        private static List<string> ParseMacroDefinition(IEnumerator<Token> input)
+        private static List<string> ParseGroupDefinition(IEnumerator<Token> input)
         {
             if (!input.MoveNext())
             {
-                Debug.LogError("logic error: EOF within macro declaration");
+                Debug.LogError("logic error: EOF within group declaration");
                 return null;
             }
             if (!ExpectTokenOfType(input, "opening brace", TokenType.LeftBrace))
@@ -304,7 +312,7 @@ namespace Haiku.Rando.Logic
             {
                 if (!input.MoveNext())
                 {
-                    Debug.LogError("logic error: EOF within macro declaration");
+                    Debug.LogError("logic error: EOF within group declaration");
                     return null;
                 }
                 if (!ExpectTokenOfType(input, "node name", TokenType.Name))
@@ -314,7 +322,7 @@ namespace Haiku.Rando.Logic
                 names.Add(input.Current.Content);
                 if (!input.MoveNext())
                 {
-                    Debug.LogError("logic error: EOF within macro declaration");
+                    Debug.LogError("logic error: EOF within group declaration");
                     return null;
                 }
                 switch (input.Current.Type)

@@ -9,6 +9,7 @@ namespace Haiku.Rando
         private const string randoStartKey = "randoRandomStart";
         private const string poolsKey = "randoPools";
         private const string startingItemsKey = "randoStartingItems";
+        private const string skipsKey = "randoSkips";
         private const string levelKey = "randoLevel";
         private const string collectedLoreKey = "randoCollectedLoreTablets";
         private const string collectedFillerKey = "randoCollectedFillers";
@@ -32,6 +33,7 @@ namespace Haiku.Rando
                 RandomStartLocation = saveFile.Load<bool>(randoStartKey, false),
                 Pools = new(saveFile.Load<ulong>(poolsKey, 0UL)),
                 StartingItems = new(saveFile.Load<ulong>(startingItemsKey, 0UL)),
+                Skips = new(saveFile.Load<ulong>(skipsKey, 0UL)),
                 Level = (RandomizationLevel)saveFile.Load<int>(levelKey, 0)
             };
             CollectedLore = new(saveFile.Load<ulong>(collectedLoreKey, 0UL));
@@ -45,6 +47,7 @@ namespace Haiku.Rando
             saveFile.Save(randoStartKey, Settings.RandomStartLocation);
             saveFile.Save(poolsKey, Settings.Pools.Bits);
             saveFile.Save(startingItemsKey, Settings.StartingItems.Bits);
+            saveFile.Save(skipsKey, Settings.Skips.Bits);
             saveFile.Save(levelKey, (int)Settings.Level);
             saveFile.Save(collectedLoreKey, CollectedLore.Bits);
             saveFile.Save(collectedFillerKey, CollectedFillers.Bits);
