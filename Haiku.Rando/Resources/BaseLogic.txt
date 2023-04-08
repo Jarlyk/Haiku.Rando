@@ -1086,7 +1086,7 @@ Left->Item: Grapple+WaterRes
 // Transitions: Right0 (131-125), Right1 (131-126), Left (132-131bottom)
 // Checks:
 Scene 131
-*->Right1: WaterRes + (Magnet | DoubleJump)
+*->Right1: (WaterRes | Grapple | Blink) + (Magnet | DoubleJump)
 Left->Right0: DoubleJump
 Left->Right1: Magnet
 Right0->Left: DoubleJump
@@ -1303,8 +1303,11 @@ BottomArea<->BottomArea: Light
 // Transitions: Right (154-155), Left0 (146-154), Left1 (153-154)
 // Checks:
 Scene 154
-*->*: Light
-//TODO: Should check requirements to access train (Left0) from here
+Left0->*: Light
+Left1->Left0: Light + (Magnet | DoubleJump)
+Left1->Right: Light
+Right->Left0: Light + (Magnet | DoubleJump)
+Right->Left1: Light
 
 // Scene 155
 // Transitions: Right (155-156), Left0 (165-155), Left1 (154-155)
@@ -1314,10 +1317,10 @@ Left1->Lever: Light
 Right->Lever: false
 Left0->Lever: false
 Right->Left1: Light + Lever + (Magnet | DoubleJump)
-Right->Left0: Light + Lever + (Magnet | DoubleJump)
+Right->Left0: Light + (Magnet | DoubleJump)
 Left0->Left1: Light+Lever
 Left0->Right: Light
-Left1->Left0: Light + (Magnet | DoubleJump)
+Left1->Left0: Light + Lever + (Magnet | DoubleJump)
 *->Right: Light 
 *->Chip: Light+Magnet
 
@@ -1558,7 +1561,7 @@ Left1->Right: false
 // Transitions: Right (183-185), Left (174-183)
 // Checks: Disruptor (MapDisruptor[12])
 Scene 183
-// No obstacles
+Right->Left: Magnet | DoubleJump // or BLJ
 
 // Scene 184
 // Transitions: Right (184-185)
@@ -1790,9 +1793,8 @@ Left1->Left0: FireRes + (Magnet | DoubleJump)
 // Transitions: Right (214-213), Left (215-214)
 // Checks:
 Scene 214
-*->Left: FireRes + (Magnet | DoubleJump)
-*->Right: FireRes
-//(Room might be fine for "*->*: FireRes" as an enemy pogo can get up fairly easily)
+Right->Left: FireRes + (Magnet | DoubleJump)
+Left->Right: FireRes
 
 // Scene 215
 // Transitions: Right0 (215-218), Right1 (215-214), Left1 (232-215), Left0 (217-215)

@@ -63,3 +63,67 @@ Scene 127 // Lower Water Ducts repair station
 
 Right->Left: true
 Repair->Left: true
+
+Scene 131
+
+Left->Right1: WaterRes | Grapple | Blink
+
+Scene 133
+
+Left->Right0: true // + coyote jump
+Left->Right1: true
+
+Scene 135
+
+Right->Left0: true
+Right->Left1: true
+
+Scene 152 // Amplifying Transputer room
+$Bottom {Left2, Right1}
+
+Bottom->Left0: Light + Ball + BLJ
+Bottom->Left1: Light + Ball + BLJ
+Bottom->Right0: Light + Ball + BLJ
+Bottom->Lore: Light + Ball + BLJ
+// Right1->Chip and Right1->Left2 can be done with just the BLJ
+
+Scene 155
+
+Right->Left1: Light + Lever
+
+Scene 156
+
+*->Disruptor: Light + DoubleJump // pogo on a retracting hook; may require damage tank
+
+Scene 157
+
+Left<->Right: Light
+
+Scene 158 // Entrance to Sunken Wastes from Incinerator
+
+Left<->Right: Light
+
+Scene 173 // Bottom left entrance to Factory
+
+*1->*: true
+
+Scene 183
+
+Right->Left: true
+
+Scene 187
+
+// you may have to wait a while for the frogs to line up
+Left<->Right: true
+
+Scene 193
+
+Left->Right0: true
+Right1->Left: true
+Right1->Right0: true
+Right2->Left: true
+Right2->Right0: true
+
+Scene 214
+
+Right->Left: FireRes
