@@ -1,0 +1,16 @@
+Scene 43
+
+Left1->Left0: true
+
+Scene 47
+
+*->Chip: Magnet
+
+Scene 63 // Left of Bulb Hive
+$Top {Left0, Right0}
+Right1->Left1: true
+Right1->Top: true
+Left1->Top: true
+
+Scene 169 // Electric Key shop entrance
+Right->Left: Magnet

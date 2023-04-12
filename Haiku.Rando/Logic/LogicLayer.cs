@@ -37,7 +37,10 @@ namespace Haiku.Rando.Logic
         {
             var tokens = TokenizeLogic(reader);
             var allSkips = (Skip[])Enum.GetValues(typeof(Skip));
-            var aliases = new Dictionary<string, string>();
+            var aliases = new Dictionary<string, string>()
+            {
+                {"PowerProcessor", "Chip[3]"}
+            };
             foreach (var c in allSkips)
             {
                 aliases[c.ToString()] = enabledSkips(c) ? "true" : "false";
@@ -262,7 +265,7 @@ namespace Haiku.Rando.Logic
                         continue;
                     }
                     var logicSets = EvalLogicExpression(rpn,
-                        term => aliases.TryGetValue(term, out var v) ? v : ExpandAlias(term, scene));
+                        term => ExpandAlias(aliases.TryGetValue(term, out var v) ? v : term, scene));
                     if (logicSets == null)
                     {
                         continue;

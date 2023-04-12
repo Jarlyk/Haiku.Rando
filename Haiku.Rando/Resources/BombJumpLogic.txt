@@ -1,0 +1,132 @@
+// The maximum number of possible consecutive bomb jumps ranges from 2 to 10,
+// depending on how much coolant has been obtained and whether Power Processor is equipped.
+// The requirements for each number of jumps are as follows:
+//
+// 2 jumps => Ball + Bomb
+// 3 jumps => Ball + Bomb + (PowerProcessor | Coolant)
+// 4 jumps => Ball + Bomb + (PowerProcessor | 3#Coolant)
+// 5-6 jumps => Ball + Bomb + PowerProcessor + 2#Coolant
+// 7-10 jumps => Ball + Bomb + PowerProcessor + 3#Coolant
+
+Scene 10 // Starting area
+
+*->Right0: Ball + Bomb
+
+Scene 21 // After Magnet repair station
+
+$BottomRight {Right1, Repair}
+BottomRight->Right0: Ball + Bomb
+*->Disruptor: Ball + Bomb
+
+Scene 22
+
+Left->Right: Ball + Bomb
+
+Scene 23
+
+Left1<->Right1: Ball + Bomb
+
+Scene 24 // Tire Village
+
+*->Left0: Ball + Bomb
+
+Scene 31
+
+*->Left0: Ball + Bomb
+Left2->Left1: Ball + Bomb
+Left2->MapMarker: Ball + Bomb
+Left1->MapMarker: Ball + Bomb
+Left0->Left1: Ball + Bomb
+
+Scene 32 // Hand Room
+
+Right1->*: Ball + Bomb
+Left->*: Ball + Bomb
+
+Scene 33 // Traps room on way to Mainframe
+
+*->*: Ball + Bomb
+
+Scene 34
+
+*->PowerCell: Ball + Bomb
+Right0->Left: Ball + Bomb
+
+Scene 35 // Tall room below Bunker
+
+$Up {Right0, Chip}
+
+Right1->Up: Ball + Bomb + 2#Coolant + PowerProcessor
+Right1->Left: Ball + Bomb + 2#Coolant + PowerProcessor + Transition[201][Left]
+
+Scene 38 // Huge room in the middle of Bunker
+
+*->*: Ball + Bomb
+
+Scene 39
+
+*->Left0: Ball + Bomb + Blink
+
+Scene 43
+
+Left1->Left0: Ball + Bomb
+Right->Left*: Ball + Bomb + (PowerProcessor | 3#Coolant)
+
+Scene 45
+
+Left->PowerCell: Ball + Bomb + PowerProcessor
+
+Scene 46
+
+$Bottom {Door, Right1}
+
+Left->Right0: Lever + Ball + Bomb
+Bottom->Right0: Ball + Bomb
+
+Scene 47
+
+Right->Left: Ball + Bomb
+*->Chip: Ball + Bomb
+
+Scene 48
+$Bottom{Left1, Right1}
+Bottom->Left0: Ball + Bomb
+Bottom->Right0: Ball + Bomb
+Right0->Left0: Ball + Bomb
+
+Scene 52
+*1->*0: Ball + Bomb
+
+Scene 61 // Upper Left from Mainframe
+*->Right0: Ball + Bomb
+
+Scene 62 // Mainframe
+$Bottom {Left1, Right1, Door0}
+$Top {Left0, Right0}
+Left0<->Right0: Ball + Bomb
+Bottom->Top: Ball + Bomb
+
+Scene 63 // Left of Bulb Hive
+$Top {Left0, Right0}
+
+Right1->Left1: Ball + Bomb
+Right1->Top: Ball + Bomb
+Left1->Top: Ball + Bomb
+
+Scene 78 // Tricky magnet obstacle course
+// Right->Left can be done with just 3 jumps but it requires a precise landing on the
+// 4th pillar from the right
+Left<->Right: Ball + Bomb + (3#Coolant | PowerProcessor)
+
+Scene 168 // Vertical to left of Electric Key shop
+Right1->Right0: Ball + Bomb + 3#Coolant + PowerProcessor
+// the power cell can be reached with only 2 consecutive jumps with a landing on the
+// bottom-most pillar (it's still 3 jumps total, but the heat can regenerate after
+// the 1st)
+Right1->PowerCell: Ball + Bomb + (Coolant | PowerProcessor)
+
+Scene 169 // Electric Key shop entrance
+Right->Left: Ball + Bomb
+
+Scene 202 // Lower Right Entrance to Bunker
+Left1->Left0: Ball + Bomb + (Coolant | PowerProcessor | EnemyPogos)

@@ -16,7 +16,7 @@ Scene 40 // Trap room to the left of the Bunker Mid repair station
 
 Scene 46
 
-Left->Right0: true
+Left->Right0: Lever
 
 Scene 63 // Left of Bulb Hive
 

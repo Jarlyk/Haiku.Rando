@@ -140,7 +140,8 @@ Scene 20
 // Checks: Disruptor (MapDisruptor[1])
 Scene 21
 $BottomRight {Right1, Repair}
-BottomRight->*: Magnet
+BottomRight->Right0: Magnet
+BottomRight->Disruptor: Magnet
 Right0->Disruptor: Magnet | DoubleJump
 
 // Scene 22
@@ -233,8 +234,8 @@ Scene 32
 Right1->*: Magnet
 Left->*: Magnet
 Right0->Lore: true
-Right1->Lore: Magnet // | (Bomb + Ball)
-Left->Lore: Magnet // | (Bomb + Ball)
+Right1->Lore: Magnet
+Left->Lore: Magnet
 
 // Scene 33 : Traps room on way to Mainframe
 // Transitions: Right (33-61), Left (32-33)
@@ -343,14 +344,22 @@ Left->PowerCell: DoubleJump + Magnet + (Grapple | Blink)
 // Transitions: Right0 (46-47), Right1 (46-39), Left (58-46), Door (222-46)
 // Checks: Lever (Lever[27])
 Scene 46
-*->Door: Item[0]
-Right0->Left: Lever
-Right1->Left: Lever + (Magnet | DoubleJump)
-Door->Left: Lever + (Magnet | DoubleJump)
-*->Right0: Magnet | DoubleJump
-Right0->Lever: false
-Right1->Lever: false
-Door->Lever: false
+
+$LeftLever {Left, Lever}
+
+Right0->Door: Item[0]
+Right0->Right1: true
+Right0->LeftLever: Lever
+Right1->Door: Item[0]
+Right1->Right0: Magnet | DoubleJump
+Right1->LeftLever: Lever + (Magnet | DoubleJump)
+Left->Door: Lever + Item[0]
+Left->Right0: Lever + (Magnet | DoubleJump)
+Left->Right1: Lever
+Left->Lever: true
+Door->Right0: Magnet | DoubleJump
+Door->Right1: true
+Door->LeftLever: Lever + (Magnet | DoubleJump)
 
 // Scene 47
 // Transitions: Right (47-48), Left (46-47)
