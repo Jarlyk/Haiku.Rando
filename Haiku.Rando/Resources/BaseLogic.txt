@@ -624,7 +624,7 @@ Scene 73
 // Transitions: Right2 (74-75), Right1 (74-73), Right0 (74-71), Left (106-74)
 // Checks:
 Scene 74
-*->*: Ball+Bomb
+*->*: Bomb
 Left->Right2: true
 Right2->Left: true
 //TODO: This room has a Blink through the wall into bombs at Right1, accessible from Right0
@@ -633,23 +633,26 @@ Right2->Left: true
 // Transitions: Right (75-76), Left0 (74-75), Left1 (84-75), Repair (75Repair)
 // Checks: Item (Item[1]), Lever (Lever[15])
 Scene 75
-Left0->Item: Ball + Bomb + (Magnet | DoubleJump)
-Left0->Left1: Ball + Bomb + (Magnet | DoubleJump)
-Left0->Lever: Ball + Bomb + (Magnet | DoubleJump)
-Left0->Repair: Ball+Bomb
+Left0->Item: Bomb + (Lever | Ball + Magnet | Ball + DoubleJump)
+Left0->Left1: Bomb + (Lever | Ball + Magnet | Ball + DoubleJump)
+Left0->Lever: Bomb + (Lever | Ball + Magnet | Ball + DoubleJump)
+Left0->Repair: Bomb
+// Left0<->Right can be crossed itemless, but only if the bomb floor has not been broken yet.
+Left0<->Right: Magnet | Grapple | Blink
 Left1->Item: Magnet | DoubleJump
-Left1->Left0: Ball+Bomb+Magnet
+Left1->Lever: Magnet | DoubleJump
+Left1->Left0: Lever + Bomb + Magnet
 Left1->Repair: Lever + (Magnet | DoubleJump)
-Left1->Right: Ball+Bomb+Magnet
+Left1->Right: Lever + Bomb + Magnet
 Repair->Item: Lever | Ball + Bomb + (Magnet | DoubleJump)
-Repair->Left0: Ball+Bomb+Magnet
+Repair->Left0: Bomb + Magnet
 Repair->Left1: Lever | Ball + Bomb + (Magnet | DoubleJump)
 Repair->Lever: Lever | Ball + Bomb + (Magnet | DoubleJump)
-Repair->Right: Ball+Bomb+Magnet
-Right->Item: Ball + Bomb + (Magnet | DoubleJump)
+Repair->Right: Bomb + Magnet
+Right->Item: Bomb + (Lever | Ball + Magnet | Ball + DoubleJump)
 Right->Left1: Ball + Bomb + (Magnet | DoubleJump)
 Right->Lever: Ball + Bomb + (Magnet | DoubleJump)
-Right->Repair: Ball+Bomb
+Right->Repair: Bomb
 //NOTE: the non-lever path here can be accessed via a pretty easy BLJ after breaking the bomb barrier
 //The path from below can also use a BLJ, though slightly harder
 
@@ -669,7 +672,6 @@ Left->Right: Lever + Ball + (Magnet | DoubleJump)
 Right->*Res: Ball
 Right->Lever: Lever+Ball
 Right->Left: Lever+Ball
-//TODO: BLJ skip here
 
 // Scene 78 : Tricky magnet obstacle course
 // Transitions: Right (78-63), Left (168-78)
@@ -1886,10 +1888,9 @@ Scene 227
 // Checks: PowerCell (PowerCell[17]), Lore (Lore[3])
 Scene 228
 //TODO: Possible skips chaining double jump and blink
-// 2-bomb jump gives Left->Monument
 $Monument {PowerCell, Lore}
 $Exit {Left, Right}
-Exit->Exit: Grapple
+Exit->Exit: Grapple + (Magnet | DoubleJump)
 Exit->Monument: Grapple+Magnet+DoubleJump
 
 // Scene 229

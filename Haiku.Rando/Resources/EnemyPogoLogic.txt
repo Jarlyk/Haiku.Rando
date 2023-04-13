@@ -47,6 +47,11 @@ Right3->Left1: true
 Right3->Right0: Ball
 Right3->Right1: true
 
+Scene 68 // Electrified gauntlet after Car Battery
+// These require you to lure a flying enemy from the path to the power cell.
+Right->Left0: Magnet
+Right->Left1: Magnet + Ball
+
 Scene 81 // Right of Bulb Hive
 
 Left0<->Right0: true

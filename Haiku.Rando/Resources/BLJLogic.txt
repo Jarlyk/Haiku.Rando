@@ -12,5 +12,21 @@ Right1->Left1: true
 Right1->Top: true
 Left1->Top: true
 
+Scene 68 // Electrified gauntlet after Car Battery
+Right->Left0: Magnet
+Right->Left1: Magnet + Ball
+
+Scene 75 // Bomb barriers before Electron
+$Interior {Left1, Item, Lever}
+Left0->Interior: Ball + Bomb
+Right->Interior: Ball + Bomb
+Left1->Item: true
+Left1->Lever: true
+Left1->Repair: true
+
+Scene 77 // Sealants Room
+Left->*Res: Lever
+Left->Right: Lever
+
 Scene 169 // Electric Key shop entrance
 Right->Left: Magnet

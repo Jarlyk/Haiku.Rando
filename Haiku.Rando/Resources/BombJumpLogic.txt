@@ -7,6 +7,9 @@
 // 4 jumps => Ball + Bomb + (PowerProcessor | 3#Coolant)
 // 5-6 jumps => Ball + Bomb + PowerProcessor + 2#Coolant
 // 7-10 jumps => Ball + Bomb + PowerProcessor + 3#Coolant
+//
+// Double jump may extend the range by 1 jump, although the height and physics are not quite the same
+// as an additional bomb jump.
 
 Scene 10 // Starting area
 
@@ -109,14 +112,62 @@ Bottom->Top: Ball + Bomb
 Scene 63 // Left of Bulb Hive
 $Top {Left0, Right0}
 
+Scene 66 // Central Core tall room near Quatern
+Left0->Left1: Ball + Bomb
+Right0->Left1: Ball + Bomb
+Left1->Left0: Ball + Bomb
+Left1->Right0: Ball + Bomb
+Left1->Right1: Ball + Bomb
+Left2->Left0: Ball + Bomb
+Left2->Left1: Ball + Bomb
+Left2->Right0: Ball + Bomb
+Left2->Right1: Ball + Bomb
 Right1->Left1: Ball + Bomb
-Right1->Top: Ball + Bomb
-Left1->Top: Ball + Bomb
+Right2->Left0: Ball + Bomb
+Right2->Left1: Ball + Bomb
+Right2->Right0: Ball + Bomb
+Right2->Right1: Ball + Bomb
+Right3->Left0: Ball + Bomb
+Right3->Left1: Ball + Bomb
+Right3->Right0: Ball + Bomb
+Right3->Right1: Ball + Bomb
+
+Scene 68 // Electrified gauntlet after Car Battery
+$Checks {Lever, PowerCell}
+
+Left*<->Right: Ball + Bomb + (Lever | DoubleJump | Coolant | PowerProcessor | BLJ)
+Left0->Left1: Ball + Bomb
+Left*->Checks: Ball + Bomb + (DoubleJump | Coolant | PowerProcessor | BLJ)
+
+Scene 69 // Car Battery Room
+$CarBattery {Right0, Chip}
+Left1->Left0: Ball + Bomb
+Left1->CarBattery: Ball + Bomb
+Left2->Left0: Ball + Bomb
+Left2->CarBattery: Ball + Bomb
+Right1->*: Ball + Bomb
+
+Scene 75 // Bomb barriers before Electron
+$Interior {Left1, Item, Lever}
+$Exterior {Left0, Right, Repair}
+Left0->Interior: Ball + Bomb
+Left0<->Right: Ball + Bomb // see main logic file for notes on why this is needed
+Right->Interior: Ball + Bomb
+Left1->Exterior: Ball + Bomb + (Lever | Coolant | PowerProcessor)
+Left1->Item: Ball + Bomb
+Left1->Lever: Ball + Bomb
+
+Scene 77 // Sealants Room
+Left->*Res: Lever + Ball + Bomb
+Left->Right: Lever + Ball + Bomb
 
 Scene 78 // Tricky magnet obstacle course
 // Right->Left can be done with just 3 jumps but it requires a precise landing on the
 // 4th pillar from the right
 Left<->Right: Ball + Bomb + (3#Coolant | PowerProcessor)
+
+Scene 85 // Grapple Pickup
+Left->Grapple: Ball + Bomb
 
 Scene 168 // Vertical to left of Electric Key shop
 Right1->Right0: Ball + Bomb + 3#Coolant + PowerProcessor
@@ -130,3 +181,11 @@ Right->Left: Ball + Bomb
 
 Scene 202 // Lower Right Entrance to Bunker
 Left1->Left0: Ball + Bomb + (Coolant | PowerProcessor | EnemyPogos)
+
+Scene 228 // Grapple gauntlet to left of Bulb Drop
+$Monument {PowerCell, Lore}
+$Exit {Left, Right}
+Exit->Exit: Ball + Bomb + (PowerProcessor + 2#Coolant | Grapple)
+Right->Monument: Ball + Bomb + (PowerProcessor + 2#Coolant | Grapple)
+// Left->Monument requires you to jump up a hidden spot in the ceiling where you normally drop down
+Left->Monument: Ball + Bomb
