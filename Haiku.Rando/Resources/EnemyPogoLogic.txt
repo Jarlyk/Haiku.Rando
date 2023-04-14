@@ -18,6 +18,9 @@ Scene 46
 
 Left->Right0: Lever
 
+Scene 60
+Right1->Right0: Magnet + BLJ
+
 Scene 63 // Left of Bulb Hive
 
 *->*: true

@@ -454,7 +454,7 @@ Right->*: DoubleJump | Grapple | Blink | Ball
 Scene 58
 $Bottom {Left1, Right}
 Bottom->Left0: Magnet | DoubleJump
-Bottom->Lore: Magnet | DoubleJump // | (Bomb + Ball)
+Bottom->Lore: Magnet | DoubleJump
 Left0->Bottom: true
 Left0->Lore: true
 
@@ -553,10 +553,9 @@ Right2->Right3: true
 // Transitions: Right (67-68), Left (66-67), Train (67-Train)
 // Checks: TrainStation (TrainStation[6])
 Scene 67
-//TODO: Check transitions
 *->Train: TrainStation+Clock
 Train->Left: true
-Train->Right: Magnet | DoubleJump
+Train->Right: Ball + (Magnet | DoubleJump)
 Left->Right: Ball + (Magnet | DoubleJump)
 Right->Left: Ball
 
@@ -688,7 +687,6 @@ Scene 79
 Down->*: false
 Left1->Left0: Magnet | DoubleJump
 //NOTE: Lever here doesn't actually block anything
-//TODO: BLJ skips here
 
 // Scene 80 : Right of Mainframe
 // Transitions: Right (80-81), Left (62-80)
@@ -754,7 +752,6 @@ Scene 87
 $LeftCorner {Left1, Repair}
 $Bottom {Left1, Repair, Right1}
 Right1->LeftCorner: Magnet | DoubleJump
-//TODO: Right1->LeftCorner is an easy BLJ
 Bottom->Right0: Magnet
 Bottom->Left0: Clock + (Magnet | DoubleJump)
 Left0->*: Clock
@@ -767,8 +764,9 @@ Scene 88
 $Bottom {Left, Right1}
 $RightArea {Right0, Clock}
 *->Train: Clock+TrainStation
-Bottom->Item: DoubleJump | Clock
-Bottom->RightArea: DoubleJump | Clock + Blink | Clock + Grapple
+Bottom->Item: DoubleJump | Clock + Magnet
+Bottom->RightArea: DoubleJump | Clock + Magnet
+Right0->Item: DoubleJump | Blink | Grapple | Ball | Clock + Magnet
 
 // Scene 89
 // Transitions: Right (89-90), Left (87-89)
@@ -816,14 +814,14 @@ Scene 95
 //NOTE: The Chip here is behind the 'save the children' quest
 //This means access is a bit unusual, as it involves visiting room 97 and completing it
 //We thus flag the Chip as being gated based on room 97's obstacles
-//TODO: For future room rando, we probably want to keep 95-97 linked, as otherwise logic here gets very wonky
+//TODO: For future room rando, we probably want to keep 95-97 linked, as otherwise logic here gets very wonky (or we can use a transition requirement, like for bosses)
 *->Chip: Magnet | (DoubleJump + Lever[42])
 
 // Scene 96 : Piston bridge
 // Transitions: Right (96-95), Left (93-96)
 // Checks:
 Scene 96
-Left->Right: Grapple
+Left<->Right: Grapple
 //TODO: Piston bridge lever is not currently part of checks
 
 // Scene 97

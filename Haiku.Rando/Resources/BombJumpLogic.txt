@@ -100,6 +100,30 @@ Right0->Left0: Ball + Bomb
 Scene 52
 *1->*0: Ball + Bomb
 
+Scene 54
+Right->Left: Ball + Bomb + Blink
+
+Scene 55
+Left<->Right: Ball + Bomb + PowerProcessor + 3#Coolant
+
+Scene 56
+Right1->*: Ball + Bomb
+
+Scene 57
+*<->Right: Ball + Bomb
+
+Scene 58 // Bunk Beds
+$Bottom {Left1, Right}
+Bottom->Left0: Ball + Bomb
+Bottom->Lore: Ball + Bomb
+
+Scene 59 // Basketball Court
+$Edge {Left, Right}
+Edge->Edge: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
+
+Scene 60
+Right1->Right0: Ball + Bomb
+
 Scene 61 // Upper Left from Mainframe
 *->Right0: Ball + Bomb
 
@@ -132,9 +156,12 @@ Right3->Left1: Ball + Bomb
 Right3->Right0: Ball + Bomb
 Right3->Right1: Ball + Bomb
 
+Scene 67
+Train->Right: Ball + Bomb
+Left->Right: Ball + Bomb
+
 Scene 68 // Electrified gauntlet after Car Battery
 $Checks {Lever, PowerCell}
-
 Left*<->Right: Ball + Bomb + (Lever | DoubleJump | Coolant | PowerProcessor | BLJ)
 Left0->Left1: Ball + Bomb
 Left*->Checks: Ball + Bomb + (DoubleJump | Coolant | PowerProcessor | BLJ)
@@ -166,8 +193,33 @@ Scene 78 // Tricky magnet obstacle course
 // 4th pillar from the right
 Left<->Right: Ball + Bomb + (3#Coolant | PowerProcessor)
 
+Scene 79 // Right of Sealants Room
+Left1->Left0: Ball + Bomb
+
+Scene 81 // Right of Bulb Hive
+*->Left0: Ball + Bomb
+*->Right0: Ball + Bomb
+
 Scene 85 // Grapple Pickup
 Left->Grapple: Ball + Bomb
+
+Scene 87
+$Bottom {Left1, Repair, Right1}
+Right1->*: Ball + Bomb
+Bottom->Right0: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
+Bottom->Left0: Ball + Bomb + Clock
+
+Scene 88
+$Top {Item, Clock, Right0}
+$Bottom {Left, Right1}
+Bottom->Top: Ball + Bomb
+
+Scene 95 // Steam Town
+// see the base logic file for possible further logic requirements about this
+*->Chip: Ball + Bomb + (Lever[42] | PowerProcessor | Coolant | DoubleJump)
+
+Scene 96 // Piston bridge
+Left<->Right: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 
 Scene 168 // Vertical to left of Electric Key shop
 Right1->Right0: Ball + Bomb + 3#Coolant + PowerProcessor

@@ -6,11 +6,18 @@ Scene 47
 
 *->Chip: Magnet
 
+Scene 54
+Right->Left: Blink + Magnet
+
 Scene 63 // Left of Bulb Hive
 $Top {Left0, Right0}
 Right1->Left1: true
 Right1->Top: true
 Left1->Top: true
+
+Scene 67
+Train->Right: true
+Left->Right: true
 
 Scene 68 // Electrified gauntlet after Car Battery
 Right->Left0: Magnet
@@ -27,6 +34,13 @@ Left1->Repair: true
 Scene 77 // Sealants Room
 Left->*Res: Lever
 Left->Right: Lever
+
+Scene 79 // Right of Sealants Room
+Left1->Left0: true
+
+Scene 87
+Right1->Left1: true
+Right1->Repair: true
 
 Scene 169 // Electric Key shop entrance
 Right->Left: Magnet

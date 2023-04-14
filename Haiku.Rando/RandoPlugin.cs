@@ -245,7 +245,7 @@ namespace Haiku.Rando
             var baseLogic = LoadLogicLayer("BaseLogic", gs.Contains);
             var logicLayers = new List<LogicLayer>() { baseLogic };
             if (gs.Contains(Skip.EnemyPogos)) logicLayers.Add(LoadLogicLayer("EnemyPogoLogic", gs.Contains));
-            if (gs.Contains(Skip.BLJ)) logicLayers.Add(LoadLogicLayer("BLJ", gs.Contains));
+            if (gs.Contains(Skip.BLJ)) logicLayers.Add(LoadLogicLayer("BLJLogic", gs.Contains));
             if (gs.Contains(Skip.BombJumps)) logicLayers.Add(LoadLogicLayer("BombJumpLogic", gs.Contains));
 
             var evaluator = new LogicEvaluator(logicLayers);
