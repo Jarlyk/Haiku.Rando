@@ -8,11 +8,13 @@ using BepInEx;
 using Haiku.Rando.Checks;
 using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
+using Haiku.Rando.UI;
 using Haiku.Rando.Util;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Haiku.Rando
 {
@@ -37,7 +39,7 @@ namespace Haiku.Rando
             CheckManager.Instance.InitHooks(Logger.Log, () => _saveData);
             TransitionManager.InitHooks();
             QoL.InitHooks();
-            Text.Hook();
+            ModText.Hook();
             
             IL.LoadGame.Start += LoadGame_Start;
             On.PCSaveManager.Load += PCSaveManager_Load;
@@ -49,6 +51,8 @@ namespace Haiku.Rando
 
             //TODO: Add bosses as logic conditions
             //This impacts some transitions
+
+            gameObject.AddComponent<RecentPickupDisplay>();
         }
 
         private void WarnCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)

@@ -28,6 +28,7 @@ namespace Haiku.Rando
         public static ConfigEntry<bool> IncludeSealants { get; private set; }
         public static ConfigEntry<bool> IncludeLoreTablets { get; private set; }
 
+        public static ConfigEntry<bool> ShowRecentPickups { get; private set; }
         public static ConfigEntry<bool> FastMoney { get; private set; }
         public static ConfigEntry<bool> SyncedMoney { get; private set; }
         public static ConfigEntry<bool> PreBrokenDoors { get; private set; }
@@ -62,6 +63,8 @@ namespace Haiku.Rando
             IncludeSealants = config.Bind(Pool, "Sealants", true);
             IncludeLoreTablets = config.Bind(Pool, "Lore Tablets", true);
 
+            ShowRecentPickups = config.Bind(QoL, "ShowRecentPickups", true,
+                                            "Whether to show a list of recent pickups");
             FastMoney = config.Bind(QoL, "FastMoney", true,
                                     "Makes it so that money totems drop all their money in a single hit");
             SyncedMoney = config.Bind(QoL, "SyncedMoney", true,

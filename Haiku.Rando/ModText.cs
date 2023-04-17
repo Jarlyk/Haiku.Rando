@@ -1,6 +1,6 @@
 namespace Haiku.Rando
 {
-    public static class Text
+    public static class ModText
     {
         public static string _LORE_TITLE => "_LORE_TITLE";
         public static string _LORE_DESCRIPTION => "_LORE_DESCRIPTION";

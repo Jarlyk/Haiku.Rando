@@ -124,9 +124,9 @@ namespace Haiku.Rando.Checks
                     image = HaikuResources.RefDisruptor.GetComponentInChildren<SpriteRenderer>(true).sprite;
                     break;
                 case CheckType.Lore:
-                    title = Text._LORE_TITLE;
-                    description = Text._LORE_DESCRIPTION;
-                    image = LoadSprite("LoreTablet.png", ref loreTabletSprite);
+                    title = ModText._LORE_TITLE;
+                    description = ModText._LORE_DESCRIPTION;
+                    image = GetLoreTabletSprite();
                     break;
                 case CheckType.Lever:
                     //TODO
@@ -162,8 +162,8 @@ namespace Haiku.Rando.Checks
                     //This is never randomized, but is important to logic
                     break;
                 case CheckType.Filler:
-                    title = Text._NOTHING_TITLE;
-                    description = Text._NOTHING_DESCRIPTION;
+                    title = ModText._NOTHING_TITLE;
+                    description = ModText._NOTHING_DESCRIPTION;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -171,6 +171,11 @@ namespace Haiku.Rando.Checks
 
             self.shopScript.UpdateTexts(title, description, image, self.price, 0, 0, self.gameObject, self.itemPositionInList);
             self.shopScript.UpdateCursor(self.transform);
+        }
+
+        public static Sprite GetLoreTabletSprite()
+        {
+            return LoadSprite("LoreTablet.png", ref loreTabletSprite);
         }
 
         private static void ShopItemButton_InitialCheck(On.ShopItemButton.orig_InitialCheck orig, ShopItemButton self)
