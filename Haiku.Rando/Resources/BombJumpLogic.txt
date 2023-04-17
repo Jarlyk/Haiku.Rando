@@ -231,8 +231,140 @@ Right1->PowerCell: Ball + Bomb + (Coolant | PowerProcessor)
 Scene 169 // Electric Key shop entrance
 Right->Left: Ball + Bomb
 
+Scene 100 // Hidden tunnel toward Factory right side
+Left->Right: Ball + Bomb
+
+Scene 101
+*->Left: FireRes + HeatDrive + Ball + Bomb
+*->Right0: FireRes + HeatDrive + Ball + Bomb
+
+Scene 103
+$Bottom {Left1, Repair}
+$Top {Left0, Lore, Right}
+Bottom->Top: FireRes + HeatDrive + Ball + Bomb
+
+Scene 104 // Fire Wheels Incinerator Room
+Right0<->*: FireRes + HeatDrive + Ball + Bomb
+Right1->PowerCell: FireRes + HeatDrive + Ball + Bomb
+Right*->Lore: FireRes + HeatDrive + Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+
+Scene 108
+*->Disruptor: FireRes + HeatDrive + Ball + Bomb
+
+Scene 109 // Incinerator Top
+Left1->*: FireRes + HeatDrive + Ball + Bomb
+
+Scene 110 // Dark bridge over fire
+Left<->Right: FireRes + HeatDrive + Light + Ball + Bomb
+
+Scene 152 // Amplifying Transputer room
+Left2->Right0: Light + Ball + Bomb
+Left2->Left0: Light + Ball + Bomb
+Left2->Left1: Light + Ball + Bomb
+Left2->Lore: Light + Ball + Bomb
+Right1->Chip: Light + (Blink | Grapple) + Ball + Bomb
+Right1->Lore: Light + Ball + Bomb
+Right1->Left*: Light + Ball + Bomb
+Right1->Right0: Light + Ball + Bomb
+
+Scene 153
+$TopArea {Left0, Right0}
+$BottomArea {Left1, Right1}
+BottomArea->TopArea: Light + Blink + Ball + Bomb
+
+Scene 154
+Left1->Left0: Light + Ball + Bomb
+Right->Left0: Light + Ball + Bomb
+
+Scene 155
+*->Chip: Light + Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+Left1->Left0: Light + Lever + Ball + Bomb
+Right->Left0: Light + Ball + Bomb
+Right->Left1: Light + Lever + Ball + Bomb
+
+Scene 156
+Left1->*: Light + Ball + Bomb
+*->Disruptor: Light + Ball + Bomb
+
+Scene 157
+Left<->Right: Light + Ball + Bomb
+
+Scene 158
+Left<->Right: Light + Ball + Bomb
+
+Scene 160
+Right1->*: Light + Blink + Ball + Bomb
+Right0->Item: Light + Ball + Bomb
+Right0->Lever: Light + Ball + Bomb
+
+Scene 161
+Right1->Right0: Light + Blink + Ball + Bomb
+Right2->Right0: Light + Ball + Bomb
+
+Scene 162
+Right->*: Light + Ball + Bomb
+
+Scene 173 // Bottom left entrance to Factory
+*1->*: Ball + Bomb
+
+Scene 175
+Right->Left: Ball + Bomb + Lever
+Right->Lever: Ball + Bomb
+
+Scene 176
+Left1->*: Ball + Bomb
+
+Scene 177
+Right->Chip: Ball + Bomb
+
+Scene 183
+Right->Left: Ball + Bomb
+
+Scene 185
+// having the lever or not doesn't change the required number of jumps
+Left0->Left1: Ball + Bomb
+Left1->Left0: Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+Left2->*: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
+Right->Left0: Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+Right->Left1: Ball + Bomb
+
+Scene 186
+Left->Right0: Ball + Bomb
+Right0<->Left: Ball + Bomb
+Right1<->Left: Ball + Bomb
+
+Scene 188
+Right->Left0: Ball + Bomb
+
+Scene 192
+Left1->Left0: Ball + Bomb + PowerProcessor + 2#Coolant
+Left1->PowerCell: Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+
+Scene 199
+*->Right0: Ball + Bomb
+
+Scene 193
+Right1->Right0: Ball + Bomb
+Right1->Left: Ball + Bomb
+Right2->Right0: Ball + Bomb
+Right2->Left: Ball + Bomb
+Left->Right0: Ball + Bomb
+
 Scene 202 // Lower Right Entrance to Bunker
 Left1->Left0: Ball + Bomb + (Coolant | PowerProcessor | EnemyPogos)
+
+Scene 213
+Left1->*: FireRes + HeatDrive + Ball + Bomb
+Left0->PowerCell: FireRes + HeatDrive + Ball + Bomb
+
+Scene 214
+Right->Left: FireRes + HeatDrive + Ball + Bomb
+
+Scene 215
+*1->*0: FireRes + HeatDrive + Ball + Bomb
+
+Scene 216
+Left->Slot: FireRes + HeatDrive + Ball + Bomb
 
 Scene 228 // Grapple gauntlet to left of Bulb Drop
 $Monument {PowerCell, Lore}
@@ -241,3 +373,18 @@ Exit->Exit: Ball + Bomb + (PowerProcessor + 2#Coolant | Grapple)
 Right->Monument: Ball + Bomb + (PowerProcessor + 2#Coolant | Grapple)
 // Left->Monument requires you to jump up a hidden spot in the ceiling where you normally drop down
 Left->Monument: Ball + Bomb
+
+Scene 229
+Right->Left*: Ball + Bomb
+Left1->Left0: Ball + Bomb
+
+Scene 230
+Right1->Right0: Ball + Bomb // requires landing under the lasers, can be done without taking damage
+
+Scene 232
+Right->Disruptor: FireRes + Ball + Bomb + (
+    PowerProcessor + 3#Coolant |
+    Grapple + PowerProcessor |
+    Grapple + Coolant |
+    Grapple + DoubleJump)
+Right->Lever: FireRes + Ball + Bomb + Grapple + (PowerProcessor | Coolant | DoubleJump)

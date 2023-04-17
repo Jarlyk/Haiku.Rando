@@ -883,7 +883,7 @@ Repair->Lore: FireRes + Magnet
 Scene 104
 *->Right0: FireRes+Magnet
 Right0->*: FireRes + (Magnet | DoubleJump)
-Right1->PowerCell: FireRes + Magnet + DoubleJump | FireRes + Chip[25] + (Blink | Grapple)
+Right1->PowerCell: FireRes + Magnet + DoubleJump | FireRes + HeatDrive + (Blink | Grapple)
 Right*->Lore: FireRes + Magnet + (DoubleJump | Blink | Grapple | Ball)
 // ball-jump may belong in another layer?
 // also Power Processor + Bomb can get there in 3 bombs
@@ -928,8 +928,8 @@ Left1->*: FireRes + (Magnet | DoubleJump)
 // Checks:
 Scene 110
 //Heat Drive and Grapple can cross this room
-Right->Left: FireRes + (Light | Chip[25] + Grapple)
-Left->Right: FireRes+Chip[25]+Grapple
+Right->Left: FireRes + (Light | HeatDrive + Grapple)
+Left->Right: FireRes+HeatDrive+Grapple
 
 // Scene 111
 // Transitions: Right (111-112), Left (69-111)
@@ -1376,6 +1376,7 @@ Scene 160
 Right1->*: Blink + Light + (Magnet | DoubleJump)
 Right0->Right1: Blink+Light
 Right0->Item: Light + (Blink | Grapple) + (Magnet | DoubleJump)
+Right0->Lever: Light + Lever | Light + (Blink | Grapple) + (Magnet | DoubleJump)
 
 // Scene 161
 // Transitions: Right2 (161-152bottom), Right1 (161-152top), Right0 (161-162), Repair (161Repair)
@@ -1475,7 +1476,6 @@ Scene 172
 // Checks:
 Scene 173
 *1->*: Magnet | DoubleJump
-// TODO: *1->* is doable with bomb jumps or BLJs.
 
 // Scene 174 : Mundo (Factory Big Elevator)
 // Transitions: Left2 (180-174), Left3 (173-174), Left1 (182-174), Left0 (187-174), Right2 (174-175), Right1 (174-183), Right0 (174-186)
@@ -1499,8 +1499,8 @@ F2->F3: false
 Scene 175
 Left->Right: Lever | Grapple
 Left->Lever: Grapple
-Right->Left: Lever | Grapple
-Right->Lever: true
+Right->Left: (Lever + Magnet) | Grapple
+Right->Lever: Magnet | (Lever + Grapple)
 *->PowerCell: Grapple
 // TODO: Blink (also maybe longer blink chip required) can let you get the power cell
 
@@ -1514,8 +1514,7 @@ Left1->*: Magnet | DoubleJump
 // Transitions: Right (177-176)
 // Checks: Chip (Chip[24])
 Scene 177
-*->Chip: (Ball | Blink) + (Magnet | DoubleJump)
-// TODO: Ball+grapple+enemy pogo is possible.
+*->Chip: (Ball | Blink) + (Magnet | DoubleJump) | Ball + Grapple
 // Ball+blink with no skips is possible but maybe it should be under a "precise movement" setting.
 // Blink only is also possible but requires BLJs.
 // Ball only is possible with bomb jumps.
@@ -1603,26 +1602,25 @@ Right->Lever: Ball+Magnet
 // Transitions: Right0 (186-213), Right1 (186-185), Left (174-186)
 // Checks: Item (Item[3])
 Scene 186
-Left->Right0: Magnet + (Grapple | Blink | DoubleJump)
+Left->Right0: Magnet + (Grapple | Blink | DoubleJump) | Grapple + DoubleJump
 *->Right1: Ball + (Magnet | DoubleJump)
 *->Item: Ball + (Magnet | DoubleJump)
 Right1->Left: Ball + Magnet
 Right1->Right0: Ball + Magnet + (Grapple | Blink | DoubleJump)
 Right0->Left: true
-// TODO: Bomb jumps can replace any instance of dj. Left->Right0 can be done with only bomb jumps or grapple+dj.
 
 // Scene 187
 // Transitions: Right (187-174), Left (188-187)
 // Checks:
 Scene 187
 // For skips: itemless requires some tight coyote jumps
-Right<->Left: Grapple | DoubleJump | Magnet | Blink
+Right<->Left: Grapple | DoubleJump | Magnet | Blink | Ball
 
 // Scene 188
 // Transitions: Right (188-187), Left1 (189-188), Left0 (231-188)
 // Checks:
 Scene 188
-Right->Left0: DoubleJump | Magnet + Grapple
+Right->Left0: DoubleJump | Magnet + (Blink | Grapple)
 
 // Scene 189
 // Transitions: Right (189-188)
@@ -1706,7 +1704,7 @@ Right1->Left: WaterRes
 // Transitions: Right1 (199-221), Right0 (199-197), Left (233-199)
 // Checks:
 Scene 199
-*->Right0: Blink + WaterRes + (Magnet | DoubleJump)
+*->Right0: Magnet | DoubleJump
 *->Right1: Transition[84][Right] + Transition[200][Right] + Transition[201][Left]
 *->Left: Item[7]+Item[8]
 
@@ -1813,10 +1811,9 @@ Left0<->Right0: FireRes
 Left1<->Right1: FireRes
 $Top {Left0, Right0}
 $Bottom {Left1, Right1}
-Bottom->Top: FireRes + (DoubleJump | Blink + Chip[25] + Magnet | Ball + Magnet)
+Bottom->Top: FireRes + (DoubleJump | Blink + HeatDrive + Magnet | Ball + Magnet)
 //(with just magnet might belong in skips)
 Top->Bottom: FireRes
-//(might be additional Heat Drive(Chip[25]) checks)
 
 // Scene 216
 // Transitions: Left (218-216)

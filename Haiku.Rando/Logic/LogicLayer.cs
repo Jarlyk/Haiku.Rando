@@ -39,7 +39,8 @@ namespace Haiku.Rando.Logic
             var allSkips = (Skip[])Enum.GetValues(typeof(Skip));
             var aliases = new Dictionary<string, string>()
             {
-                {"PowerProcessor", "Chip[3]"}
+                {"PowerProcessor", "Chip[3]"},
+                {"HeatDrive", "Chip[25]"}
             };
             foreach (var c in allSkips)
             {

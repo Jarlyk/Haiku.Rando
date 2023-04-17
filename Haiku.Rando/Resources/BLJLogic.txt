@@ -42,5 +42,25 @@ Scene 87
 Right1->Left1: true
 Right1->Repair: true
 
+Scene 152 // Amplifying Transputer room
+Right1->Chip: Light + (Blink | Grapple)
+Right1->Left2: Light
+
 Scene 169 // Electric Key shop entrance
 Right->Left: Magnet
+
+Scene 173 // Bottom left entrance to Factory
+*1->*: true
+
+Scene 183
+Right->Left: true
+
+Scene 193
+Left->Right0: true
+Right1->Left: true
+Right1->Right0: true
+Right2->Left: true
+Right2->Right0: true
+
+Scene 214
+Right->Left: FireRes
