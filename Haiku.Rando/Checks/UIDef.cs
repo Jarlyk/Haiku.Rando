@@ -59,8 +59,8 @@ namespace Haiku.Rando.Checks
             CheckType.Lore => new()
             {
                 Sprite = loreTabletSprite.Load(),
-                Name = Text._LORE_TITLE,
-                Description = Text._LORE_DESCRIPTION
+                Name = ModText._LORE_TITLE,
+                Description = ModText._LORE_DESCRIPTION
             },
             CheckType.PowerCell => new()
             {
@@ -95,8 +95,8 @@ namespace Haiku.Rando.Checks
             CheckType.Filler => new()
             {
                 Sprite = null,
-                Name = Text._NOTHING_TITLE,
-                Description = Text._NOTHING_DESCRIPTION
+                Name = ModText._NOTHING_TITLE,
+                Description = ModText._NOTHING_DESCRIPTION
             },
             CheckType.MapMarker => (RustyType)check.CheckId switch
             {
@@ -104,31 +104,31 @@ namespace Haiku.Rando.Checks
                 {
                     Sprite = healthMarkerSprite.Load(),
                     Name = "_HEALTH_PINS",
-                    Description = Text._HEALTH_MARKER_DESCRIPTION
+                    Description = ModText._HEALTH_MARKER_DESCRIPTION
                 },
                 RustyType.Bank => new()
                 {
                     Sprite = bankMarkerSprite.Load(),
                     Name = "_BANK_PINS",
-                    Description = Text._BANK_MARKER_DESCRIPTION
+                    Description = ModText._BANK_MARKER_DESCRIPTION
                 },
                 RustyType.Train => new()
                 {
                     Sprite = trainMarkerSprite.Load(),
                     Name = "_TRAIN_PINS",
-                    Description = Text._TRAIN_MARKER_DESCRIPTION,
+                    Description = ModText._TRAIN_MARKER_DESCRIPTION,
                 },
                 RustyType.Vendor => new()
                 {
                     Sprite = vendorMarkerSprite.Load(),
                     Name = "_VENDOR_PINS",
-                    Description = Text._VENDOR_MARKER_DESCRIPTION
+                    Description = ModText._VENDOR_MARKER_DESCRIPTION
                 },
                 RustyType.PowerCell => new()
                 {
                     Sprite = powerCellMarkerSprite.Load(),
                     Name = "_POWERCELL_PINS",
-                    Description = Text._POWER_CELL_MARKER_DESCRIPTION
+                    Description = ModText._POWER_CELL_MARKER_DESCRIPTION
                 },
                 _ => new()
                 {

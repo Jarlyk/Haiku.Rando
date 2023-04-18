@@ -11,6 +11,7 @@ using System.Xml;
 using BepInEx.Logging;
 using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
+using Haiku.Rando.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -358,7 +359,13 @@ namespace Haiku.Rando.Checks
         private static void ShowCheckPopup(RandoCheck check)
         {
             var uidef = UIDef.Of(check);
+            if (check.Type == CheckType.PowerCell)
+            {
+                var collectedCount = GameManager.instance.powerCells.Count(p => p.collected);
+                uidef.Name = $"{LocalizationSystem.GetLocalizedValue(uidef.Name)} ({collectedCount})";
+            }
             CameraBehavior.instance.ShowLeftCornerUI(uidef.Sprite, uidef.Name, "", PickupTextDuration);
+            RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name);
         }
 
         public static IEnumerator RemoveHeat()
