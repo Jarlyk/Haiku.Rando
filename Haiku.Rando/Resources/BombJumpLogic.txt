@@ -257,6 +257,76 @@ Left1->*: FireRes + HeatDrive + Ball + Bomb
 Scene 110 // Dark bridge over fire
 Left<->Right: FireRes + HeatDrive + Light + Ball + Bomb
 
+Scene 114
+*1->*0: Ball + Bomb
+
+Scene 117 // Water Ducts elevator
+$Bottom {Elevator, Left}
+Bottom->Lore: Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+Right->Lore: WaterRes + Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+Bottom->Right: WaterRes + Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+
+Scene 118
+Right2->Left*: (Blink | WaterRes) + Ball + Bomb
+Right2->Right1: (Blink | WaterRes) + Ball + Bomb
+Left1->Right1: (Blink | WaterRes) + Ball + Bomb
+Left1->Left0: (Blink | WaterRes) + Ball + Bomb
+
+Scene 120
+Left->Right0: Ball + Bomb
+Left->Right1: Lever + Ball + Bomb
+Right1->Right0: Lever + Ball + Bomb
+
+Scene 121
+Left->PowerCell: (Grapple | WaterRes) + Ball + Bomb
+
+Scene 122
+Left->Right: Ball + Bomb
+
+Scene 123
+*0->*0: Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+*1->*1: Ball + Bomb + Blink + (PowerProcessor | 2#Coolant)
+*1->*0: WaterRes + Ball + Bomb + PowerProcessor + 3#Coolant
+
+Scene 124
+Right->Left: Grapple + Ball + Bomb
+
+Scene 126
+Right->*: Lever + Ball + Bomb + (PowerProcessor | 3#Coolant | Coolant + DoubleJump)
+Left->Right: Lever + Ball + Bomb + (PowerProcessor | 3#Coolant | Coolant + DoubleJump)
+
+Scene 127 // Lower Water Ducts repair station
+$RightSide {Right, Repair}
+$Transition {Left, Right, Repair}
+Left<->RightSide: Light + Ball + Bomb
+Transition->Lore: Light + Ball + Bomb
+
+Scene 128
+Left<->Right*: Light + Ball + Bomb
+*->Coolant: Light + Ball + Bomb
+
+Scene 129
+*->Chip: Ball + Bomb
+*->Lever: Ball + Bomb
+
+Scene 130
+Left->Item: Ball + Bomb + PowerProcessor + 3#Coolant
+
+Scene 135
+Right->Left*: Ball + Bomb
+Left1->Right: Ball + Bomb
+Left1->Left0: Ball + Bomb
+*->Chip: Ball + Bomb
+
+Scene 140
+$Bottom {Right1, Repair, Lore}
+Right0->Bottom: Ball + Bomb
+*->MapMarker: Ball + Bomb
+
+Scene 147
+Right1->Right0: Ball + Bomb + Blink
+Left->Right0: Ball + Bomb
+
 Scene 152 // Amplifying Transputer room
 Left2->Right0: Light + Ball + Bomb
 Left2->Left0: Light + Ball + Bomb
@@ -351,7 +421,28 @@ Right2->Left: Ball + Bomb
 Left->Right0: Ball + Bomb
 
 Scene 202 // Lower Right Entrance to Bunker
-Left1->Left0: Ball + Bomb + (Coolant | PowerProcessor | EnemyPogos)
+Left1->Left0: Ball + Bomb + (Coolant | PowerProcessor | DoubleJump | EnemyPogos)
+
+Scene 206 // Helm-Crawlers Refuge
+Left->Lore: Light + Ball + Bomb
+
+Scene 207
+$Upper {Chip, Left0}
+Left1->Upper: Light + Ball + Bomb + (
+    PowerProcessor + 2#Coolant |
+    PowerProcessor + DoubleJump |
+    3#Coolant + DoubleJump)
+
+Scene 208
+Left->Door: Ball + Bomb
+
+Scene 223 // Snailbot Burrow House
+*->PowerCell: Ball + Bomb + (
+    PowerProcessor | 
+    3#Coolant | 
+    Coolant + DoubleJump | 
+    Coolant + WaterRes + BLJ |
+    Coolant + Blink + BLJ)
 
 Scene 213
 Left1->*: FireRes + HeatDrive + Ball + Bomb

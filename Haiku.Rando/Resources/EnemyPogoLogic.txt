@@ -1,3 +1,11 @@
+Scene 21
+$BottomRight {Right1, Repair}
+BottomRight->Right0: DoubleJump
+BottomRight->Disruptor: DoubleJump
+// requires falling into the saws to the left of the repair station
+// in order to aggro the flying enemy
+Right0->Disruptor: true 
+
 Scene 24 // Tire Village
 
 *->Left0: true
@@ -85,6 +93,11 @@ Scene 135
 
 Right->Left0: true
 Right->Left1: true
+*->Chip: DoubleJump
+
+Scene 147
+Left->Right0: DoubleJump
+Right1->Right0: Blink + DoubleJump
 
 Scene 152 // Amplifying Transputer room
 $Bottom {Left2, Right1}

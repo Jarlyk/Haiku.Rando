@@ -42,6 +42,18 @@ Scene 87
 Right1->Left1: true
 Right1->Repair: true
 
+Scene 120
+// Magnet + Grapple is also in base logic but uses a different method
+Left->Right1: Lever + Magnet + (Blink | Grapple) 
+Left->Right0: Magnet + (Blink | Grapple)
+Right1->Right: Lever + Magnet + (Blink | Grapple)
+
+Scene 128
+*->Right0: Light + Magnet
+
+Scene 135
+Right->Left*: true
+
 Scene 152 // Amplifying Transputer room
 Right1->Chip: Light + (Blink | Grapple)
 Right1->Left2: Light

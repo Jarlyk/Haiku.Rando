@@ -1009,16 +1009,25 @@ Scene 119
 // Transitions: Right0 (120-208), Right1 (120-207), Left (119-120)
 // Checks: Lever (Lever[54])
 Scene 120
-!Right1->Lever: false
-*->Right0: DoubleJump
-Left->Right1: Lever+DoubleJump
+!Right1->Lever: Lever
+Left->Right0: DoubleJump
+Right1->Right0: Lever + DoubleJump
+Left->Right1: Lever + (DoubleJump | Magnet + Grapple)
 Right0->Right1: Lever
 
 // Scene 121
 // Transitions: Left (118-121)
 // Checks: PowerCell (PowerCell[5])
 Scene 121
-Left->PowerCell: Magnet + (Grapple | Blink)
+Left->PowerCell:
+    Magnet + Grapple |
+    Magnet + Blink |
+    DoubleJump + Grapple |
+    WaterRes + Magnet |
+    WaterRes + DoubleJump |
+    WaterRes + Grapple |
+    WaterRes + Blink |
+    WaterRes + Bomb // for an air stall
 
 // Scene 122
 // Transitions: Right (122-118), Left (123-122)
@@ -1033,7 +1042,7 @@ Left->Right: Magnet | DoubleJump | Chip[20] + Blink + (Grapple | WaterRes)
 Scene 123
 *0->*0: Grapple | Blink | WaterRes
 *0->*1: Bomb+WaterRes
-*1->*1: Grapple | WaterRes
+*1->*1: Grapple | WaterRes | Blink + DoubleJump
 *1->*0: WaterRes+Magnet+Bomb
 
 
@@ -1041,7 +1050,7 @@ Scene 123
 // Transitions: Right (124-123), Left (125-124)
 // Checks:
 Scene 124
-Right->Left: WaterRes
+Right->Left: Grapple + DoubleJump | WaterRes
 Left->Right: Grapple | WaterRes
 
 // Scene 125
@@ -1055,7 +1064,7 @@ Scene 125
 // Checks: Lever (Lever[30]), PowerCell (PowerCell[9])
 Scene 126
 Right->*: Lever + (Grapple | WaterRes)
-Left->Right: Grapple
+Left->Right: Lever + Grapple
 
 // Scene 127: Lower Water Ducts repair station
 // Transitions: Right (127-128), Left (123-127), Repair (127Repair)
@@ -1073,10 +1082,9 @@ Transition->Lore: Light + (Magnet | DoubleJump)
 // Checks: Coolant (Coolant[0])
 Scene 128
 Right*->Left: Light + (Magnet | DoubleJump)
-Left->Right1: Magnet+Light
+Left->Right1: Light + (Magnet | DoubleJump)
 *->Right0: DoubleJump+Light
 *->Coolant: Light + (Magnet | DoubleJump)
-Right1->Right0: Light
 
 // Scene 129
 // Transitions: Right (129-130), Left (112-129)
