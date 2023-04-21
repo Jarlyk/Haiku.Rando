@@ -1107,7 +1107,7 @@ Scene 131
 Left->Right0: DoubleJump
 Left->Right1: Magnet
 Right0->Left: DoubleJump
-Right1->Left: Magnet | WaterRes
+Right1->Left: WaterRes | Grapple | Blink
 Right1->Right0: WaterRes + (Magnet | DoubleJump)
 
 // Scene 132 : Lune up above (with 'Down' transition that's actually Left) and Ruins vertical room
@@ -1162,7 +1162,7 @@ Right2->Left1: Magnet
 Right2->Left0: Magnet
 Right2->Right1: Magnet
 Right2->Right0: Magnet
-Right2->PowerCell: Magnet + (Blink | Grapple)
+Right2->PowerCell: Magnet + (Blink | Grapple) // also possible with a thorn stand
 Left0->PowerCell: Blink | DoubleJump | Grapple
 Left1->PowerCell: Blink | DoubleJump | Grapple
 Right0->PowerCell: Blink | DoubleJump | Grapple
@@ -1192,7 +1192,7 @@ Scene 137
 Left->Right: Item[0]
 Right->Left: false
 
-// Scene 138
+// Scene 138: First Tree
 // Transitions: Right1 (138-139), Right0 (138-132), Left (137-138), Door (138-227)
 // Checks: Item (Item[3]), Slot (ChipSlot[3])
 Scene 138
@@ -1207,7 +1207,6 @@ Right1->Right0: Magnet + (DoubleJump | Blink | Grapple)
 // Checks: Lore (Lore[12])
 Scene 139
 $Bottom {Right, Repair}
-// 2-bomb jump also works for both of these
 Bottom->Left: Magnet
 Bottom->Lore: Magnet
 // the conditions to be able to defeat Virus
@@ -1413,13 +1412,15 @@ Left->PowerCell: Light
 Scene 163
 Left->Right: Blink + (Magnet | DoubleJump)
 Right->Left: Blink
+Right->Lever: Blink + (Magnet | DoubleJump)
+Left->Lever: Magnet | DoubleJump
 
 // Scene 164: Hidden Lab Core
 // Transitions: Right (164-163)
 // Checks: Blink (Ability[3]), Lore0 (Lore[5]), Lore1 (Lore[6])
 Scene 164
 $Checks {Blink, Lore0, Lore1}
-Right->Checks: Blink + (Magnet | DoubleJump)
+Right->Checks: Blink
 
 // Scene 165
 // Transitions: Elevator (165-29), Right (165-155), Down (165-18), Left0 (151-165hidden), Left1 (151-165)

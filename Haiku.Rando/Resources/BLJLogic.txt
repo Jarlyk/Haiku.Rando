@@ -51,6 +51,9 @@ Right1->Right: Lever + Magnet + (Blink | Grapple)
 Scene 128
 *->Right0: Light + Magnet
 
+Scene 131
+Right0->Right1: WaterRes | Grapple | Blink
+
 Scene 135
 Right->Left*: true
 

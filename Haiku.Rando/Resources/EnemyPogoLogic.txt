@@ -88,6 +88,7 @@ Scene 133
 
 Left->Right0: true // + coyote jump
 Left->Right1: true
+Right1->Left: Blink + Chip[20]
 
 Scene 135
 

@@ -312,16 +312,61 @@ Scene 129
 Scene 130
 Left->Item: Ball + Bomb + PowerProcessor + 3#Coolant
 
+Scene 131
+*->*: Ball + Bomb
+
+Scene 132 // Lune up above / Ruins vertical room
+$BottomPastLever {Right1, Right0, Left0}
+$Alcove {Lore, Disruptor}
+BottomPastLever->Alcove: Blink + Ball + Bomb
+Right1->Right0: Ball + Bomb
+Right1->Left0: Ball + Bomb
+Right0->Left0: Ball + Bomb
+Left1->Right0: Lever + Ball + Bomb
+Left1->Left0: Lever + Ball + Bomb
+Left1->Alcove: Lever + Blink + Ball + Bomb
+
+Scene 133
+*->*: Ball + Bomb
+
+Scene 134
+Left2->Right1: Blink + Ball + Bomb
+Left2->Right0: Blink + Ball + Bomb
+Left2->Left*: Blink + Ball + Bomb
+Left2->PowerCell: Blink + Ball + Bomb
+Left1->PowerCell: Ball + Bomb
+Left0->PowerCell: Ball + Bomb
+Right2->Left1: Ball + Bomb
+Right2->Left0: Ball + Bomb
+Right2->Right*: Ball + Bomb
+Right*->PowerCell: Ball + Bomb
+
 Scene 135
 Right->Left*: Ball + Bomb
 Left1->Right: Ball + Bomb
 Left1->Left0: Ball + Bomb
 *->Chip: Ball + Bomb
 
+Scene 138 // First Tree
+*->Door: Ball + Bomb
+*->Right0: Ball + Bomb
+*->Item: Ball + Bomb + (
+    PowerProcessor + 2#Coolant |
+    PowerProcessor + DoubleJump |
+    3#Coolant + DoubleJump)
+
+Scene 139 // Entrance to Lost Archives
+$Bottom {Right, Repair}
+Bottom->Left: Ball + Bomb
+Bottom->Lore: Ball + Bomb
+
 Scene 140
 $Bottom {Right1, Repair, Lore}
 Right0->Bottom: Ball + Bomb
 *->MapMarker: Ball + Bomb
+
+Scene 143
+Left->PowerCell: Ball + Bomb // you may have to fall in the spikes afterwards, or warp out
 
 Scene 147
 Right1->Right0: Ball + Bomb + Blink
@@ -362,6 +407,11 @@ Left<->Right: Light + Ball + Bomb
 Scene 158
 Left<->Right: Light + Ball + Bomb
 
+Scene 159
+*->Left0: Ball + Bomb
+Left1->Right: Ball + Bomb
+*->Coolant: Ball + Bomb + Blink
+
 Scene 160
 Right1->*: Light + Blink + Ball + Bomb
 Right0->Item: Light + Ball + Bomb
@@ -373,6 +423,11 @@ Right2->Right0: Light + Ball + Bomb
 
 Scene 162
 Right->*: Light + Ball + Bomb
+
+Scene 163
+Left->Right: Blink + Ball + Bomb
+Left->Lever: Ball + Bomb
+Right->Lever: Blink + Ball + Bomb
 
 Scene 173 // Bottom left entrance to Factory
 *1->*: Ball + Bomb
