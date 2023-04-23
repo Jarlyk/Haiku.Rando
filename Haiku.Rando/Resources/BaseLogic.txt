@@ -1033,8 +1033,7 @@ Left->PowerCell:
 // Transitions: Right (122-118), Left (123-122)
 // Checks:
 Scene 122
-Left->Right: Magnet | DoubleJump | Chip[20] + Blink + (Grapple | WaterRes)
-// Chip[20] == Amplifying Transputer
+Left->Right: Magnet | DoubleJump | AmplifyingTransputer + Blink + (Grapple | WaterRes)
 
 // Scene 123
 // Transitions: Right1 (123-127), Right0 (123-122), Left0 (124-123), Left1 (126-123)
@@ -1139,12 +1138,11 @@ Left0->Right1: true
 // Transitions: Right0 (133-225top), Right1 (133-132bottom), Left (134-133)
 // Checks:
 Scene 133
-Right0->Right1: Ball | Blink + Chip[20]
-Right0->Left: Ball + Magnet | Ball + DoubleJump | Blink + Chip[20] + (Magnet | DoubleJump)
-*->Right0: Ball + Magnet | Ball + DoubleJump | Blink + Chip[20] + Magnet
+Right0->Right1: Ball | Blink + AmplifyingTransputer
+Right0->Left: Ball + Magnet | Ball + DoubleJump | Blink + AmplifyingTransputer + (Magnet | DoubleJump)
+*->Right0: Ball + Magnet | Ball + DoubleJump | Blink + AmplifyingTransputer + Magnet
 Left->Right1: Magnet | DoubleJump
 Right1->Left: Magnet | DoubleJump
-// Chip[20] == Amplifying Transputer
 
 // Scene 134
 // Transitions: Right2 (134-137), Right1 (134-136), Right0 (134-133), Left1 (135-134), Left0 (211-134), Left2 (141-134)

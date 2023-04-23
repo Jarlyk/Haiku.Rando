@@ -40,7 +40,8 @@ namespace Haiku.Rando.Logic
             var aliases = new Dictionary<string, string>()
             {
                 {"PowerProcessor", "Chip[3]"},
-                {"HeatDrive", "Chip[25]"}
+                {"HeatDrive", "Chip[25]"},
+                {"AmplifyingTransputer", "Chip[20]"}
             };
             foreach (var c in allSkips)
             {
