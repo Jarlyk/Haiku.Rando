@@ -203,7 +203,7 @@ Right->Train: Clock+TrainStation
 // Transitions: Elevator (165-29), Down2 (29-155), Right (29-18), Down0 (162-29), Down1 (151-29)
 // Checks:
 Scene 29
-Right->Elevator: Light
+Right->Elevator: LIGHT
 *->Down*: false
 Down*->*: false
 
@@ -1425,8 +1425,8 @@ Right->Checks: Blink
 // Checks:
 Scene 165
 *->Down: false
-Left1->Elevator: Light
-Right->Elevator: Light
+Left1->Elevator: LIGHT
+Right->Elevator: LIGHT
 *->Left0: Ball+Light+DoubleJump
 Left0->*: Ball+Light
 

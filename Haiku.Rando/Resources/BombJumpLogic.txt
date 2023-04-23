@@ -58,7 +58,7 @@ Right0->Left: Ball + Bomb
 Scene 35 // Tall room below Bunker
 
 $Up {Right0, Chip}
-
+// lower requirements if you have Magnet
 Right1->Up: Ball + Bomb + 2#Coolant + PowerProcessor
 Right1->Left: Ball + Bomb + 2#Coolant + PowerProcessor + Transition[201][Left]
 

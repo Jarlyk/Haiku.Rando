@@ -37,19 +37,30 @@ namespace Haiku.Rando.Logic
         {
             var tokens = TokenizeLogic(reader);
             var allSkips = (Skip[])Enum.GetValues(typeof(Skip));
-            var aliases = new Dictionary<string, string>()
+            var macros = new Dictionary<string, List<Token>>()
             {
-                {"PowerProcessor", "Chip[3]"},
-                {"HeatDrive", "Chip[25]"},
-                {"AmplifyingTransputer", "Chip[20]"}
+                {"PowerProcessor", singleName("Chip[3]")},
+                {"HeatDrive", singleName("Chip[25]")},
+                {"AmplifyingTransputer", singleName("Chip[20]")},
+                {"LIGHT", singleName("Light")},
+                {"Light", singleName(enabledSkips(Skip.DarkRooms) ? "true" : "Light")},
+                {"BLJ", singleName(enabledSkips(Skip.BLJ) ? "true" : "false")},
+                {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? "true" : "false")},
             };
-            foreach (var c in allSkips)
+            if (enabledSkips(Skip.SkillChips))
             {
-                aliases[c.ToString()] = enabledSkips(c) ? "true" : "false";
+                macros["Ball"] = new()
+                {
+                    new(TokenType.Name, "Ball", -1),
+                    new(TokenType.Name, "Chip[6]", -1), // Chip[6] = Auto Modifier
+                    new(TokenType.Or, "|", -1)
+                };
             }
 
-            return tokens == null ? null : ParseLogic(topology, aliases, tokens.GetEnumerator());
+            return tokens == null ? null : ParseLogic(topology, macros, tokens.GetEnumerator());
         }
+
+        private static List<Token> singleName(string name) => new() { new(TokenType.Name, name, -1) };
 
         private enum TokenType
         {
@@ -159,7 +170,7 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private static LogicLayer ParseLogic(RandoTopology topology, Dictionary<string, string> aliases, IEnumerator<Token> input)
+        private static LogicLayer ParseLogic(RandoTopology topology, Dictionary<string, List<Token>> macros, IEnumerator<Token> input)
         {
             var logicByScene = new Dictionary<int, Dictionary<GraphEdge, List<LogicSet>>>();
             var groups = new Dictionary<string, List<string>>();
@@ -260,14 +271,13 @@ namespace Haiku.Rando.Logic
                         SkipToNextTerminator(input);
                         continue;
                     }
-                    var rpn = ParseLogicExpression(input);
+                    var rpn = ParseLogicExpression(input, macros);
                     if (rpn == null)
                     {
                         SkipToNextTerminator(input);
                         continue;
                     }
-                    var logicSets = EvalLogicExpression(rpn,
-                        term => ExpandAlias(aliases.TryGetValue(term, out var v) ? v : term, scene));
+                    var logicSets = EvalLogicExpression(rpn, term => ExpandAlias(term, scene));
                     if (logicSets == null)
                     {
                         continue;
@@ -350,7 +360,7 @@ namespace Haiku.Rando.Logic
 
         // Reads a logic expression from the input, and, if successful, returns it in RPN
         // (reverse Polish notation) form.
-        private static List<Token> ParseLogicExpression(IEnumerator<Token> input)
+        private static List<Token> ParseLogicExpression(IEnumerator<Token> input, Dictionary<string, List<Token>> macros)
         {
             // An implementation of the shunting yard algorithm follows, with added error checks
             // to guard against multiple terms or multiple operators in a row.
@@ -385,7 +395,19 @@ namespace Haiku.Rando.Logic
                             ErrExpectedTerm();
                             return null;
                         }
-                        output.Add(input.Current);
+                        if (macros.TryGetValue(input.Current.Content, out var expansion))
+                        {
+                            foreach (var term in expansion)
+                            {
+                                var t = term;
+                                t.LineNumber = input.Current.LineNumber;
+                                output.Add(t);
+                            }
+                        }
+                        else
+                        {
+                            output.Add(input.Current);
+                        }
                         expectTerm = false;
                         break;
                     case TokenType.Hash:
