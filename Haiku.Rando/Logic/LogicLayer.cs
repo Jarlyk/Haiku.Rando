@@ -36,14 +36,14 @@ namespace Haiku.Rando.Logic
         public static LogicLayer Deserialize(RandoTopology topology, Func<Skip, bool> enabledSkips, StreamReader reader)
         {
             var tokens = TokenizeLogic(reader);
-            var allSkips = (Skip[])Enum.GetValues(typeof(Skip));
             var macros = new Dictionary<string, List<Token>>()
             {
-                {"PowerProcessor", singleName("Chip[3]")},
-                {"HeatDrive", singleName("Chip[25]")},
-                {"AmplifyingTransputer", singleName("Chip[20]")},
-                {"LIGHT", singleName("Light")},
-                {"Light", singleName(enabledSkips(Skip.DarkRooms) ? "true" : "Light")},
+                {"PowerProcessor", singleName(LogicStateNames.PowerProcessor)},
+                {"HeatDrive", singleName(LogicStateNames.HeatDrive)},
+                {"AmplifyingTransputer", singleName(LogicStateNames.AmplifyingTransputer)},
+                {"GyroAccelerator", singleName(LogicStateNames.GyroAccelerator)},
+                {"LIGHT", singleName(LogicStateNames.Light)},
+                {"Light", singleName(enabledSkips(Skip.DarkRooms) ? "true" : LogicStateNames.Light)},
                 {"BLJ", singleName(enabledSkips(Skip.BLJ) ? "true" : "false")},
                 {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? "true" : "false")}
             };
@@ -52,10 +52,10 @@ namespace Haiku.Rando.Logic
                 macros["Ball"] = new()
                 {
                     new(TokenType.Name, "Ball", -1),
-                    new(TokenType.Name, "Chip[6]", -1), // Chip[6] = Auto Modifier
+                    new(TokenType.Name, LogicStateNames.AutoModifier, -1),
                     new(TokenType.Or, "|", -1)
                 };
-                macros["SelfDetonation"] = singleName("Chip[16]");
+                macros["SelfDetonation"] = singleName(LogicStateNames.SelfDetonation);
             }
             else
             {

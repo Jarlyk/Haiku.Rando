@@ -15,10 +15,12 @@ namespace Haiku.Rando.Logic
         private readonly LogicEvaluator _logic;
         private readonly int? _startScene;
         private readonly HashSet<string> _acquiredStates = new HashSet<string>();
+        private Bitset64 _startingChipSlotsUsed;
         private readonly Dictionary<RandoCheck, RandoCheck> _checkMapping = new Dictionary<RandoCheck, RandoCheck>();
         private readonly CheckPool _startingPool = new CheckPool();
         private readonly CheckPool _pool = new CheckPool();
         private readonly List<RandoCheck> _visitedChecks = new List<RandoCheck>();
+        private readonly List<InLogicCheck> _checksToReplace = new();
         private readonly Xoroshiro128Plus _random;
         private bool _randomized;
         private int _numFillersAdded;
@@ -62,8 +64,6 @@ namespace Haiku.Rando.Logic
         private bool ArrangeChecks()
         {
             //We're going to explore, keeping track of what we can reach and what frontier of edges are not yet passable
-            var remainingChecks = _startingPool.ToList();
-            var checksToReplace = new List<InLogicCheck>();
             var frontier = new List<FrontierEdge>();
             var explored = new List<FrontierEdge>();
             _visitedChecks.Clear();
@@ -88,14 +88,14 @@ namespace Haiku.Rando.Logic
             while (_pool.Count > 0)
             {
                 //Explore the frontier, expanding our available checks
-                Explore(depth, checksToReplace, frontier, explored);
+                Explore(depth, frontier, explored);
                 depth++;
                 if (frontier.Count == 0)
                 {
                     //If there's no more frontier, we've fully progressed
                     //All remaining checks in pools can be populated at will
-                    Debug.Log($"Rando: Frontier has been fully explored, so placing remaining {remainingChecks.Count} checks");
-                    PlaceAllRemainingChecks(checksToReplace);
+                    Debug.Log($"Rando: Frontier has been fully explored, so placing remaining {_pool.Count} checks");
+                    PlaceAllRemainingChecks();
                     break;
                 }
 
@@ -107,7 +107,7 @@ namespace Haiku.Rando.Logic
                 if (frontierSet.Count == 0)
                 {
                     Debug.LogWarning("Frontier has run out of checks that can be unlocked");
-                    PlaceAllRemainingChecks(checksToReplace);
+                    PlaceAllRemainingChecks();
                     break;
                 }
 
@@ -118,7 +118,7 @@ namespace Haiku.Rando.Logic
                 //Unlock the checks required for this edge
                 foreach (var condition in nextEdge.MissingLogic)
                 {
-                    if (!PlaceChecksToSatisfyCondition(checksToReplace, condition, remainingChecks)) return false;
+                    if (!PlaceChecksToSatisfyCondition(condition)) return false;
                 }
             }
 
@@ -150,10 +150,11 @@ namespace Haiku.Rando.Logic
             return builder.ToString();
         }
 
-        private bool PlaceChecksToSatisfyCondition(List<InLogicCheck> checksToReplace, LogicCondition condition, List<RandoCheck> remainingChecks)
+        private bool PlaceChecksToSatisfyCondition(LogicCondition condition)
         {
+            Debug.Log($"Satisfying condition {condition}");
             //Find and weigh remaining check locations
-            var candidates = WeightedSet<InLogicCheck>.Build(checksToReplace, WeighCheckPlacement);
+            var candidates = WeightedSet<InLogicCheck>.Build(_checksToReplace, WeighCheckPlacement);
             if (candidates.Count < condition.Count)
             {
                 Debug.LogWarning($"Ran out of locations to place check state {condition.StateName}; logic may not be solvable");
@@ -163,7 +164,7 @@ namespace Haiku.Rando.Logic
             //Choose from weighted distribution and replace each check in turn
             for (int i = 0; i < condition.Count; i++)
             {
-                var match = remainingChecks.FirstOrDefault(c => LogicEvaluator.MatchesState(c.SceneId, c, condition.StateName));
+                var match = _pool.FirstOrDefault(c => LogicEvaluator.MatchesState(c.SceneId, c, condition.StateName));
                 if (match == null)
                 {
                     Debug.LogWarning(
@@ -171,22 +172,61 @@ namespace Haiku.Rando.Logic
                     return false;
                 }
 
-                var original = candidates.PickItem(_random.NextDouble());
-                if (i < condition.Count - 1)
+                // Place extra chip slots as necessary to ensure that all chips that are required for progression
+                // can be equipped simultaneously.
+                // In practice, it may not always be necessary to do so due to repair stations allowing the player to switch
+                // chips, but accounting for this is substantially more complex.
+                if (match.Type == CheckType.Chip)
                 {
-                    candidates.Remove(original);
+                    var color = GameManager.instance.chip[match.CheckId].chipColor;
+                    if (!TryConsumeStartingChipSlot(color))
+                    {
+                        var slot = _pool.FirstOrDefault(c => c.Type == CheckType.ChipSlot && 
+                        color == GameManager.instance.chipSlot[c.CheckId].chipSlotColor);
+                        if (slot == null)
+                        {
+                            Debug.LogWarning($"Ran out of {color} chip slots while placing {match.Name}");
+                            return false;
+                        }
+                        if (!PlaceItem(candidates, slot)) return false;
+                    }
                 }
 
-                ApplyProximityPenalty(checksToReplace, original.Check, 3);
-                _checkMapping.Add(original.Check, match);
-                remainingChecks.Remove(match);
-                _pool.Remove(match);
-                checksToReplace.Remove(original);
-                AddState(LogicEvaluator.GetStateName(match));
-                Debug.Log($"To satisfy condition {condition}, replaced check {original.Check.Name} with {match.Name}");
+                if (!PlaceItem(candidates, match)) return false;
             }
 
             return true;
+        }
+
+        private bool PlaceItem(WeightedSet<InLogicCheck> candidates, RandoCheck newItem)
+        {
+            if (candidates.Count == 0)
+            {
+                return false;
+            }
+            var original = candidates.PickItem(_random.NextDouble());
+            candidates.Remove(original);
+            ApplyProximityPenalty(original.Check, 3);
+            _checkMapping.Add(original.Check, newItem);
+            _pool.Remove(newItem);
+            _checksToReplace.Remove(original);
+            AddState(LogicEvaluator.GetStateName(newItem));
+            Debug.Log($"Replaced check {original.Check.Name} with {newItem.Name}");
+            return true;
+        }
+
+        private bool TryConsumeStartingChipSlot(string color)
+        {
+            var i = color switch
+            {
+                "red" => 0,
+                "green" => 1,
+                "blue" => 2,
+                _ => throw new InvalidOperationException($"{color} chip slots aren't real and can't hurt me")
+            };
+            var used = _startingChipSlotsUsed.Contains(i);
+            _startingChipSlotsUsed.Add(i);
+            return !used;
         }
 
         private void UpdateFrontierLogic(List<FrontierEdge> frontier, int depth)
@@ -263,10 +303,10 @@ namespace Haiku.Rando.Logic
             return filler;
         }
 
-        private void PlaceAllRemainingChecks(List<InLogicCheck> checksToReplace)
+        private void PlaceAllRemainingChecks()
         {
             //Find and weigh remaining check locations
-            var candidates = WeightedSet<InLogicCheck>.Build(checksToReplace, WeighCheckPlacement);
+            var candidates = WeightedSet<InLogicCheck>.Build(_checksToReplace, WeighCheckPlacement);
 
             //Choose from weighted distribution and replace each check in turn
             while (candidates.Count > 0)
@@ -278,11 +318,11 @@ namespace Haiku.Rando.Logic
 
                 Debug.Log($"Remaining checks, replaced {original.Check} with {match}");
                 _checkMapping.Add(original.Check, match);
-                checksToReplace.Remove(original);
+                _checksToReplace.Remove(original);
             }
         }
 
-        private double WeighFrontier(FrontierEdge edge)
+        private static double WeighFrontier(FrontierEdge edge)
         {
             var u = edge.Uniqueness;
             var d = edge.BacktrackDepth;
@@ -290,7 +330,7 @@ namespace Haiku.Rando.Logic
             return (100*u*u*u + d*d)/(c + 1);
         }
 
-        private double WeighCheckPlacement(InLogicCheck check)
+        private static double WeighCheckPlacement(InLogicCheck check)
         {
             //We prefer placement deeper in logic
             var d = check.Depth;
@@ -307,7 +347,7 @@ namespace Haiku.Rando.Logic
             $"Transition[{node.SceneId2}][{node.Alias2}]"
         );
 
-        private void Explore(int depth, List<InLogicCheck> checksToReplace, List<FrontierEdge> frontier, List<FrontierEdge> explored)
+        private void Explore(int depth, List<FrontierEdge> frontier, List<FrontierEdge> explored)
         {
             var pendingExploration = new Stack<FrontierEdge>(frontier);
             while (pendingExploration.Count > 0)
@@ -333,7 +373,7 @@ namespace Haiku.Rando.Logic
                             if (_startingPool.Contains(check))
                             {
                                 Debug.Log($"Found check {check} at depth {depth} from edge {edge.Edge}; will replace from pool");
-                                checksToReplace.Add(new InLogicCheck(check, depth));
+                                _checksToReplace.Add(new InLogicCheck(check, depth));
                             }
                             else
                             {
@@ -366,7 +406,7 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private void ApplyProximityPenalty(List<InLogicCheck> checksToReplace, RandoCheck origin, int startPenalty)
+        private void ApplyProximityPenalty(RandoCheck origin, int startPenalty)
         {
             var visitedNodes = new List<IRandoNode>();
             visitedNodes.Add(origin);
@@ -382,7 +422,7 @@ namespace Haiku.Rando.Logic
 
                     foreach (var check in node.Outgoing.Select(e => e.Destination).OfType<RandoCheck>())
                     {
-                        var ctr = checksToReplace.FirstOrDefault(c => c.Check == check);
+                        var ctr = _checksToReplace.FirstOrDefault(c => c.Check == check);
                         if (ctr != null)
                         {
                             ctr.ProximityPenalty += edge.Depth;

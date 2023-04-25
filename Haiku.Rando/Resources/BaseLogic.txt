@@ -63,8 +63,7 @@ Scene 10
 *->Wake: false
 *->Right0: Magnet
 Wake->Right0: DoubleJump | Blink
-//Chip[1] == Gyro Accelerator
-Wake->Right0: Ball+Chip[1]
+Wake->Right0: Ball + GyroAccelerator
 *->Left1: Lever
 Left1->Lever: Lever
 *->Left0: false
@@ -914,6 +913,8 @@ Scene 107
 Scene 108
 Right->Left: FireRes
 Left->Right: FireRes
+// also possible with Ball by wedging yourself between two of the crumbling walls on the right side
+// possible precise-movement category?
 *->Disruptor: FireRes + (Magnet | DoubleJump)
 
 // Scene 109 : Incinerator Top
