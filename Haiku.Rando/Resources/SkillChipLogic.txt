@@ -1,0 +1,13 @@
+Scene 60 // Last bomb barrier before Neutron
+Right0->Right1: SelfDetonation + Wrench
+
+Scene 61 // Upper Left from Mainframe
+*->Right0: SelfDetonation + Wrench + (Magnet | DoubleJump)
+
+Scene 74 // Bottom Central Core
+Right0->Left: SelfDetonation + Wrench
+Right0->Right2: SelfDetonation + Wrench
+Right1->Left: SelfDetonation + Wrench + Blink
+Right1->Right2: SelfDetonation + Wrench + Blink
+// can't use Self-Detonation from the bottom as there is nothing to get hit by
+

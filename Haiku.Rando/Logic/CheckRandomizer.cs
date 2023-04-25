@@ -427,6 +427,7 @@ namespace Haiku.Rando.Logic
             {
                 _pool.RemoveAll(c => c.Type == CheckType.Wrench ||
                                     (c.Type == CheckType.Item && c.CheckId == (int)ItemId.Wrench));
+                AddState(LogicStateNames.Heal);
             }
             if (Settings.Contains(StartingItemSet.Whistle))
             {

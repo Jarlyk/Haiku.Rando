@@ -10,6 +10,12 @@
 //
 // Double jump may extend the range by 1 jump, although the height and physics are not quite the same
 // as an additional bomb jump.
+//
+// Self-Detonation can be used in place of Bomb for a single bomb jump. For nonterminal edges - those whose
+// destination is a transition - uses of this chip should also require Wrench to guarantee that the logic doesn't
+// require a path that is impossible to survive because it chains them.
+// For terminal edges - those leading to checks - this is not necessary, as the player may always warp back once
+// they're collected.
 
 Scene 10 // Starting area
 
@@ -20,6 +26,9 @@ Scene 21 // After Magnet repair station
 $BottomRight {Right1, Repair}
 BottomRight->Right0: Ball + Bomb
 *->Disruptor: Ball + Bomb
+// requires falling into the saws to the left of the repair station
+// in order to aggro the flying enemy
+Right0->Disruptor: Ball + SelfDetonation
 
 Scene 22
 
@@ -31,7 +40,7 @@ Left1<->Right1: Ball + Bomb
 
 Scene 24 // Tire Village
 
-*->Left0: Ball + Bomb
+*->Left0: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 31
 
@@ -56,11 +65,9 @@ Scene 34
 Right0->Left: Ball + Bomb
 
 Scene 35 // Tall room below Bunker
-
 $Up {Right0, Chip}
-// lower requirements if you have Magnet
-Right1->Up: Ball + Bomb + 2#Coolant + PowerProcessor
-Right1->Left: Ball + Bomb + 2#Coolant + PowerProcessor + Transition[201][Left]
+Right1->Up: Ball + Bomb + (2#Coolant + PowerProcessor | Magnet + PowerProcessor | Magnet + 3#Coolant)
+Right1->Left: Ball + Bomb + (2#Coolant + PowerProcessor | Magnet + PowerProcessor | Magnet + 3#Coolant) + Transition[201][Left]
 
 Scene 38 // Huge room in the middle of Bunker
 
@@ -68,7 +75,7 @@ Scene 38 // Huge room in the middle of Bunker
 
 Scene 39
 
-*->Left0: Ball + Bomb + Blink
+*->Left0: Ball + (Bomb | SelfDetonation + Wrench) + Blink
 
 Scene 43
 
@@ -87,15 +94,14 @@ Left->Right0: Lever + Ball + Bomb
 Bottom->Right0: Ball + Bomb
 
 Scene 47
-
-Right->Left: Ball + Bomb
-*->Chip: Ball + Bomb
+Right->Left: Ball + (Bomb | SelfDetonation + Wrench)
+*->Chip: Ball + (Bomb | SelfDetonation)
 
 Scene 48
 $Bottom{Left1, Right1}
-Bottom->Left0: Ball + Bomb
+Bottom->Left0: Ball + (Bomb | SelfDetonation + Wrench)
 Bottom->Right0: Ball + Bomb
-Right0->Left0: Ball + Bomb
+Right0->Left0: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 52
 *1->*0: Ball + Bomb
@@ -122,10 +128,10 @@ $Edge {Left, Right}
 Edge->Edge: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 
 Scene 60
-Right1->Right0: Ball + Bomb
+Right1->Right0: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 61 // Upper Left from Mainframe
-*->Right0: Ball + Bomb
+*->Right0: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 62 // Mainframe
 $Bottom {Left1, Right1, Door0}
@@ -135,26 +141,32 @@ Bottom->Top: Ball + Bomb
 
 Scene 63 // Left of Bulb Hive
 $Top {Left0, Right0}
+*1->Top: Ball + (Bomb | SelfDetonation + Wrench)
+Right1->Left1: Ball + (Bomb | SelfDetonation + Wrench)
+
+Scene 64 // Central Core, to the right of Echo door
+*->Right0: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 66 // Central Core tall room near Quatern
-Left0->Left1: Ball + Bomb
-Right0->Left1: Ball + Bomb
-Left1->Left0: Ball + Bomb
-Left1->Right0: Ball + Bomb
-Left1->Right1: Ball + Bomb
-Left2->Left0: Ball + Bomb
-Left2->Left1: Ball + Bomb
-Left2->Right0: Ball + Bomb
-Left2->Right1: Ball + Bomb
-Right1->Left1: Ball + Bomb
-Right2->Left0: Ball + Bomb
-Right2->Left1: Ball + Bomb
-Right2->Right0: Ball + Bomb
-Right2->Right1: Ball + Bomb
-Right3->Left0: Ball + Bomb
-Right3->Left1: Ball + Bomb
-Right3->Right0: Ball + Bomb
-Right3->Right1: Ball + Bomb
+// aggroing the lamps makes the version using Self-Detonation a lot faster
+Left0->Left1: Ball + (Bomb | SelfDetonation + Wrench)
+Right0->Left1: Ball + (Bomb | SelfDetonation + Wrench)
+Left1->Left0: Ball + (Bomb | SelfDetonation + Wrench)
+Left1->Right0: Ball + (Bomb | SelfDetonation + Wrench)
+Left1->Right1: Ball + (Bomb | SelfDetonation + Wrench)
+Left2->Left0: Ball + (Bomb | SelfDetonation + Wrench)
+Left2->Left1: Ball + (Bomb | SelfDetonation + Wrench)
+Left2->Right0: Ball + (Bomb | SelfDetonation + Wrench)
+Left2->Right1: Ball + (Bomb | SelfDetonation + Wrench)
+Right1->Left1: Ball + (Bomb | SelfDetonation + Wrench)
+Right2->Left0: Ball + (Bomb | SelfDetonation + Wrench)
+Right2->Left1: Ball + (Bomb | SelfDetonation + Wrench)
+Right2->Right0: Ball + (Bomb | SelfDetonation + Wrench)
+Right2->Right1: Ball + (Bomb | SelfDetonation + Wrench)
+Right3->Left0: Ball + (Bomb | SelfDetonation + Wrench)
+Right3->Left1: Ball + (Bomb | SelfDetonation + Wrench)
+Right3->Right0: Ball + (Bomb | SelfDetonation + Wrench)
+Right3->Right1: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 67
 Train->Right: Ball + Bomb
@@ -163,6 +175,7 @@ Left->Right: Ball + Bomb
 Scene 68 // Electrified gauntlet after Car Battery
 $Checks {Lever, PowerCell}
 Left*<->Right: Ball + Bomb + (Lever | DoubleJump | Coolant | PowerProcessor | BLJ)
+Left*->Right: Ball + SelfDetonation + Wrench + Lever
 Left0->Left1: Ball + Bomb
 Left*->Checks: Ball + Bomb + (DoubleJump | Coolant | PowerProcessor | BLJ)
 
@@ -197,8 +210,8 @@ Scene 79 // Right of Sealants Room
 Left1->Left0: Ball + Bomb
 
 Scene 81 // Right of Bulb Hive
-*->Left0: Ball + Bomb
-*->Right0: Ball + Bomb
+*->Left0: Ball + (Bomb | SelfDetonation + Wrench)
+*->Right0: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 85 // Grapple Pickup
 Left->Grapple: Ball + Bomb
@@ -258,7 +271,7 @@ Scene 110 // Dark bridge over fire
 Left<->Right: FireRes + HeatDrive + Light + Ball + Bomb
 
 Scene 114
-*1->*0: Ball + Bomb
+*1->*0: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 117 // Water Ducts elevator
 $Bottom {Elevator, Left}
@@ -298,12 +311,14 @@ Left->Right: Lever + Ball + Bomb + (PowerProcessor | 3#Coolant | Coolant + Doubl
 Scene 127 // Lower Water Ducts repair station
 $RightSide {Right, Repair}
 $Transition {Left, Right, Repair}
-Left<->RightSide: Light + Ball + Bomb
-Transition->Lore: Light + Ball + Bomb
+Left<->RightSide: Light + Ball + (Bomb | SelfDetonation + Wrench)
+Transition->Lore: Light + Ball + (Bomb | SelfDetonation)
 
 Scene 128
 Left<->Right*: Light + Ball + Bomb
+Left->Right1: Light + Ball + SelfDetonation + Wrench + BLJ
 *->Coolant: Light + Ball + Bomb
+Left->Coolant: Light + Ball + SelfDetonation + BLJ
 
 Scene 129
 *->Chip: Ball + Bomb
@@ -313,7 +328,7 @@ Scene 130
 Left->Item: Ball + Bomb + PowerProcessor + 3#Coolant
 
 Scene 131
-*->*: Ball + Bomb
+*->*: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 132 // Lune up above / Ruins vertical room
 $BottomPastLever {Right1, Right0, Left0}
@@ -328,6 +343,8 @@ Left1->Alcove: Lever + Blink + Ball + Bomb
 
 Scene 133
 *->*: Ball + Bomb
+Left->*: Ball + SelfDetonation + Wrench
+Right1->*: Ball + SelfDetonation + Wrench + Blink + AmplifyingTransputer
 
 Scene 134
 Left2->Right1: Blink + Ball + Bomb
@@ -342,10 +359,10 @@ Right2->Right*: Ball + Bomb
 Right*->PowerCell: Ball + Bomb
 
 Scene 135
-Right->Left*: Ball + Bomb
-Left1->Right: Ball + Bomb
-Left1->Left0: Ball + Bomb
-*->Chip: Ball + Bomb
+Right->Left*: Ball + (Bomb | SelfDetonation + Wrench)
+Left1->Right: Ball + (Bomb | SelfDetonation + Wrench)
+Left1->Left0: Ball + (Bomb | SelfDetonation + Wrench)
+*->Chip: Ball + (Bomb | SelfDetonation)
 
 Scene 138 // First Tree
 *->Door: Ball + Bomb
@@ -369,8 +386,8 @@ Scene 143
 Left->PowerCell: Ball + Bomb // you may have to fall in the spikes afterwards, or warp out
 
 Scene 147
-Right1->Right0: Ball + Bomb + Blink
-Left->Right0: Ball + Bomb
+Right1->Right0: Ball + (Bomb | SelfDetonation + Wrench) + Blink
+Left->Right0: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 152 // Amplifying Transputer room
 Left2->Right0: Light + Ball + Bomb
@@ -398,17 +415,18 @@ Right->Left0: Light + Ball + Bomb
 Right->Left1: Light + Lever + Ball + Bomb
 
 Scene 156
-Left1->*: Light + Ball + Bomb
+$Upper {Left0, Right, Repair}
+Left1->Upper: Light + Ball + Bomb
 *->Disruptor: Light + Ball + Bomb
 
 Scene 157
-Left<->Right: Light + Ball + Bomb
+Left<->Right: Light + Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 158
-Left<->Right: Light + Ball + Bomb
+Left<->Right: Light + Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 159
-*->Left0: Ball + Bomb
+*->Left0: Ball + (Bomb | SelfDetonation + Wrench)
 Left1->Right: Ball + Bomb
 *->Coolant: Ball + Bomb + Blink
 
@@ -418,8 +436,8 @@ Right0->Item: Light + Ball + Bomb
 Right0->Lever: Light + Ball + Bomb
 
 Scene 161
-Right1->Right0: Light + Blink + Ball + Bomb
-Right2->Right0: Light + Ball + Bomb
+Right1->Right0: Light + Blink + Ball + (Bomb | SelfDetonation + Wrench)
+Right2->Right0: Light + Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 162
 Right->*: Light + Ball + Bomb
@@ -437,13 +455,14 @@ Right->Left: Ball + Bomb + Lever
 Right->Lever: Ball + Bomb
 
 Scene 176
-Left1->*: Ball + Bomb
+Left1->*: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 177
 Right->Chip: Ball + Bomb
+// likely possible with Self-Detonation too but it's a pain to set up
 
 Scene 183
-Right->Left: Ball + Bomb
+Right->Left: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 185
 // having the lever or not doesn't change the required number of jumps
@@ -457,6 +476,7 @@ Scene 186
 Left->Right0: Ball + Bomb
 Right0<->Left: Ball + Bomb
 Right1<->Left: Ball + Bomb
+Right1->Left: Ball + SelfDetonation + Wrench
 
 Scene 188
 Right->Left0: Ball + Bomb
@@ -465,15 +485,15 @@ Scene 192
 Left1->Left0: Ball + Bomb + PowerProcessor + 2#Coolant
 Left1->PowerCell: Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
 
+Scene 193
+Right1->Right0: Ball + (Bomb | SelfDetonation + Wrench)
+Right1->Left: Ball + (Bomb | SelfDetonation + Wrench)
+Right2->Right0: Ball + (Bomb | SelfDetonation + Wrench)
+Right2->Left: Ball + (Bomb | SelfDetonation + Wrench)
+Left->Right0: Ball + (Bomb | SelfDetonation + Wrench)
+
 Scene 199
 *->Right0: Ball + Bomb
-
-Scene 193
-Right1->Right0: Ball + Bomb
-Right1->Left: Ball + Bomb
-Right2->Right0: Ball + Bomb
-Right2->Left: Ball + Bomb
-Left->Right0: Ball + Bomb
 
 Scene 202 // Lower Right Entrance to Bunker
 Left1->Left0: Ball + Bomb + (Coolant | PowerProcessor | DoubleJump | EnemyPogos)
@@ -504,7 +524,7 @@ Left1->*: FireRes + HeatDrive + Ball + Bomb
 Left0->PowerCell: FireRes + HeatDrive + Ball + Bomb
 
 Scene 214
-Right->Left: FireRes + HeatDrive + Ball + Bomb
+Right->Left: FireRes + Ball + (Bomb + HeatDrive | SelfDetonation + Wrench)
 
 Scene 215
 *1->*0: FireRes + HeatDrive + Ball + Bomb

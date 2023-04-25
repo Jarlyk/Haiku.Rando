@@ -45,7 +45,7 @@ namespace Haiku.Rando.Logic
                 {"LIGHT", singleName("Light")},
                 {"Light", singleName(enabledSkips(Skip.DarkRooms) ? "true" : "Light")},
                 {"BLJ", singleName(enabledSkips(Skip.BLJ) ? "true" : "false")},
-                {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? "true" : "false")},
+                {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? "true" : "false")}
             };
             if (enabledSkips(Skip.SkillChips))
             {
@@ -55,6 +55,11 @@ namespace Haiku.Rando.Logic
                     new(TokenType.Name, "Chip[6]", -1), // Chip[6] = Auto Modifier
                     new(TokenType.Or, "|", -1)
                 };
+                macros["SelfDetonation"] = singleName("Chip[16]");
+            }
+            else
+            {
+                macros["SelfDetonation"] = singleName("false");
             }
 
             return tokens == null ? null : ParseLogic(topology, macros, tokens.GetEnumerator());

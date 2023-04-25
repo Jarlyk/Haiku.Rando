@@ -467,17 +467,18 @@ Edge->Edge: Grapple | Blink
 Right->Lore: Grapple | Blink
 Left->Lore: true
 
-// Scene 60
+// Scene 60: Last bomb barrier before Neutron
 // Transitions: Right1 (60-201), Right0 (60-59)
 // Checks:
 Scene 60
-Right1->Right0: Magnet+DoubleJump
+Right0->Right1: Bomb
+Right1->Right0: Magnet + DoubleJump + Bomb
 
 // Scene 61 : Upper Left from Mainframe
 // Transitions: Right1 (61-62), Right0 (61-202), Left (33-61)
 // Checks:
 Scene 61
-*->Right0: Ball + Bomb + (Magnet | DoubleJump)
+*->Right0: Bomb + (Magnet | DoubleJump)
 Right0->*: Bomb
 
 // Scene 62 : Mainframe
@@ -626,6 +627,7 @@ Scene 74
 *->*: Bomb
 Left->Right2: true
 Right2->Left: true
+Right0<->Right1: Blink // through the wall
 //TODO: This room has a Blink through the wall into bombs at Right1, accessible from Right0
 
 // Scene 75 : Bomb barriers before Electron
@@ -935,7 +937,7 @@ Left->Right: FireRes+HeatDrive+Grapple
 // Transitions: Right (111-112), Left (69-111)
 // Checks:
 Scene 111
-Right->Left: Magnet | DoubleJump
+Right->Left: Magnet | DoubleJump | Ball // Ball works because of a corner boost
 
 
 // Scene 112
