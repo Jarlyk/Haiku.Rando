@@ -23,7 +23,15 @@ namespace Haiku.Rando.Logic
             // randomization and can be discarded afterward; that is why it is a separate object.
             // CheckRandomizer only provides the public interface to the randomization process
             // and parameters.
-            return new CheckRandomizerBuilder(topology, logic, gs, seed, startScene).Randomize();
+            try
+            {
+                return new CheckRandomizerBuilder(topology, logic, gs, seed, startScene).Randomize();
+            }
+            catch (RandomizationException ex)
+            {
+                Debug.LogWarning(ex.Message);
+                return null;
+            }
         }
 
         // This is the maximum number of checks that can fit in a Bitset64.
@@ -74,22 +82,18 @@ namespace Haiku.Rando.Logic
 
             SyncedRng.SequenceSeed = _random.NextULong();
             BuildPool();
-
-            if (ArrangeChecks())
+            ArrangeChecks();
+            return new()
             {
-                return new()
-                {
-                    Settings = Settings,
-                    Topology = _topology,
-                    CheckMapping = _checkMapping,
-                    StartScene = _startScene,
-                    Logic = _logic.Layers,
-                };
-            }
-            return null;
+                Settings = Settings,
+                Topology = _topology,
+                CheckMapping = _checkMapping,
+                StartScene = _startScene,
+                Logic = _logic.Layers,
+            };
         }
 
-        private bool ArrangeChecks()
+        private void ArrangeChecks()
         {
             //We're going to explore, keeping track of what we can reach and what frontier of edges are not yet passable
             var frontier = new List<FrontierEdge>();
@@ -146,22 +150,14 @@ namespace Haiku.Rando.Logic
                 //Unlock the checks required for this edge
                 foreach (var condition in nextEdge.MissingLogic)
                 {
-                    if (!PlaceChecksToSatisfyCondition(condition)) return false;
+                    PlaceChecksToSatisfyCondition(condition);
                 }
             }
 
-            if (_pool.Count > 10)
+            if (_pool.Count > 0)
             {
-                Debug.LogWarning($"There are still {_pool.Count} checks not yet placed; this is too many, so rerolling");
-                return false;
+                throw new RandomizationException($"{_pool.Count} checks left unplaced");
             }
-            else if (_pool.Count > 0)
-            {
-                Debug.LogWarning($"Completed with {_pool.Count} checks not yet placed; this is low enough that will still attempt to use this seed");
-            }
-
-            //Successfully arranged all checks
-            return true;
         }
 
         private string ListToString<T>(IReadOnlyList<T> list)
@@ -178,16 +174,11 @@ namespace Haiku.Rando.Logic
             return builder.ToString();
         }
 
-        private bool PlaceChecksToSatisfyCondition(LogicCondition condition)
+        private void PlaceChecksToSatisfyCondition(LogicCondition condition)
         {
             Debug.Log($"Satisfying condition {condition}");
             //Find and weigh remaining check locations
             var candidates = WeightedSet<InLogicCheck>.Build(_checksToReplace, WeighCheckPlacement);
-            if (candidates.Count < condition.Count)
-            {
-                Debug.LogWarning($"Ran out of locations to place check state {condition.StateName}; logic may not be solvable");
-                return false;
-            }
 
             //Choose from weighted distribution and replace each check in turn
             for (int i = 0; i < condition.Count; i++)
@@ -195,9 +186,7 @@ namespace Haiku.Rando.Logic
                 var match = _pool.FirstOrDefault(c => LogicEvaluator.MatchesState(c.SceneId, c, condition.StateName));
                 if (match == null)
                 {
-                    Debug.LogWarning(
-                        $"Failed to locate check for check state {condition.StateName}; logic may not be solvable");
-                    return false;
+                    throw new RandomizationException($"Failed to locate check for check state {condition.StateName}; logic may not be solvable");
                 }
 
                 // Place extra chip slots as necessary to ensure that all chips that are required for progression
@@ -213,24 +202,21 @@ namespace Haiku.Rando.Logic
                         color == GameManager.instance.chipSlot[c.CheckId].chipSlotColor);
                         if (slot == null)
                         {
-                            Debug.LogWarning($"Ran out of {color} chip slots while placing {match.Name}");
-                            return false;
+                            throw new RandomizationException($"Ran out of {color} chip slots while placing {match.Name}");
                         }
-                        if (!PlaceItem(candidates, slot)) return false;
+                        PlaceItem(candidates, slot);
                     }
                 }
 
-                if (!PlaceItem(candidates, match)) return false;
+                PlaceItem(candidates, match);
             }
-
-            return true;
         }
 
-        private bool PlaceItem(WeightedSet<InLogicCheck> candidates, RandoCheck newItem)
+        private void PlaceItem(WeightedSet<InLogicCheck> candidates, RandoCheck newItem)
         {
             if (candidates.Count == 0)
             {
-                return false;
+                throw new RandomizationException($"Ran out of locations to place {newItem.Name}");
             }
             var original = candidates.PickItem(_random.NextDouble());
             candidates.Remove(original);
@@ -240,7 +226,6 @@ namespace Haiku.Rando.Logic
             _checksToReplace.Remove(original);
             AddState(LogicEvaluator.GetStateName(newItem));
             Debug.Log($"Replaced check {original.Check.Name} with {newItem.Name}");
-            return true;
         }
 
         private bool TryConsumeStartingChipSlot(string color)
@@ -250,7 +235,7 @@ namespace Haiku.Rando.Logic
                 "red" => 0,
                 "green" => 1,
                 "blue" => 2,
-                _ => throw new InvalidOperationException($"{color} chip slots aren't real and can't hurt me")
+                _ => throw new RandomizationException($"{color} chip slots aren't real and can't hurt me")
             };
             var used = _startingChipSlotsUsed.Contains(i);
             _startingChipSlotsUsed.Add(i);
