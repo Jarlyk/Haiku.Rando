@@ -264,16 +264,14 @@ namespace Haiku.Rando
             }
 
             Debug.Log("** Configuring check randomization **");
-            _randomizer = new CheckRandomizer(_topology, evaluator, gs, seed, startScene);
-            bool success = _randomizer.Randomize();
-
-            if (success)
+            _randomizer = CheckRandomizer.TryRandomize(_topology, evaluator, gs, seed, startScene);
+            if (_randomizer == null)
             {
-                CheckManager.Instance.Randomizer = _randomizer;
-                Debug.Log("** Randomization complete **");
+                return false;
             }
-
-            return success;
+            CheckManager.Instance.Randomizer = _randomizer;
+            Debug.Log("** Randomization complete **");
+            return true;
         }
 
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)

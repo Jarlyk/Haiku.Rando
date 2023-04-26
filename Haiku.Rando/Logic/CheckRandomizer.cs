@@ -9,23 +9,49 @@ using UnityEngine;
 
 namespace Haiku.Rando.Logic
 {
-    public sealed class CheckRandomizer : ICheckRandoContext
+    public sealed class CheckRandomizer
     {
+        public GenerationSettings Settings { get; internal set; }
+        public RandoTopology Topology { get; internal set; }
+        public IReadOnlyDictionary<RandoCheck, RandoCheck> CheckMapping { get; internal set; }
+        public int? StartScene { get; internal set; }
+        public IReadOnlyList<LogicLayer> Logic { get; internal set; }
+
+        public static CheckRandomizer TryRandomize(RandoTopology topology, LogicEvaluator logic, GenerationSettings gs, Seed128 seed, int? startScene)
+        {
+            // CheckRandomizerBuilder contains a lot of data structures that are only needed during
+            // randomization and can be discarded afterward; that is why it is a separate object.
+            // CheckRandomizer only provides the public interface to the randomization process
+            // and parameters.
+            return new CheckRandomizerBuilder(topology, logic, gs, seed, startScene).Randomize();
+        }
+
+        // This is the maximum number of checks that can fit in a Bitset64.
+        // Any more than that will be left blank (not vanilla), by replacing with
+        // a check for which AlreadyHasCheck returns true always.
+        internal const int MaxFillerChecks = 64;
+    }
+
+    internal sealed class CheckRandomizerBuilder : ICheckRandoContext
+    {
+        // things that are needed post-randomization
         private readonly RandoTopology _topology;
         private readonly LogicEvaluator _logic;
         private readonly int? _startScene;
+        private readonly Dictionary<RandoCheck, RandoCheck> _checkMapping = new Dictionary<RandoCheck, RandoCheck>();
+        private bool _randomized;
+
+        // things that are only needed during randomization
         private readonly HashSet<string> _acquiredStates = new HashSet<string>();
         private Bitset64 _startingChipSlotsUsed;
-        private readonly Dictionary<RandoCheck, RandoCheck> _checkMapping = new Dictionary<RandoCheck, RandoCheck>();
         private readonly CheckPool _startingPool = new CheckPool();
         private readonly CheckPool _pool = new CheckPool();
         private readonly List<RandoCheck> _visitedChecks = new List<RandoCheck>();
         private readonly List<InLogicCheck> _checksToReplace = new();
         private readonly Xoroshiro128Plus _random;
-        private bool _randomized;
         private int _numFillersAdded;
 
-        public CheckRandomizer(RandoTopology topology, LogicEvaluator logic, GenerationSettings gs, Seed128 seed, int? startScene)
+        public CheckRandomizerBuilder(RandoTopology topology, LogicEvaluator logic, GenerationSettings gs, Seed128 seed, int? startScene)
         {
             _topology = topology;
             _logic = logic;
@@ -38,27 +64,29 @@ namespace Haiku.Rando.Logic
 
         public GenerationSettings Settings { get; }
 
-        public RandoTopology Topology => _topology;
-
-        public IReadOnlyDictionary<RandoCheck, RandoCheck> CheckMapping => _checkMapping;
-
-        public int? StartScene => _startScene;
-
-        public IReadOnlyList<LogicLayer> Logic => _logic.Layers;
-
-        public bool Randomize()
+        public CheckRandomizer Randomize()
         {
             if (_randomized)
             {
-                throw new InvalidOperationException("Randomization already complete; to randomize again, please create a new instance of CheckRandomizer");
+                throw new InvalidOperationException("Randomization already complete; to randomize again, please create a new instance of CheckRandomizerBuilder");
             }
+            _randomized = true;
 
             SyncedRng.SequenceSeed = _random.NextULong();
             BuildPool();
-            bool success = ArrangeChecks();
 
-            _randomized = true;
-            return success;
+            if (ArrangeChecks())
+            {
+                return new()
+                {
+                    Settings = Settings,
+                    Topology = _topology,
+                    CheckMapping = _checkMapping,
+                    StartScene = _startScene,
+                    Logic = _logic.Layers,
+                };
+            }
+            return null;
         }
 
         private bool ArrangeChecks()
@@ -280,11 +308,6 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        // This is the maximum number of checks that can fit in a Bitset64.
-        // Any more than that will be left blank (not vanilla), by replacing with
-        // a check for which AlreadyHasCheck returns true always.
-        internal const int MaxFillerChecks = 64;
-
         private RandoCheck GetArbitraryCheck()
         {
             if (_pool.Count > 0)
@@ -295,7 +318,7 @@ namespace Haiku.Rando.Logic
                 return item;
             }
             var filler = new RandoCheck(CheckType.Filler, 0, new(0, 0), _numFillersAdded);
-            if (_numFillersAdded >= MaxFillerChecks)
+            if (_numFillersAdded >= CheckRandomizer.MaxFillerChecks)
             {
                 Debug.Log("Out of filler checks. Will leave placement blank.");
             }
