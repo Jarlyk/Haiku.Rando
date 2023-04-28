@@ -45,7 +45,8 @@ namespace Haiku.Rando.Logic
                 {"LIGHT", singleName(LogicStateNames.Light)},
                 {"Light", singleName(enabledSkips(Skip.DarkRooms) ? "true" : LogicStateNames.Light)},
                 {"BLJ", singleName(enabledSkips(Skip.BLJ) ? "true" : "false")},
-                {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? "true" : "false")}
+                {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? "true" : "false")},
+                {"BombJumps", singleName(enabledSkips(Skip.BombJumps) ? "true" : "false")}
             };
             if (enabledSkips(Skip.SkillChips))
             {

@@ -42,6 +42,9 @@ Scene 87
 Right1->Left1: true
 Right1->Repair: true
 
+Scene 104
+Right*->Lore: Magnet
+
 Scene 120
 // Magnet + Grapple is also in base logic but uses a different method
 Left->Right1: Lever + Magnet + (Blink | Grapple) 

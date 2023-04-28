@@ -1,0 +1,42 @@
+// The following logic is written with the assumption that some nodes are close enough to a safe area
+// to reach without the appropriate sealant. Accordingly, it cannot be used if transitions are randomized,
+// as that might require the player to tank more damage than is survivable.
+
+// Surface (it may be necessary to stop over at Reaper's shop to heal when using Ball)
+Scene 196 // Surface Left
+Left1<->Right: Grapple | Ball + Wrench
+
+Scene 197 // Surface Shop
+!Left1<->!Left1: Grapple | Ball + Wrench
+Left0<->Left1: Blink
+
+Scene 198 // Surface Right
+Right1->PowerCell: Magnet + DoubleJump | BombJumps + Ball + Bomb + (Magnet | DoubleJump | PowerProcessor | Coolant)
+Left<->Right1: Grapple | Ball + Wrench
+
+// Incinerator
+Scene 101
+Left->Chip: Ball
+
+Scene 102
+Right0->Right1: Ball | HeatDrive + (Grapple | Blink)
+
+Scene 103
+$Reachable {Lore, Right}
+Left0->Reachable: Ball | HeatDrive + (Grapple | Blink)
+
+Scene 108
+Right->Disruptor: Magnet | DoubleJump | BombJumps + HeatDrive + Ball + Bomb
+
+Scene 109 // Incinerator Top
+*->Left1: true
+Left0<->Right: true
+
+Scene 106
+Right->Left1: Ball | HeatDrive + (Blink | Grapple)
+
+Scene 110 // Dark bridge over fire
+Right->Left: Light + Ball + GyroAccelerator | HeatDrive + (Blink | Grapple)
+
+Scene 213
+Left1->PowerCell: Magnet | DoubleJump | BombJumps + HeatDrive + Ball + Bomb

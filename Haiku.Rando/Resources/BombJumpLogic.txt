@@ -492,6 +492,9 @@ Right2->Right0: Ball + (Bomb | SelfDetonation + Wrench)
 Right2->Left: Ball + (Bomb | SelfDetonation + Wrench)
 Left->Right0: Ball + (Bomb | SelfDetonation + Wrench)
 
+Scene 198
+!Right0->PowerCell: WaterRes + Ball + Bomb
+
 Scene 199
 *->Right0: Ball + Bomb
 

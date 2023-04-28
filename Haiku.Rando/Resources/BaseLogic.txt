@@ -1,5 +1,5 @@
 // This is a logic file for the Haiku Rando mod
-// Logic is specified per scene, where the passability is defined between transitions and checks () 
+// Logic is specified per scene, where the passability is defined between transitions and checks
 // (collectively called "nodes") in the room.
 
 // The logic for each edge is defined by a logic statement, which is of the form
@@ -905,7 +905,7 @@ Scene 106
 // Transitions: Right (107-72), Left (102-107)
 // Checks:
 Scene 107
-*->*: FireRes
+*->*: true
 
 // Scene 108
 // Transitions: Right (108-109), Left (101-108)
@@ -1706,8 +1706,8 @@ Left1->*: Blink+WaterRes
 // Transitions: Right0 (198-200), Right1 (198-231), Left (197-198)
 // Checks: PowerCell (PowerCell[15])
 Scene 198
-*->PowerCell: Magnet+DoubleJump+WaterRes
-Right1->Left: WaterRes
+!Right0->PowerCell: Magnet+DoubleJump+WaterRes
+Right1<->Left: WaterRes
 *<->Right0: false
 
 // Scene 199 : Catacombs

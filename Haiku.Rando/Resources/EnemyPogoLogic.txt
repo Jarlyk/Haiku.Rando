@@ -70,6 +70,7 @@ Left0<->Right0: true
 Scene 104 // Fire Wheels Incinerator Room
 
 Right1->PowerCell: FireRes
+Right*->Lore: FireRes + Magnet
 
 Scene 114 // Water Ducts, right of the train
 
@@ -94,6 +95,8 @@ Scene 135
 
 Right->Left0: true
 Right->Left1: true
+Left1->Left0: Magnet
+Left1->Right: Magnet
 *->Chip: DoubleJump
 
 Scene 147
