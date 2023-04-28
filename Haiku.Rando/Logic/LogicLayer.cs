@@ -44,6 +44,7 @@ namespace Haiku.Rando.Logic
                 {"GyroAccelerator", singleName(LogicStateNames.GyroAccelerator)},
                 {"LIGHT", singleName(LogicStateNames.Light)},
                 {"Light", singleName(enabledSkips(Skip.DarkRooms) ? "true" : LogicStateNames.Light)},
+                {"BALL", singleName(LogicStateNames.Ball)},
                 {"BLJ", singleName(enabledSkips(Skip.BLJ) ? "true" : "false")},
                 {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? "true" : "false")},
                 {"BombJumps", singleName(enabledSkips(Skip.BombJumps) ? "true" : "false")}
@@ -52,7 +53,7 @@ namespace Haiku.Rando.Logic
             {
                 macros["Ball"] = new()
                 {
-                    new(TokenType.Name, "Ball", -1),
+                    new(TokenType.Name, LogicStateNames.Ball, -1),
                     new(TokenType.Name, LogicStateNames.AutoModifier, -1),
                     new(TokenType.Or, "|", -1)
                 };

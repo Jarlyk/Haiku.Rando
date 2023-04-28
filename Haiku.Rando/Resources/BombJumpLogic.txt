@@ -538,8 +538,8 @@ Left->Slot: FireRes + HeatDrive + Ball + Bomb
 Scene 228 // Grapple gauntlet to left of Bulb Drop
 $Monument {PowerCell, Lore}
 $Exit {Left, Right}
-Exit->Exit: Ball + Bomb + (PowerProcessor + 2#Coolant | Grapple)
-Right->Monument: Ball + Bomb + (PowerProcessor + 2#Coolant | Grapple)
+Exit->Exit: BALL + Bomb + (PowerProcessor + 2#Coolant | Grapple)
+Right->Monument: BALL + Bomb + (PowerProcessor + 2#Coolant | Grapple)
 // Left->Monument requires you to jump up a hidden spot in the ceiling where you normally drop down
 Left->Monument: Ball + Bomb
 

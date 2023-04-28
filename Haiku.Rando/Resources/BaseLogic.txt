@@ -660,7 +660,7 @@ Right->Repair: Bomb
 // Transitions: Right (76-70), Left0 (73-76), Left1 (75-76)
 // Checks: Disruptor (MapDisruptor[8])
 Scene 76
-//No obstacles
+*->Left0: Magnet | DoubleJump | Ball
 
 // Scene 77 : Sealants Room
 // Transitions: Right (77-79), Left (66-77)
@@ -1099,7 +1099,7 @@ Scene 129
 // Transitions: Left (129-130)
 // Checks: Item (Item[3])
 Scene 130
-Left->Item: Grapple+WaterRes
+Left->Item: WaterRes + Grapple + Magnet | Grapple + DoubleJump
 
 // Scene 131
 // Transitions: Right0 (131-125), Right1 (131-126), Left (132-131bottom)
