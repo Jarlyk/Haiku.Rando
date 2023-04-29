@@ -252,7 +252,11 @@ namespace Haiku.Rando
             if (gs.Contains(Skip.BLJ)) logicLayers.Add(LoadLogicLayer("BLJLogic", gs.Contains));
             if (gs.Contains(Skip.BombJumps)) logicLayers.Add(LoadLogicLayer("BombJumpLogic", gs.Contains));
             if (gs.Contains(Skip.SkillChips)) logicLayers.Add(LoadLogicLayer("SkillChipLogic", gs.Contains));
-            if (gs.Contains(Skip.HazardRooms)) logicLayers.Add(LoadLogicLayer("HazardRoomLogic", gs.Contains));
+            // See the hazard room logic file for why this randomization level check is needed.
+            if (gs.Level == RandomizationLevel.Pickups && gs.Contains(Skip.HazardRooms))
+            {
+                logicLayers.Add(LoadLogicLayer("HazardRoomLogic", gs.Contains));
+            }
 
             var evaluator = new LogicEvaluator(logicLayers);
 
