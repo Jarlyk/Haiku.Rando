@@ -359,13 +359,18 @@ namespace Haiku.Rando.Checks
         private static void ShowCheckPopup(RandoCheck check)
         {
             var uidef = UIDef.Of(check);
+            CameraBehavior.instance.ShowLeftCornerUI(uidef.Sprite, uidef.Name, "", PickupTextDuration);
             if (check.Type == CheckType.PowerCell)
             {
                 var collectedCount = GameManager.instance.powerCells.Count(p => p.collected);
-                uidef.Name = $"{LocalizationSystem.GetLocalizedValue(uidef.Name)} ({collectedCount})";
+                var annotatedName = $"{CameraBehavior.instance.leftCornerTitleText.text} ({collectedCount})";
+                CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
+                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName);
             }
-            CameraBehavior.instance.ShowLeftCornerUI(uidef.Sprite, uidef.Name, "", PickupTextDuration);
-            RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name);
+            else
+            {
+                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name);
+            }
         }
 
         public static IEnumerator RemoveHeat()
