@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,6 +35,13 @@ namespace Haiku.Rando
 
         public static void Init(ConfigFile config)
         {
+            var skipDescriptions = new Dictionary<Skip, string>()
+            {
+                {Skip.DarkRooms, "Consider most dark rooms traversable without Bulblet"},
+                {Skip.HazardRooms, "Consider surface and some hot rooms traversable without their respective sealants"},
+                {Skip.SkillChips, "Allow Auto Modifier and Self-Detonation to substitute for Ball and Bomb respectively"}
+            };
+
             RandoLevel = config.Bind(General, "Level", RandomizationLevel.Pickups);
             Seed = config.Bind(General, "Seed", "", "Seed (blank for auto)");
             RandomStartLocation = config.Bind(General, "Random Start Location", false);
@@ -47,7 +55,7 @@ namespace Haiku.Rando
                 .ToList();
             
             SkipToggles = EnumValues<Skip>()
-                .Select(c => config.Bind("Skips", SplitCamelCase(c.ToString()), false))
+                .Select(c => config.Bind("Skips", SplitCamelCase(c.ToString()), false, skipDescriptions.TryGetValue(c, out var d) ? d : ""))
                 .ToList();
             //TODO: Load/Save settings to copyable string
             //TODO: Hash display for race sync

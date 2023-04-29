@@ -231,12 +231,14 @@ namespace Haiku.Rando
             {
                 //Pick from any save station except Incinerator, Furnace and Train
                 var availScenes = new List<int>
-                    { 10, 15, 21, 71, 57, 41, 75, 195, 172, 194, 87, 113, 127, 139, 140, 161, 156, 167 };
+                    { 10, 15, 21, 71, 57, 41, 75, 195, 172, 194, 87, 113, 139, 140, 167 };
 
-                //TODO: We need to remove dark areas, though these could be allowed if dark room skips are enabled
-                availScenes.Remove(161);
-                availScenes.Remove(156);
-                availScenes.Remove(127);
+                if (gs.Contains(Skip.DarkRooms))
+                {
+                    availScenes.Add(161);
+                    availScenes.Add(156);
+                    availScenes.Add(127);
+                }
 
                 var tmpRandom = new Xoroshiro128Plus(seed.S0, seed.S1);
                 startScene = availScenes[tmpRandom.NextRange(0, availScenes.Count)];
