@@ -17,7 +17,7 @@ This release supports both item rando and room rando.  The room rando is more li
 - **Random Start Location**: if enabled, starts the game at a randomly-chosen repair station instead of the opening cutscene wake location.
 - **Starting Items**: grants Wrench, Whistle, or all Map Disruptors at the start of the game.
 - **Pool**: selects which locations and respective items will be randomized.
-- **Skips**: allows certain categories skips to be considered for logic purposes:
+- **Skips**: allows certain categories of skips to be considered for logic purposes:
     - BLJs
     - Enemy Pogos
     - Bomb Jumps
