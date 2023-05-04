@@ -221,11 +221,28 @@ namespace Haiku.Rando.Logic
             var original = candidates.PickItem(_random.NextDouble());
             candidates.Remove(original);
             ApplyProximityPenalty(original.Check, 3);
-            _checkMapping.Add(original.Check, newItem);
+            SetCheckMapping(original.Check, newItem);
             _pool.Remove(newItem);
             _checksToReplace.Remove(original);
             AddState(LogicEvaluator.GetStateName(newItem));
             Debug.Log($"Replaced check {original.Check.Name} with {newItem.Name}");
+        }
+
+        private void SetCheckMapping(RandoCheck original, RandoCheck newItem)
+        {
+            _checkMapping.Add(original, newItem);
+            // Duplicate a subset of train shop checks onto the Abandoned Wastes pre-train shop.
+            if (original.IsShopItem && original.SceneId == SpecialScenes.Train)
+            {
+                var outsideLocation = _topology.Scenes[SpecialScenes.AbandonedWastesStation].Nodes.OfType<RandoCheck>()
+                    .Where(c => c.IsShopItem && c.Type == original.Type && c.CheckId == original.CheckId)
+                    .FirstOrDefault();
+                if (outsideLocation != null)
+                {
+                    _checkMapping.Add(outsideLocation, newItem);
+                    Debug.Log($"Replaced duplicate check {outsideLocation.Name} with {newItem.Name}");
+                }
+            }
         }
 
         private bool TryConsumeStartingChipSlot(string color)
@@ -325,7 +342,7 @@ namespace Haiku.Rando.Logic
                 candidates.Remove(original);
 
                 Debug.Log($"Remaining checks, replaced {original.Check} with {match}");
-                _checkMapping.Add(original.Check, match);
+                SetCheckMapping(original.Check, match);
                 _checksToReplace.Remove(original);
             }
         }
@@ -383,7 +400,7 @@ namespace Haiku.Rando.Logic
                                 Debug.Log($"Found check {check} at depth {depth} from edge {edge.Edge}; will replace from pool");
                                 _checksToReplace.Add(new InLogicCheck(check, depth));
                             }
-                            else
+                            else if (!IsAbandonedWastesShopItem(check))
                             {
                                 Debug.Log($"Found check {check} at depth {depth} from edge {edge.Edge}; leaving as vanilla");
                                 AddState(LogicEvaluator.GetStateName(check));
@@ -467,7 +484,10 @@ namespace Haiku.Rando.Logic
             if (Settings.Contains(Pool.Lore)) AddToPool(CheckType.Lore);
             if (Settings.Contains(Pool.MapMarkers)) AddToPool(CheckType.MapMarker);
 
-            //Starting pool contains all the checks we're going to replace eventually
+            // Starting pool contains all the checks we're going to replace eventually.
+            // The checks in the Abandoned Wastes shop are all duplicates of those in the train, and become inaccessible once
+            // the train is unlocked.
+            _pool.RemoveAll(IsAbandonedWastesShopItem);
             _startingPool.AddRange(_pool);
 
             //We remove a few checks from the source pool based on special starting conditions
@@ -486,6 +506,8 @@ namespace Haiku.Rando.Logic
                 _pool.RemoveAll(c => c.Type == CheckType.MapDisruptor);
             }
         }
+
+        private static bool IsAbandonedWastesShopItem(RandoCheck c) => c.IsShopItem && c.SceneId == SpecialScenes.AbandonedWastesStation;
 
         private void AddToPool(CheckType checkType)
         {
