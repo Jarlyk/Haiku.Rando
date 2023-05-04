@@ -1427,11 +1427,15 @@ Right->Checks: Blink
 // Transitions: Elevator (165-29), Right (165-155), Down (165-18), Left0 (151-165hidden), Left1 (151-165)
 // Checks:
 Scene 165
-*->Down: false
-Left1->Elevator: LIGHT
-Right->Elevator: LIGHT
-*->Left0: Ball+Light+DoubleJump
-Left0->*: Ball+Light
+$Bottom {Left1, Right}
+*<->Down: false
+Elevator->Bottom: Light
+Elevator->Left0: Ball + Light + DoubleJump
+Left0->Bottom: Ball + Light
+Left0->Elevator: Ball + LIGHT
+Bottom->Bottom: Light
+Bottom->Left0: Ball + Light + DoubleJump
+Bottom->Elevator: LIGHT
 
 // Scene 166
 // Transitions: 24-166 (24-166)
