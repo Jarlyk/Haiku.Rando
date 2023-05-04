@@ -1,3 +1,11 @@
+# 1.1.1 (4 May 2023)
+
+Bug fixes:
+- The limited subset of shop item in Abandoned Wastes (which in vanilla are duplicates of four train shop items)
+  is no longer treated as independent locations; instead these locations always offer the same items as their counterparts in the train.
+  This prevents items from being irretrieavably lost once the Clock is repaired.
+- Logic no longer allows going up from Sunken Wastes through the elevator without Light under any circumstances
+
 # 1.1 (29 April 2023)
 
 New features:
