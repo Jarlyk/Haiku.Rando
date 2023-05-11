@@ -319,7 +319,12 @@ namespace Haiku.Rando.Checks
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            if (check.Type != CheckType.Lore)
+            if (check.Type == CheckType.Lore)
+            {
+                var uidef = UIDef.Of(check);
+                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name);
+            }
+            else
             {
                 ShowCheckPopup(check);
             }
