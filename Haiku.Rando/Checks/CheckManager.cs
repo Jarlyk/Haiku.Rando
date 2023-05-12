@@ -29,15 +29,6 @@ namespace Haiku.Rando.Checks
         private Action<LogLevel, string> Log = (_, _) => {};
         private Func<SaveData> GetCurrentSaveData;
 
-        // ShinyLocation *
-        // CarBatteryLocation *
-        // SealantShopLocation
-        // BeehiveLocation
-        // QuaternLocation *
-        // ShopLocation
-        // MotherLocation
-        // RustyLocation
-
         internal void InitHooks(Action<LogLevel, string> logger, Func<SaveData> getSaveData)
         {
             Log = logger;
