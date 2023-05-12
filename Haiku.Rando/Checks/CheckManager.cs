@@ -265,6 +265,7 @@ namespace Haiku.Rando.Checks
                 case CheckType.Lore:
                     ShowLoreTabletText(check.CheckId);
                     GetCurrentSaveData().CollectedLore.Add(check.CheckId);
+                    hasWorldObject = false;
                     break;
                 case CheckType.Lever:
                     //TODO
@@ -315,6 +316,7 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.MapMarker:
                     GiveMapMarker((RustyType)check.CheckId);
+                    hasWorldObject = false;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
