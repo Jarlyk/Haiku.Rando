@@ -1,3 +1,9 @@
+# 1.1.2 (13 May 2023)
+
+Bug fixes:
+- Lore items now appear in the recent items list like everything else
+- Picking up lore, map marker, or Nothing checks will no longer make a certain Rusted Key item disappear
+
 # 1.1.1 (4 May 2023)
 
 Bug fixes:
