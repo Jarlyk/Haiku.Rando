@@ -304,6 +304,7 @@ namespace Haiku.Rando.Checks
                     {
                         Log(LogLevel.Error, $"picked up excess filler check {check.CheckId}; this should never happen");
                     }
+                    hasWorldObject = false;
                     break;
                 case CheckType.MapMarker:
                     GiveMapMarker((RustyType)check.CheckId);
