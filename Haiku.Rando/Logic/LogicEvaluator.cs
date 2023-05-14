@@ -196,6 +196,8 @@ namespace Haiku.Rando.Logic
                     return "Clock";
                 case CheckType.MapMarker:
                     return $"Marker[{check.CheckId}]";
+                case CheckType.MoneyPile:
+                    return $"MoneyPile[{check.CheckId}]";
                 default:
                     throw new ArgumentOutOfRangeException();
             }

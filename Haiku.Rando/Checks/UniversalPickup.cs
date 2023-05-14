@@ -205,6 +205,13 @@ namespace Haiku.Rando.Checks
             Replace(obj, replacement, false);
         }
 
+        internal static void ReplaceMoneyPile(RandoCheck orig, RandoCheck replacement)
+        {
+            var obj = SceneUtils.FindObjectsOfType<SmallMoneyPile>().FirstOrDefault(
+                p => p.pileID == orig.CheckId)?.gameObject;
+            Replace(obj, replacement, true);
+        }
+
         private static void Attach(GameObject obj, RandoCheck replacement, bool midAir)
         {
             var universalPickup = obj.AddComponent<UniversalPickup>();

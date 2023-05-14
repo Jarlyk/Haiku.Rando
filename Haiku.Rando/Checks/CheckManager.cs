@@ -87,6 +87,7 @@ namespace Haiku.Rando.Checks
             CheckType.WaterRes => SealantShopItemReplacer.ReplaceWater,
             CheckType.TrainStation => UniversalPickup.ReplaceTrainStation,
             CheckType.MapMarker => r => RustyItemReplacer.ReplaceCheck((RustyType)orig.CheckId, r),
+            CheckType.MoneyPile => r => UniversalPickup.ReplaceMoneyPile(orig, r),
             _ => throw new ArgumentOutOfRangeException($"invalid check type {orig.Type}")
         };
 
@@ -145,6 +146,7 @@ namespace Haiku.Rando.Checks
             CheckType.PartsMonument => false,
             CheckType.Filler => check.CheckId >= CheckRandomizer.MaxFillerChecks || GetCurrentSaveData().CollectedFillers.Contains(check.CheckId),
             CheckType.MapMarker => HasMapMarker((RustyType)check.CheckId),
+            CheckType.MoneyPile => GameManager.instance.moneyPiles[check.CheckId].collected,
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -310,6 +312,10 @@ namespace Haiku.Rando.Checks
                     GiveMapMarker((RustyType)check.CheckId);
                     hasWorldObject = false;
                     break;
+                case CheckType.MoneyPile:
+                    InventoryManager.instance.AddSpareParts(check.SaveId);
+                    hasWorldObject = false;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -359,16 +365,23 @@ namespace Haiku.Rando.Checks
         {
             var uidef = UIDef.Of(check);
             CameraBehavior.instance.ShowLeftCornerUI(uidef.Sprite, uidef.Name, "", PickupTextDuration);
-            if (check.Type == CheckType.PowerCell)
+            switch (check.Type)
             {
-                var collectedCount = GameManager.instance.powerCells.Count(p => p.collected);
-                var annotatedName = $"{CameraBehavior.instance.leftCornerTitleText.text} ({collectedCount})";
-                CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
-                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName);
-            }
-            else
-            {
-                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name);
+                case CheckType.PowerCell:
+                    var collectedCount = GameManager.instance.powerCells.Count(p => p.collected);
+                    var annotatedName = $"{CameraBehavior.instance.leftCornerTitleText.text} ({collectedCount})";
+                    CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
+                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName);
+                    break;
+                case CheckType.MoneyPile:
+                    var value = check.SaveId;
+                    annotatedName = $"{value} {CameraBehavior.instance.leftCornerTitleText.text}";
+                    CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
+                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName);
+                    break;
+                default:
+                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name);
+                    break;
             }
         }
 

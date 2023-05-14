@@ -27,7 +27,8 @@ namespace Haiku.Rando
         PowerCells,
         Coolant,
         Sealants,
-        Lore
+        Lore,
+        ScrapShrines
     }
 
     public enum StartingItemSet

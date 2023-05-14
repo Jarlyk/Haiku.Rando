@@ -483,6 +483,7 @@ namespace Haiku.Rando.Logic
             if (Settings.Contains(Pool.Sealants)) AddToPool(CheckType.WaterRes);
             if (Settings.Contains(Pool.Lore)) AddToPool(CheckType.Lore);
             if (Settings.Contains(Pool.MapMarkers)) AddToPool(CheckType.MapMarker);
+            if (Settings.Contains(Pool.ScrapShrines)) AddToPool(CheckType.MoneyPile);
 
             // Starting pool contains all the checks we're going to replace eventually.
             // The checks in the Abandoned Wastes shop are all duplicates of those in the train, and become inaccessible once
