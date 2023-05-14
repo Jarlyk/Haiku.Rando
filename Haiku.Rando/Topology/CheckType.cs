@@ -24,6 +24,7 @@ namespace Haiku.Rando.Topology
         TrainStation,
         Clock,
         Filler,
-        MapMarker
+        MapMarker,
+        MoneyPile
     }
 }

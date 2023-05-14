@@ -503,6 +503,16 @@ namespace Haiku.Rando.Topology
                 checks.Add(check);
             }
 
+            foreach (var pile in SceneUtils.FindObjectsOfType<SmallMoneyPile>())
+            {
+                if (!IsCorruptModeOnly(pile.gameObject))
+                {
+                    var check = new RandoCheck(CheckType.MoneyPile, sceneId, pile.transform.position, pile.pileID) { SaveId = MoneyPileValue(pile) };
+                    check.Alias = "MoneyPile";
+                    checks.Add(check);
+                }
+            }
+
             var powerCells = SceneUtils.FindObjectsOfType<PowerCell>();
             for (var i = 0; i < powerCells.Length; i++)
             {
@@ -637,7 +647,12 @@ namespace Haiku.Rando.Topology
             return checks;
         }
 
-        private bool IsCorruptModeOnly(GameObject gameObj)
+        // Each hit on a money pile spawns two random coins, except for the last, which spawns four.
+        // For valuation purposes, we suppose that all rolls yield the most valuable option possible.
+        private static int MoneyPileValue(SmallMoneyPile p) =>
+            2 * (p.health + 1) * p.currencies.Select(m => m.GetComponent<Money>().value).Max();
+
+        private static bool IsCorruptModeOnly(GameObject gameObj)
         {
             var corruptEnable = gameObj.GetComponent<EnableIfCorruptMode>();
             return corruptEnable && corruptEnable.setActive;
