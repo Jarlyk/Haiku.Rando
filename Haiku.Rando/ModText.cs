@@ -11,7 +11,6 @@ namespace Haiku.Rando
         public static string _TRAIN_MARKER_DESCRIPTION => "_TRAIN_MARKER_DESCRIPTION";
         public static string _VENDOR_MARKER_DESCRIPTION => "_VENDOR_MARKER_DESCRIPTION";
         public static string _POWER_CELL_MARKER_DESCRIPTION => "_POWER_CELL_MARKER_DESCRIPTION";
-        public static string _MONEY_PILE_DESCRIPTION => "_MONEY_PILE_DESCRIPTION";
 
         private static void Load(On.LocalizationSystem.orig_Init orig)
         {
@@ -25,7 +24,6 @@ namespace Haiku.Rando
             LocalizationSystem.localizedEN[_TRAIN_MARKER_DESCRIPTION] = "Shows the locations of train stations on the map.";
             LocalizationSystem.localizedEN[_VENDOR_MARKER_DESCRIPTION] = "Shows the locations of various characters on the map.";
             LocalizationSystem.localizedEN[_POWER_CELL_MARKER_DESCRIPTION] = "Shows the locations of power cells on the map.";
-            LocalizationSystem.localizedEN[_MONEY_PILE_DESCRIPTION] = "A small voucher redeemable for various goods in Arcadian stores.";
         }
 
         internal static void Hook()

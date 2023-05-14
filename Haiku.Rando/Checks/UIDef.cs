@@ -140,8 +140,8 @@ namespace Haiku.Rando.Checks
             CheckType.MoneyPile => new()
             {
                 Sprite = GameManager.instance.chip[15].image,
-                Name = "_SPARE_PARTS",
-                Description = ModText._MONEY_PILE_DESCRIPTION
+                Name = "_SPARE_PARTS_TITLE",
+                Description = "_SPARE_PARTS_DESCRIPTION"
             },
             _ => throw new ArgumentOutOfRangeException($"UIDef not defined for check type {check.Type}")
         };
