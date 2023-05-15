@@ -20,15 +20,18 @@
 Scene 10 // Starting area
 
 *->Right0: Ball + Bomb
+*->MoneyPile0: Ball + Bomb
 
 Scene 21 // After Magnet repair station
 
 $BottomRight {Right1, Repair}
 BottomRight->Right0: Ball + Bomb
 *->Disruptor: Ball + Bomb
+*->MoneyPile*: Ball + Bomb
 // requires falling into the saws to the left of the repair station
 // in order to aggro the flying enemy
 Right0->Disruptor: Ball + SelfDetonation
+Right0->MoneyPile*: Ball + SelfDetonation
 
 Scene 22
 
@@ -37,6 +40,7 @@ Left->Right: Ball + Bomb
 Scene 23
 
 Left1<->Right1: Ball + Bomb
+*1->MoneyPile*: Ball + Bomb
 
 Scene 24 // Tire Village
 
@@ -47,8 +51,13 @@ Scene 31
 *->Left0: Ball + Bomb
 Left2->Left1: Ball + Bomb
 Left2->MapMarker: Ball + Bomb
+Left2->MoneyPile3: Ball + Bomb
+Left2->MoneyPile*: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 Left1->MapMarker: Ball + Bomb
+Left1->MoneyPile3: Ball + bomb
+Left1->MoneyPile*: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 Left0->Left1: Ball + Bomb
+Left0->MoneyPile*: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 
 Scene 32 // Hand Room
 
@@ -91,7 +100,9 @@ Scene 46
 $Bottom {Door, Right1}
 
 Left->Right0: Lever + Ball + Bomb
+Left->MoneyPile*: Lever + Ball + Bomb
 Bottom->Right0: Ball + Bomb
+Bottom->MoneyPile*: Ball + Bomb
 
 Scene 47
 Right->Left: Ball + (Bomb | SelfDetonation + Wrench)
@@ -143,9 +154,14 @@ Scene 63 // Left of Bulb Hive
 $Top {Left0, Right0}
 *1->Top: Ball + (Bomb | SelfDetonation + Wrench)
 Right1->Left1: Ball + (Bomb | SelfDetonation + Wrench)
+Right1->MoneyPile: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 64 // Central Core, to the right of Echo door
-*->Right0: Ball + (Bomb | SelfDetonation + Wrench)
+$Top {Right0, MoneyPile}
+*->Top: Ball + (Bomb | SelfDetonation + Wrench)
+
+Scene 65 // Room to upper left of Bulb Drop
+*->MoneyPile0: Ball + (Bomb | SelfDetonation)
 
 Scene 66 // Central Core tall room near Quatern
 // aggroing the lamps makes the version using Self-Detonation a lot faster
@@ -174,10 +190,12 @@ Left->Right: Ball + Bomb
 
 Scene 68 // Electrified gauntlet after Car Battery
 $Checks {Lever, PowerCell}
-Left*<->Right: Ball + Bomb + (Lever | DoubleJump | Coolant | PowerProcessor | BLJ)
+Left*<->Right: Ball + Bomb
+Left*->MoneyPile*: Ball + Bomb
 Left*->Right: Ball + SelfDetonation + Wrench + Lever
 Left0->Left1: Ball + Bomb
-Left*->Checks: Ball + Bomb + (DoubleJump | Coolant | PowerProcessor | BLJ)
+Left*->Checks: Ball + Bomb
+Right->MoneyPile*: Ball + Bomb
 
 Scene 69 // Car Battery Room
 $CarBattery {Right0, Chip}
@@ -291,7 +309,7 @@ Left->Right1: Lever + Ball + Bomb
 Right1->Right0: Lever + Ball + Bomb
 
 Scene 121
-Left->PowerCell: (Grapple | WaterRes) + Ball + Bomb
+Left->*: Grapple + BALL + Bomb
 
 Scene 122
 Left->Right: Ball + Bomb
@@ -313,6 +331,7 @@ $RightSide {Right, Repair}
 $Transition {Left, Right, Repair}
 Left<->RightSide: Light + Ball + (Bomb | SelfDetonation + Wrench)
 Transition->Lore: Light + Ball + (Bomb | SelfDetonation)
+Transition->MoneyPile*: Light + Ball + (Bomb | SelfDetonation)
 
 Scene 128
 Left<->Right*: Light + Ball + Bomb
@@ -448,7 +467,7 @@ Left->Lever: Ball + Bomb
 Right->Lever: Blink + Ball + Bomb
 
 Scene 173 // Bottom left entrance to Factory
-*1->*: Ball + Bomb
+*->*: Ball + Bomb
 
 Scene 175
 Right->Left: Ball + Bomb + Lever
@@ -458,19 +477,22 @@ Scene 176
 Left1->*: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 177
-Right->Chip: Ball + Bomb
+Right->*: Ball + Bomb
 // likely possible with Self-Detonation too but it's a pain to set up
 
 Scene 183
 Right->Left: Ball + (Bomb | SelfDetonation + Wrench)
 
 Scene 185
-// having the lever or not doesn't change the required number of jumps
 Left0->Left1: Ball + Bomb
+Left0->MoneyPile*: Ball + Bomb
+// having the lever or not doesn't change the required number of jumps to Left0
 Left1->Left0: Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+Left1->MoneyPile*: Ball + Bomb + (Lever | PowerProcessor | Coolant | DoubleJump)
 Left2->*: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 Right->Left0: Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
 Right->Left1: Ball + Bomb
+Right->MoneyPile*: Ball + Bomb
 
 Scene 186
 Left->Right0: Ball + Bomb
@@ -506,6 +528,7 @@ Left->Lore: Light + Ball + Bomb
 
 Scene 207
 $Upper {Chip, Left0}
+Left0->MoneyPile*: Light + Ball + (Bomb | SelfDetonation)
 Left1->Upper: Light + Ball + Bomb + (
     PowerProcessor + 2#Coolant |
     PowerProcessor + DoubleJump |
@@ -544,8 +567,9 @@ Right->Monument: BALL + Bomb + (PowerProcessor + 2#Coolant | Grapple)
 Left->Monument: Ball + Bomb
 
 Scene 229
-Right->Left*: Ball + Bomb
+Right->*: Ball + Bomb
 Left1->Left0: Ball + Bomb
+Left1->MoneyPile*: Ball + Bomb
 
 Scene 230
 Right1->Right0: Ball + Bomb // requires landing under the lasers, can be done without taking damage

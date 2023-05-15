@@ -22,6 +22,7 @@ Left->Right: true
 Scene 68 // Electrified gauntlet after Car Battery
 Right->Left0: Magnet
 Right->Left1: Magnet + Ball
+Right->MoneyPile*: Magnet
 
 Scene 75 // Bomb barriers before Electron
 $Interior {Left1, Item, Lever}
@@ -45,11 +46,18 @@ Right1->Repair: true
 Scene 104
 Right*->Lore: Magnet
 
+Scene 114
+*->MoneyPile*: true
+
 Scene 120
 // Magnet + Grapple is also in base logic but uses a different method
 Left->Right1: Lever + Magnet + (Blink | Grapple) 
 Left->Right0: Magnet + (Blink | Grapple)
 Right1->Right0: Lever + Magnet + (Blink | Grapple)
+
+Scene 127
+$RightSide {Right, Repair}
+RightSide->MoneyPile*: Magnet
 
 Scene 128
 *->Right0: Light + Magnet
@@ -68,7 +76,10 @@ Scene 169 // Electric Key shop entrance
 Right->Left: Magnet
 
 Scene 173 // Bottom left entrance to Factory
-*1->*: true
+$Top {Left0, Right0}
+$Bottom {Left1, Right1}
+Bottom->Bottom: true
+Bottom->Top: true
 
 Scene 183
 Right->Left: true
@@ -79,6 +90,12 @@ Right1->Left: true
 Right1->Right0: true
 Right2->Left: true
 Right2->Right0: true
+
+Scene 207
+Left1->Left0: Light + Magnet
+Left1->Chip: Light + Magnet + Ball
+Left1->MoneyPile*: Light + Magnet
+Left0->MoneyPile*: Light
 
 Scene 214
 Right->Left: FireRes

@@ -2,9 +2,11 @@ Scene 21
 $BottomRight {Right1, Repair}
 BottomRight->Right0: DoubleJump
 BottomRight->Disruptor: DoubleJump
+BottomRight->MoneyPile*: DoubleJump
 // requires falling into the saws to the left of the repair station
 // in order to aggro the flying enemy
-Right0->Disruptor: true 
+Right0->Disruptor: true
+Right0->MoneyPile*: true
 
 Scene 24 // Tire Village
 
@@ -38,6 +40,9 @@ Scene 64 // Central Core, to the right of Echo door
 Left->Right0: true
 Right1->Right0: true
 
+Scene 65 // Room to upper left of Bulb Drop
+*->MoneyPile*: true
+
 Scene 66 // Central Core tall room near Quatern
 
 Left0->Left1: true
@@ -62,6 +67,7 @@ Scene 68 // Electrified gauntlet after Car Battery
 // These require you to lure a flying enemy from the path to the power cell.
 Right->Left0: Magnet
 Right->Left1: Magnet + Ball
+Right->MoneyPile*: Magnet
 
 Scene 81 // Right of Bulb Hive
 
@@ -74,12 +80,12 @@ Right*->Lore: FireRes + Magnet
 
 Scene 114 // Water Ducts, right of the train
 
-*1->*0: true
+*->*: true
 
 Scene 127 // Lower Water Ducts repair station
-
-Right->Left: true
-Repair->Left: true
+$RightSide {Right, Repair}
+RightSide->Left: Light
+RightSide->MoneyPile*: Light + Magnet
 
 Scene 131
 
@@ -130,7 +136,7 @@ Left<->Right: Light
 
 Scene 173 // Bottom left entrance to Factory
 
-*1->*: true
+*->*: true
 
 Scene 183
 
@@ -152,3 +158,6 @@ Right2->Right0: true
 Scene 214
 
 Right->Left: FireRes
+
+Scene 229
+Left0->MoneyPile*: true // may take a few retries for the frog to cooperate
