@@ -65,6 +65,10 @@ Scene 128
 Scene 131
 Right0->Right1: WaterRes | Grapple | Blink
 
+Scene 132
+Right1->MoneyPile3: Blink
+Left1->MoneyPile3: Lever + Blink
+
 Scene 135
 Right->Left*: true
 

@@ -91,11 +91,17 @@ Scene 131
 
 Left->Right1: WaterRes | Grapple | Blink
 
+Scene 132
+Right1->MoneyPile3: Blink
+Left1->MoneyPile3: Lever + Blink
+
 Scene 133
 
 Left->Right0: true // + coyote jump
 Left->Right1: true
+Left->MoneyPile*: true
 Right1->Left: Blink + AmplifyingTransputer
+Right1->MoneyPile*: Blink + AmplifyingTransputer
 
 Scene 135
 

@@ -1169,49 +1169,66 @@ Right1->Right0: WaterRes + (Magnet | DoubleJump)
 
 // Scene 132 : Lune up above (with 'Down' transition that's actually Left) and Ruins vertical room
 // Transitions: Right1 (132-143), Right0 (132-131bottom), Left1 (138-132), Left0 (133-132bottom), Down (133-132top)
-// Checks: Disruptor (MapDisruptor[6]), Lever (Lever[47]), Lore (Lore[10])
+// Checks: Disruptor (MapDisruptor[6]), Lever (Lever[47]), Lore (Lore[10]), MoneyPile2 (MoneyPile[122]), MoneyPile0 (MoneyPile[157]), MoneyPile3 (MoneyPile[104]), MoneyPile1 (MoneyPile[123])
 Scene 132
 $BottomPastLever {Right1, Right0, Left0}
 *<->Down: false
 BottomPastLever->Disruptor: Blink + (Magnet | DoubleJump)
 BottomPastLever->Lore: Blink + (Magnet | DoubleJump)
+BottomPastLever->MoneyPile0: Blink + (Magnet | DoubleJump)
 BottomPastLever->Lever: Lever
 Right1->Right0: Magnet | DoubleJump
 Right1->Left0: DoubleJump
 Right1->Left1: Lever
+Right1->MoneyPile*: Blink + (Magnet | DoubleJump)
 Right0->Left0: DoubleJump
 Right0->Left1: Lever
 Right0->Right1: true
+Right0->MoneyPile1: true
+Right0->MoneyPile2: true
+Right0->MoneyPile3: Blink
 Left1->Right0: Lever + (Magnet | DoubleJump)
 Left1->Left0: DoubleJump+Lever
 Left1->Right1: true
 Left1->Disruptor: Lever + Blink + (Magnet | DoubleJump)
 Left1->Lore: Lever + Blink + (Magnet | DoubleJump)
+Left1->MoneyPile*: Lever + Blink + (Magnet | DoubleJump)
 Left1->Lever: true
 Left0->Left1: Lever
 Left0->Right0: true
 Left0->Right1: true
+Left0->MoneyPile1: true
+Left0->MoneyPile2: true
+Left0->MoneyPile3: Blink
 
 // Scene 133
 // Transitions: Right0 (133-225top), Right1 (133-132bottom), Left (134-133)
-// Checks:
+// Checks: MoneyPile1 (MoneyPile[175]), MoneyPile0 (MoneyPile[174])
 Scene 133
 Right0->Right1: Ball | Blink + AmplifyingTransputer
 Right0->Left: Ball + Magnet | Ball + DoubleJump | Blink + AmplifyingTransputer + (Magnet | DoubleJump)
+Right0->MoneyPile*: Ball + Magnet | Ball + DoubleJump | Blink + AmplifyingTransputer
 *->Right0: Ball + Magnet | Ball + DoubleJump | Blink + AmplifyingTransputer + Magnet
 Left->Right1: Magnet | DoubleJump
-Right1->Left: Magnet | DoubleJump
+Left->MoneyPile*: Magnet | DoubleJump
+Right1->Left: Magnet
+Right1->MoneyPile*: Magnet | DoubleJump + Blink + AmplifyingTransputer
 
 // Scene 134
 // Transitions: Right2 (134-137), Right1 (134-136), Right0 (134-133), Left1 (135-134), Left0 (211-134), Left2 (141-134)
-// Checks: PowerCell (PowerCell[18])
+// Checks: PowerCell (PowerCell[18]), MoneyPile1 (MoneyPile[177]), MoneyPile0 (MoneyPile[176]), MoneyPile5 (MoneyPile[161]), MoneyPile2 (MoneyPile[158]), MoneyPile4 (MoneyPile[160]), MoneyPile3 (MoneyPile[159])
 Scene 134
+$LowerPiles {MoneyPile2, MoneyPile3, MoneyPile4, MoneyPile5}
+$UpperPiles {MoneyPile0, MoneyPile1}
+$UpperTransitions {Left0, Left1, Right0, Right1}
 Left2->Right2: Blink
 Left2->Right1: Blink+Magnet
 Left2->Right0: Blink+Magnet
 Left2->Left1: Blink+Magnet
 Left2->Left0: Blink+Magnet
 Left2->PowerCell: Blink+Magnet
+Left2->*: Blink + DoubleJump
+Left2->LowerPiles: Blink + Magnet
 *->Left2: Blink
 Right2->*: DoubleJump
 Right2->Left1: Magnet
@@ -1219,10 +1236,11 @@ Right2->Left0: Magnet
 Right2->Right1: Magnet
 Right2->Right0: Magnet
 Right2->PowerCell: Magnet + (Blink | Grapple) // also possible with a thorn stand
-Left0->PowerCell: Blink | DoubleJump | Grapple
-Left1->PowerCell: Blink | DoubleJump | Grapple
-Right0->PowerCell: Blink | DoubleJump | Grapple
-Right1->PowerCell: Blink | DoubleJump | Grapple
+Right2->LowerPiles: Magnet // also DoubleJump implied by Right2->* clause
+UpperTransitions->PowerCell: Blink | DoubleJump | Grapple
+UpperTransitions->LowerPiles: true
+UpperTransitions->UpperPiles: Grapple | Magnet + Blink
+!Left2->UpperPiles: Magnet + DoubleJump
 
 // Scene 135
 // Transitions: Right (135-134), Left0 (147-135), Left1 (140-135)
@@ -1305,12 +1323,14 @@ Right->Train: Clock+TrainStation
 
 // Scene 147
 // Transitions: Right1 (147-135), Right0 (147-156), Left (153-147)
-// Checks:
+// Checks: MoneyPile2 (MoneyPile[78]), MoneyPile0 (MoneyPile[76]), MoneyPile4 (MoneyPile[75]), MoneyPile1 (MoneyPile[77]), MoneyPile3 (MoneyPile[74])
 Scene 147
 Left->Right0: Magnet+DoubleJump
 Right1->Right0: Magnet+Blink+DoubleJump
 Right1->Left: Blink
 *->Right1: Blink
+!Right1->MoneyPile*: Magnet | DoubleJump
+Right1->MoneyPile*: Blink + (Magnet | DoubleJump)
 
 // Scene 151
 // Transitions: Right0 (151-165hidden), Right1 (151-165), Left1 (152-151), Left0 (162-151)

@@ -351,24 +351,31 @@ Scene 131
 
 Scene 132 // Lune up above / Ruins vertical room
 $BottomPastLever {Right1, Right0, Left0}
-$Alcove {Lore, Disruptor}
+$Alcove {Lore, Disruptor, MoneyPile0, MoneyPile3}
+$OuterPiles {MoneyPile1, MoneyPile2}
 BottomPastLever->Alcove: Blink + Ball + Bomb
 Right1->Right0: Ball + Bomb
 Right1->Left0: Ball + Bomb
+Right1->OuterPiles: Ball + Bomb
 Right0->Left0: Ball + Bomb
 Left1->Right0: Lever + Ball + Bomb
 Left1->Left0: Lever + Ball + Bomb
 Left1->Alcove: Lever + Blink + Ball + Bomb
+Left1->OuterPiles: Lever + Ball + Bomb
 
 Scene 133
+$Transition {Left, Right0, Right1}
 *->*: Ball + Bomb
-Left->*: Ball + SelfDetonation + Wrench
-Right1->*: Ball + SelfDetonation + Wrench + Blink + AmplifyingTransputer
+Left->Transition: Ball + SelfDetonation + Wrench
+Left->MoneyPile*: Ball + SelfDetonation
+Right1->Transition: Ball + SelfDetonation + Wrench + Blink + AmplifyingTransputer
+Right1->MoneyPile*: Ball + SelfDetonation + Blink + AmplifyingTransputer
 
 Scene 134
 Left2->Right1: Blink + Ball + Bomb
 Left2->Right0: Blink + Ball + Bomb
 Left2->Left*: Blink + Ball + Bomb
+Left2->MoneyPile*: Blink + Ball + Bomb
 Left2->PowerCell: Blink + Ball + Bomb
 Left1->PowerCell: Ball + Bomb
 Left0->PowerCell: Ball + Bomb
@@ -376,6 +383,7 @@ Right2->Left1: Ball + Bomb
 Right2->Left0: Ball + Bomb
 Right2->Right*: Ball + Bomb
 Right*->PowerCell: Ball + Bomb
+!Left2->MoneyPile*: Ball + Bomb
 
 Scene 135
 Right->Left*: Ball + (Bomb | SelfDetonation + Wrench)
@@ -406,7 +414,9 @@ Left->PowerCell: Ball + Bomb // you may have to fall in the spikes afterwards, o
 
 Scene 147
 Right1->Right0: Ball + (Bomb | SelfDetonation + Wrench) + Blink
+Right1->MoneyPile*: Ball + (Bomb | SelfDetonation) + Blink
 Left->Right0: Ball + (Bomb | SelfDetonation + Wrench)
+!Right1->MoneyPile*: Ball + (Bomb | SelfDetonation)
 
 Scene 152 // Amplifying Transputer room
 Left2->Right0: Light + Ball + Bomb
