@@ -31,9 +31,12 @@ Right->Disruptor: Magnet | DoubleJump | BombJumps + HeatDrive + Ball + Bomb
 Scene 109 // Incinerator Top
 *->Left1: true
 Left0<->Right: true
+Left0->MoneyPile: true
+Right->MoneyPile: true
 
 Scene 106
 Right->Left1: Ball | HeatDrive + (Blink | Grapple)
+Right->MoneyPile*: Ball // required to make the pistons go down faster
 
 Scene 110 // Dark bridge over fire
 Right->Left: Light + Ball + GyroAccelerator | HeatDrive + (Blink | Grapple)

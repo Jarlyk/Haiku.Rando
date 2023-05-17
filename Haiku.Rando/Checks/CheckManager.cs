@@ -314,6 +314,7 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.MoneyPile:
                     InventoryManager.instance.AddSpareParts(check.SaveId);
+                    GameManager.instance.moneyPiles[check.CheckId].collected = true;
                     hasWorldObject = false;
                     break;
                 default:

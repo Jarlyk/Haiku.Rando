@@ -142,7 +142,7 @@ Scene 18
 // Transitions: Right (19-18), Left (20-19)
 // Checks:
 Scene 19
-//No obstacles
+Left->Right: false // boss door is closed from the other side
 
 // Scene 20
 // Transitions: Right (20-19), Left1 (17-20), Left0 (21-20)
@@ -882,12 +882,16 @@ Scene 97
 // Transitions: Right (98-91), Left (88-98)
 // Checks: Lever (Lever[56]), PowerCell (PowerCell[16]), MoneyPile4 (MoneyPile[178]), MoneyPile6 (MoneyPile[184]), MoneyPile0 (MoneyPile[179]), MoneyPile2 (MoneyPile[180]), MoneyPile5 (MoneyPile[183]), MoneyPile1 (MoneyPile[182]), MoneyPile3 (MoneyPile[181])
 Scene 98
+$LeftPiles {MoneyPile0, MoneyPile2}
+$RightPiles {MoneyPile3, MoneyPile4, MoneyPile5, MoneyPile6}
 *->Right: false
 Left->PowerCell: Lever
 Left->Lever: Lever
 Left->MoneyPile1: Lever + (Magnet | DoubleJump)
+Left->RightPiles: Lever
 Right->Left: Lever
 Right->MoneyPile1: Magnet | DoubleJump
+Right->LeftPiles: Lever
 
 // Scene 100 : Hidden tunnel toward Factory right side
 // Transitions: Right (100-192), Left (90-100)
@@ -897,11 +901,14 @@ Left->Right: Magnet
 
 // Scene 101
 // Transitions: Right0 (101-108), Right1 (101-102), Left (18-101)
-// Checks: Chip (Chip[1])
+// Checks: Chip (Chip[1]), MoneyPile2 (MoneyPile[71]), MoneyPile1 (MoneyPile[73]), MoneyPile0 (MoneyPile[72])
 Scene 101
 *->Chip: FireRes+Ball
 *->Left: FireRes+Magnet
 *->Right0: FireRes + (Magnet | DoubleJump)
+Right0->MoneyPile*: FireRes
+Left->MoneyPile*: FireRes + (Magnet | DoubleJump)
+Right1->MoneyPile*: FireRes + (Magnet | DoubleJump)
 
 // Scene 102
 // Transitions: Right1 (102-103), Right0 (102-107), Left (101-102)
@@ -929,14 +936,17 @@ Repair->Lore: FireRes + Magnet
 
 // Scene 104 : Fire Wheels Incinerator Room
 // Transitions: Right1 (104-106), Right0 (104-103)
-// Checks: PowerCell (PowerCell[4]), Lore (Lore[7])
+// Checks: PowerCell (PowerCell[4]), Lore (Lore[7]), MoneyPile3 (MoneyPile[81]), MoneyPile2 (MoneyPile[85]), MoneyPile5 (MoneyPile[82]), MoneyPile6 (MoneyPile[79]), MoneyPile0 (MoneyPile[84]), MoneyPile4 (MoneyPile[80]), MoneyPile1 (MoneyPile[83]), PowerCell (PowerCell[4])
 Scene 104
+$LeftWellPiles {MoneyPile4, MoneyPile5, MoneyPile6}
+$LoreArea {Lore, MoneyPile0, MoneyPile1, MoneyPile2}
 *->Right0: FireRes+Magnet
 Right0->*: FireRes + (Magnet | DoubleJump)
 Right1->PowerCell: FireRes + Magnet + DoubleJump | FireRes + HeatDrive + (Blink | Grapple)
-Right*->Lore: FireRes + Magnet + (DoubleJump | Blink | Grapple | Ball)
-// ball-jump may belong in another layer?
-// also Power Processor + Bomb can get there in 3 bombs
+Right*->LoreArea: FireRes + Magnet + (
+    DoubleJump | HeatDrive + Blink | HeatDrive + Grapple | Ball)
+Right1->LeftWellPiles: FireRes
+Right1->MoneyPile3: FireRes + Magnet
 
 // Scene 105
 // Transitions: Left (103-105)
@@ -968,10 +978,12 @@ Left->Right: FireRes
 
 // Scene 109 : Incinerator Top
 // Transitions: Right (109-228), Left1 (108-109), Left0 (26-109)
-// Checks:
+// Checks: MoneyPile (MoneyPile[41])
 Scene 109
 Left0->Right: FireRes
+Left0->MoneyPile: FireRes
 Right->Left0: FireRes
+Right->MoneyPile: FireRes
 *->Left1: FireRes
 Left1->*: FireRes + (Magnet | DoubleJump)
 
@@ -1334,47 +1346,52 @@ Right1->MoneyPile*: Blink + (Magnet | DoubleJump)
 
 // Scene 151
 // Transitions: Right0 (151-165hidden), Right1 (151-165), Left1 (152-151), Left0 (162-151)
-// Checks:
+// Checks: MoneyPile0 (MoneyPile[124]), MoneyPile1 (MoneyPile[126]), MoneyPile2 (MoneyPile[125])
 Scene 151
 Right0->Left0: Ball+Light
+Right0->!Left0: false
 Left0->Right0: Ball+Light
+Left0->!Right0: false
 Right1->Right0: false
 Right1->Left0: false
 Left1->Right0: false
 Left1->Left0: false
 Right1->Left1: Ball+Light
+Right1->MoneyPile*: Ball + Light
 Left1->Right1: Light
+Left1->MoneyPile*: Ball + Light
 
 // Scene 152: Amplifying Transputer room
 // Transitions: Right1 (152-153), Right0 (152-151), Left1 (161-152bottom), Left0 (161-152top), Left2 (160-152)
-// Checks: Chip (Chip[20]), Lore (Lore[4])
+// Checks: Chip (Chip[20]), Lore (Lore[4]), MoneyPile5 (MoneyPile[49]), MoneyPile2 (MoneyPile[52]), MoneyPile4 (MoneyPile[51]), MoneyPile1 (MoneyPile[53]), MoneyPile3 (MoneyPile[55]), MoneyPile0 (MoneyPile[54])
 Scene 152
+$TopRightChecks {Lore, MoneyPile0, MoneyPile1, MoneyPile2, MoneyPile3, MoneyPile4, MoneyPile5}
 Left0->Left1: Ball+Light
 Left0->Right0: Ball+Light
 Left0->Left2: Ball+Light
 Left0->Right1: Ball+Light
 Left0->Chip: Ball + Light + (Blink | Grapple)
-Left0->Lore: Light
+Left0->TopRightChecks: Light
 Left1->Left2: Ball+Light
 Left1->Right0: Ball+Light
 Left1->Left1: Ball+Light
 Left1->Left0: Ball+Light
 Left1->Chip: Ball + Light + (Blink | Grapple)
-Left1->Lore: Ball + Light
+Left1->TopRightChecks: Ball + Light
 Right0->Left1: Ball+Light
 Right0->Left0: Ball+Light
 Right0->Left2: Ball+Light
 Right0->Right1: Ball+Light
 Right0->Chip: Ball + Light + (Blink | Grapple)
-Right0->Lore: Ball + Light
+Right0->TopRightChecks: Ball + Light
 Left2->Chip: Light + (Blink | Grapple)
-Left2->Lore: Light + Ball + (Magnet | DoubleJump)
+Left2->TopRightChecks: Light + Ball + (Magnet | DoubleJump)
 Left2->Left0: Light + Ball + (Magnet | DoubleJump)
 Left2->Left1: Light + Ball + (Magnet | DoubleJump)
 Left2->Right0: Light + Ball + (Magnet | DoubleJump)
 Left2->Right1: Light
 Right1->Chip: Light + (Blink | Grapple) + (DoubleJump | Magnet)
-Right1->Lore: Light + Ball + (Magnet | DoubleJump)
+Right1->TopRightChecks: Light + Ball + (Magnet | DoubleJump)
 Right1->Left0: Light + Ball + (Magnet | DoubleJump)
 Right1->Left1: Light + Ball + (Magnet | DoubleJump)
 Right1->Left2: Light + (Magnet | DoubleJump)
@@ -1393,13 +1410,15 @@ BottomArea<->BottomArea: Light
 
 // Scene 154
 // Transitions: Right (154-155), Left0 (146-154), Left1 (153-154)
-// Checks:
+// Checks: MoneyPile2 (MoneyPile[151]), MoneyPile0 (MoneyPile[149]), MoneyPile1 (MoneyPile[150]), MoneyPile3 (MoneyPile[152]), MoneyPile7 (MoneyPile[154]), MoneyPile5 (MoneyPile[156]), MoneyPile6 (MoneyPile[153]), MoneyPile4 (MoneyPile[155])
 Scene 154
 Left0->*: Light
 Left1->Left0: Light + (Magnet | DoubleJump)
 Left1->Right: Light
+Left1->MoneyPile*: Light
 Right->Left0: Light + (Magnet | DoubleJump)
 Right->Left1: Light
+Right->MoneyPile*: Light
 
 // Scene 155
 // Transitions: Right (155-156), Left0 (165-155), Left1 (154-155)
@@ -1454,11 +1473,12 @@ Left1->Right: Magnet | DoubleJump | Blink
 
 // Scene 160
 // Transitions: Right1 (160-159), Right0 (160-152)
-// Checks: Item (Item[0]), Lever (Lever[38])
+// Checks: Item (Item[0]), Lever (Lever[38]), MoneyPile3 (MoneyPile[138]), MoneyPile2 (MoneyPile[139]), MoneyPile1 (MoneyPile[140]), MoneyPile0 (MoneyPile[137])
 Scene 160
 Right1->*: Blink + Light + (Magnet | DoubleJump)
 Right0->Right1: Blink+Light
 Right0->Item: Light + (Blink | Grapple) + (Magnet | DoubleJump)
+Right0->MoneyPile*: Light
 Right0->Lever: Light + Lever | Light + (Blink | Grapple) + (Magnet | DoubleJump)
 
 // Scene 161
@@ -1500,16 +1520,19 @@ Right->Checks: Blink
 
 // Scene 165
 // Transitions: Elevator (165-29), Right (165-155), Down (165-18), Left0 (151-165hidden), Left1 (151-165)
-// Checks:
+// Checks: MoneyPile1 (MoneyPile[142]), MoneyPile0 (MoneyPile[141])
 Scene 165
 $Bottom {Left1, Right}
 *<->Down: false
 Elevator->Bottom: Light
-Elevator->Left0: Ball + Light + DoubleJump
+Elevator->Left0: Ball + Light + Magnet + DoubleJump
+Elevator->MoneyPile*: Ball + Light + Magnet + DoubleJump
 Left0->Bottom: Ball + Light
+Left0->MoneyPile*: Ball + Light
 Left0->Elevator: Ball + LIGHT
 Bottom->Bottom: Light
-Bottom->Left0: Ball + Light + DoubleJump
+Bottom->Left0: Ball + Light + Magnet + DoubleJump
+Bottom->MoneyPile*: Ball + Light + Magnet + DoubleJump
 Bottom->Elevator: LIGHT
 
 // Scene 166

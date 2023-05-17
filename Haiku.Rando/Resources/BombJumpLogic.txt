@@ -268,6 +268,8 @@ Left->Right: Ball + Bomb
 Scene 101
 *->Left: FireRes + HeatDrive + Ball + Bomb
 *->Right0: FireRes + HeatDrive + Ball + Bomb
+Right1->MoneyPile*: FireRes + HeatDrive + Ball + Bomb
+Left->MoneyPile*: FireRes + HeatDrive + Ball + Bomb
 
 Scene 103
 $Bottom {Left1, Repair}
@@ -275,9 +277,11 @@ $Top {Left0, Lore, Right}
 Bottom->Top: FireRes + HeatDrive + Ball + Bomb
 
 Scene 104 // Fire Wheels Incinerator Room
+$LoreArea {Lore, MoneyPile0, MoneyPile1, MoneyPile2}
 Right0<->*: FireRes + HeatDrive + Ball + Bomb
 Right1->PowerCell: FireRes + HeatDrive + Ball + Bomb
-Right*->Lore: FireRes + HeatDrive + Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
+Right1->MoneyPile3: FireRes + HeatDrive + Ball + Bomb
+Right*->LoreArea: FireRes + HeatDrive + Ball + Bomb + (PowerProcessor | Coolant | DoubleJump)
 
 Scene 108
 *->Disruptor: FireRes + HeatDrive + Ball + Bomb
@@ -419,12 +423,13 @@ Left->Right0: Ball + (Bomb | SelfDetonation + Wrench)
 !Right1->MoneyPile*: Ball + (Bomb | SelfDetonation)
 
 Scene 152 // Amplifying Transputer room
+$TopRightChecks {Lore, MoneyPile0, MoneyPile1, MoneyPile2, MoneyPile3, MoneyPile4, MoneyPile5}
 Left2->Right0: Light + Ball + Bomb
 Left2->Left0: Light + Ball + Bomb
 Left2->Left1: Light + Ball + Bomb
-Left2->Lore: Light + Ball + Bomb
+Left2->TopRightChecks: Light + Ball + Bomb
 Right1->Chip: Light + (Blink | Grapple) + Ball + Bomb
-Right1->Lore: Light + Ball + Bomb
+Right1->TopRightChecks: Light + Ball + Bomb
 Right1->Left*: Light + Ball + Bomb
 Right1->Right0: Light + Ball + Bomb
 
@@ -475,6 +480,11 @@ Scene 163
 Left->Right: Blink + Ball + Bomb
 Left->Lever: Ball + Bomb
 Right->Lever: Blink + Ball + Bomb
+
+Scene 165
+$Bottom {Left1, Right, Elevator}
+$Hidden {Left0, MoneyPile0, MoneyPile1}
+Bottom->Hidden: Light + Ball + Bomb + (PowerProcessor | 3#Coolant | Coolant + DoubleJump)
 
 Scene 173 // Bottom left entrance to Factory
 *->*: Ball + Bomb
