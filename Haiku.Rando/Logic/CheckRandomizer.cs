@@ -483,7 +483,19 @@ namespace Haiku.Rando.Logic
             if (Settings.Contains(Pool.Sealants)) AddToPool(CheckType.WaterRes);
             if (Settings.Contains(Pool.Lore)) AddToPool(CheckType.Lore);
             if (Settings.Contains(Pool.MapMarkers)) AddToPool(CheckType.MapMarker);
-            if (Settings.Contains(Pool.ScrapShrines)) AddToPool(CheckType.MoneyPile);
+            if (Settings.Contains(Pool.ScrapShrines))
+            {
+                var piles = ConsolidateMoneyPiles();
+                _pool.AddRange(piles);
+                // Make all piles not in the consolidated set disappear.
+                foreach (var c in _topology.Checks)
+                {
+                    if (c.Type == CheckType.MoneyPile && !piles.Contains(c))
+                    {
+                        _checkMapping[c] = new RandoCheck(CheckType.Filler, 0, new(0, 0), 999999);
+                    }
+                }
+            };
 
             // Starting pool contains all the checks we're going to replace eventually.
             // The checks in the Abandoned Wastes shop are all duplicates of those in the train, and become inaccessible once
@@ -513,6 +525,60 @@ namespace Haiku.Rando.Logic
         private void AddToPool(CheckType checkType)
         {
             _pool.AddRange(_topology.Checks.Where(c => c.Type == checkType));
+        }
+
+        private List<RandoCheck> ConsolidateMoneyPiles()
+        {
+            var rooms = _topology.Checks.Where(c => c.Type == CheckType.MoneyPile).GroupBy(c => c.SceneId);
+            var selectedPiles = new List<RandoCheck>();
+            foreach (var pileSet in rooms)
+            {
+                List<List<RandoCheck>> bags, oldBags;
+                bags = new();
+                foreach (var p in pileSet)
+                {
+                    bags.Add(new() { p });
+                }
+                do
+                {
+                    oldBags = bags;
+                    foreach (var b1 in oldBags)
+                    {
+                        foreach (var b2 in oldBags)
+                        {
+                            if (b1 != b2 && AreBagsAdjacent(b1, b2))
+                            {
+                                b1.AddRange(b2);
+                                b2.Clear();
+                            }
+                        }
+                    }
+                    bags = oldBags.Where(b => b.Count > 0).ToList();
+                }
+                while (bags.Count < oldBags.Count);
+                foreach (var bag in bags)
+                {
+                    bag[0].SaveId = bag.Select(p => p.SaveId).Sum();
+                    selectedPiles.Add(bag[0]);
+                }
+            }
+            
+            return selectedPiles;
+        }
+
+        private static bool AreBagsAdjacent(List<RandoCheck> b1, List<RandoCheck> b2)
+        {
+            foreach (var p1 in b1)
+            {
+                foreach (var p2 in b2)
+                {
+                    if ((p1.Position - p2.Position).sqrMagnitude < 4)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private void AddState(string state)
