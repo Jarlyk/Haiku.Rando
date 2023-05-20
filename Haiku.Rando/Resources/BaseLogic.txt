@@ -588,13 +588,14 @@ Right2->Right3: true
 
 // Scene 67
 // Transitions: Right (67-68), Left (66-67), Train (67-Train)
-// Checks: TrainStation (TrainStation[6])
+// Checks: TrainStation (TrainStation[6]), MoneyPile (MoneyPile[185])
 Scene 67
 *->Train: TrainStation+Clock
 Train->Left: true
 Train->Right: Ball + (Magnet | DoubleJump)
 Left->Right: Ball + (Magnet | DoubleJump)
 Right->Left: Ball
+Right->MoneyPile: Ball
 
 // Scene 68 : Electrified gauntlet after Car Battery
 // Transitions: Right (68-86), Left0 (67-68), Left1 (69-68)
