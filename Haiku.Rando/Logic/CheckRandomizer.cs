@@ -572,7 +572,7 @@ namespace Haiku.Rando.Logic
             {
                 foreach (var p2 in b2)
                 {
-                    if ((p1.Position - p2.Position).sqrMagnitude < 4)
+                    if ((p1.Position - p2.Position).sqrMagnitude < 36)
                     {
                         return true;
                     }
