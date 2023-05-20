@@ -503,15 +503,21 @@ namespace Haiku.Rando.Topology
                 checks.Add(check);
             }
 
-            foreach (var pile in SceneUtils.FindObjectsOfType<SmallMoneyPile>())
+            // The Steam Town scrap piles all have a pileID of 0, making them indistinguishable
+            // from each other. This is likely a vanilla bug.
+            if (sceneId != SpecialScenes.SteamTown)
             {
-                if (!IsCorruptModeOnly(pile.gameObject))
+                foreach (var pile in SceneUtils.FindObjectsOfType<SmallMoneyPile>())
                 {
-                    var check = new RandoCheck(CheckType.MoneyPile, sceneId, pile.transform.position, pile.pileID) { SaveId = MoneyPileValue(pile) };
-                    check.Alias = "MoneyPile";
-                    checks.Add(check);
+                    if (!IsCorruptModeOnly(pile.gameObject))
+                    {
+                        var check = new RandoCheck(CheckType.MoneyPile, sceneId, pile.transform.position, pile.pileID) { SaveId = MoneyPileValue(pile) };
+                        check.Alias = "MoneyPile";
+                        checks.Add(check);
+                    }
                 }
             }
+            
 
             var powerCells = SceneUtils.FindObjectsOfType<PowerCell>();
             for (var i = 0; i < powerCells.Length; i++)
