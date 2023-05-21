@@ -21,6 +21,7 @@ namespace Haiku.Rando.Logic
         public static string PowerCell = "PowerCell";
 
         internal static string PowerProcessor = "Chip[3]";
+        internal static string BulbRelation = "Chip[11]";
         internal static string HeatDrive = "Chip[25]";
         internal static string AmplifyingTransputer = "Chip[20]";
         internal static string GyroAccelerator = "Chip[1]";

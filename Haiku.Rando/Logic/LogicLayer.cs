@@ -43,7 +43,6 @@ namespace Haiku.Rando.Logic
                 {"AmplifyingTransputer", singleName(LogicStateNames.AmplifyingTransputer)},
                 {"GyroAccelerator", singleName(LogicStateNames.GyroAccelerator)},
                 {"LIGHT", singleName(LogicStateNames.Light)},
-                {"Light", singleName(enabledSkips(Skip.DarkRooms) ? "true" : LogicStateNames.Light)},
                 {"BALL", singleName(LogicStateNames.Ball)},
                 {"BLJ", singleName(enabledSkips(Skip.BLJ) ? "true" : "false")},
                 {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? "true" : "false")},
@@ -62,6 +61,20 @@ namespace Haiku.Rando.Logic
             else
             {
                 macros["SelfDetonation"] = singleName("false");
+            }
+
+            if (enabledSkips(Skip.DarkRooms))
+            {
+                macros[LogicStateNames.Light] = singleName("true");
+            }
+            else if (enabledSkips(Skip.SkillChips))
+            {
+                macros[LogicStateNames.Light] = new()
+                {
+                    new(TokenType.Name, LogicStateNames.Light, -1),
+                    new(TokenType.Name, LogicStateNames.BulbRelation, -1),
+                    new(TokenType.Or, "|", -1)
+                };
             }
 
             return tokens == null ? null : ParseLogic(topology, macros, tokens.GetEnumerator());
