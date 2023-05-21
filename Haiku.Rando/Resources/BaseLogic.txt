@@ -1468,7 +1468,7 @@ Right->Left: Light + (Blink | Magnet | DoubleJump)
 // Transitions: Right (159-153), Left0 (160-159), Left1 (163-159)
 // Checks: Coolant (Coolant[0])
 Scene 159
-*->Coolant: Magnet + (Blink | DoubleJump)
+*->Coolant: Blink + (Magnet | DoubleJump)
 *->Left0: Magnet | DoubleJump
 Left1->Right: Magnet | DoubleJump | Blink
 
@@ -1525,14 +1525,13 @@ Right->Checks: Blink
 Scene 165
 $Bottom {Left1, Right}
 *<->Down: false
+*->Left0: false // that transition only unlocks after entering the room from it
 Elevator->Bottom: Light
-Elevator->Left0: Ball + Light + Magnet + DoubleJump
 Elevator->MoneyPile*: Ball + Light + Magnet + DoubleJump
 Left0->Bottom: Ball + Light
 Left0->MoneyPile*: Ball + Light
 Left0->Elevator: Ball + LIGHT
 Bottom->Bottom: Light
-Bottom->Left0: Ball + Light + Magnet + DoubleJump
 Bottom->MoneyPile*: Ball + Light + Magnet + DoubleJump
 Bottom->Elevator: LIGHT
 
