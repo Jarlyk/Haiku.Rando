@@ -57,7 +57,6 @@ namespace Haiku.Rando.Logic
         private readonly List<RandoCheck> _visitedChecks = new List<RandoCheck>();
         private readonly List<InLogicCheck> _checksToReplace = new();
         private readonly Xoroshiro128Plus _random;
-        private int _numFillersAdded;
 
         public CheckRandomizerBuilder(RandoTopology topology, LogicEvaluator logic, GenerationSettings gs, Seed128 seed, int? startScene)
         {
@@ -152,11 +151,6 @@ namespace Haiku.Rando.Logic
                 {
                     PlaceChecksToSatisfyCondition(condition);
                 }
-            }
-
-            if (_pool.Count > 0)
-            {
-                throw new RandomizationException($"{_pool.Count} checks left unplaced");
             }
         }
 
@@ -310,40 +304,44 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private RandoCheck GetArbitraryCheck()
-        {
-            if (_pool.Count > 0)
-            {
-                var last = _pool.Count - 1;
-                var item = _pool[last];
-                _pool.RemoveAt(last);
-                return item;
-            }
-            var filler = new RandoCheck(CheckType.Filler, 0, new(0, 0), _numFillersAdded);
-            if (_numFillersAdded >= CheckRandomizer.MaxFillerChecks)
-            {
-                Debug.Log("Out of filler checks. Will leave placement blank.");
-            }
-            _numFillersAdded++;
-            return filler;
-        }
-
         private void PlaceAllRemainingChecks()
         {
-            //Find and weigh remaining check locations
-            var candidates = WeightedSet<InLogicCheck>.Build(_checksToReplace, WeighCheckPlacement);
-
-            //Choose from weighted distribution and replace each check in turn
-            while (candidates.Count > 0)
+            if (_pool.Count > _checksToReplace.Count)
             {
-                // TODO: Might want to add duplicate check support
-                var match = GetArbitraryCheck();
-                var original = candidates.PickItem(_random.NextDouble());
-                candidates.Remove(original);
+                throw new RandomizationException($"insufficient locations to place all remaining checks; {_checksToReplace.Count} existing, {_pool.Count} needed");
+            }
 
-                Debug.Log($"Remaining checks, replaced {original.Check} with {match}");
-                SetCheckMapping(original.Check, match);
-                _checksToReplace.Remove(original);
+            UniformShuffle(_checksToReplace);
+
+            for (var i = 0; i < _pool.Count; i++)
+            {
+                Debug.Log($"Remaining checks, replaced {_checksToReplace[i]} with {_pool[i]}");
+                SetCheckMapping(_checksToReplace[i].Check, _pool[i]);
+            }
+
+            for (var i = _pool.Count; i < _checksToReplace.Count; i++)
+            {
+                var filler = new RandoCheck(CheckType.Filler, 0, new(0, 0), i - _pool.Count);
+                if (i - _pool.Count >= CheckRandomizer.MaxFillerChecks)
+                {
+                    Debug.Log("Out of filler checks. Will leave placement blank.");
+                }
+                Debug.Log($"Remaining checks, replaced {_checksToReplace[i]} with {filler}");
+                SetCheckMapping(_checksToReplace[i].Check, filler);
+            }
+
+            _pool.Clear();
+            _checksToReplace.Clear();
+        }
+
+        private void UniformShuffle(List<InLogicCheck> checks)
+        {
+            for (var i = 0; i < checks.Count; i++)
+            {
+                var j = _random.NextRange(i, checks.Count);
+                var c = checks[i];
+                checks[i] = checks[j];
+                checks[j] = c;
             }
         }
 
