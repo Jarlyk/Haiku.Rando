@@ -143,6 +143,12 @@ namespace Haiku.Rando.Checks
                 Name = "_SPARE_PARTS_TITLE",
                 Description = "_SPARE_PARTS_DESCRIPTION"
             },
+            CheckType.Clock => new()
+            {
+                Sprite = null,
+                Name = ModText._CLOCK_TITLE,
+                Description = ModText._CLOCK_DESCRIPTION
+            },
             _ => throw new ArgumentOutOfRangeException($"UIDef not defined for check type {check.Type}")
         };
 

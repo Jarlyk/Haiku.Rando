@@ -28,7 +28,8 @@ namespace Haiku.Rando
         Coolant,
         Sealants,
         Lore,
-        ScrapShrines
+        ScrapShrines,
+        Clock
     }
 
     public enum StartingItemSet

@@ -97,5 +97,8 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>..\lib\Game\UnityEngine.UIModule.dll</HintPath>
     </Reference>
+    <Reference Include="Rewired.Core">
+      <HintPath>..\lib\Game\Rewired_Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

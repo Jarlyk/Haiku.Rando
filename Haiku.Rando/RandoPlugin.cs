@@ -41,6 +41,7 @@ namespace Haiku.Rando
             SealantShopItemReplacer.InitHooks();
             RustyItemReplacer.InitHooks();
             ShopItemReplacer.InitHooks();
+            ClockRepairReplacer.InitHooks();
             CheckManager.Instance.InitHooks(Logger.Log, () => _saveData);
             TransitionManager.InitHooks();
             QoL.InitHooks();

@@ -810,12 +810,14 @@ Right0->Left0: Clock
 // Transitions: Right0 (88-91), Right1 (88-98), Left (87-88), Train (88-Train)
 // Checks: Item (Item[3]), TrainStation (TrainStation[1]), Clock (Clock[0])
 Scene 88
-$Bottom {Left, Right1}
+$Bottom {Left, Right1, Train}
 $RightArea {Right0, Clock}
 *->Train: Clock+TrainStation
 Bottom->Item: DoubleJump | Clock + Magnet
+Bottom->Clock: DoubleJump | Clock + Magnet
 Bottom->RightArea: DoubleJump | Clock + Magnet
 Right0->Item: DoubleJump | Blink | Grapple | Ball | Clock + Magnet
+Right0->Clock: true
 
 // Scene 89
 // Transitions: Right (89-90), Left (87-89)

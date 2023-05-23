@@ -88,6 +88,7 @@ namespace Haiku.Rando.Checks
             CheckType.TrainStation => UniversalPickup.ReplaceTrainStation,
             CheckType.MapMarker => r => RustyItemReplacer.ReplaceCheck((RustyType)orig.CheckId, r),
             CheckType.MoneyPile => r => UniversalPickup.ReplaceMoneyPile(orig, r),
+            CheckType.Clock => ClockRepairReplacer.ReplaceCheck,
             _ => throw new ArgumentOutOfRangeException($"invalid check type {orig.Type}")
         };
 
@@ -295,7 +296,8 @@ namespace Haiku.Rando.Checks
                     hasWorldObject = false;
                     break;
                 case CheckType.Clock:
-                    //This is never randomized, but is important to logic
+                    GameManager.instance.trainUnlocked = true;
+                    hasWorldObject = false;
                     break;
                 case CheckType.Filler:
                     if (check.CheckId < CheckRandomizer.MaxFillerChecks)
