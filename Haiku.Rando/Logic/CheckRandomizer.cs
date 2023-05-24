@@ -15,6 +15,7 @@ namespace Haiku.Rando.Logic
         public RandoTopology Topology { get; internal set; }
         public IReadOnlyDictionary<RandoCheck, RandoCheck> CheckMapping { get; internal set; }
         public int? StartScene { get; internal set; }
+        internal int? StartStation { get; set; }
         public IReadOnlyList<LogicLayer> Logic { get; internal set; }
 
         public static CheckRandomizer TryRandomize(RandoTopology topology, LogicEvaluator logic, GenerationSettings gs, Seed128 seed, int? startScene)
@@ -46,6 +47,7 @@ namespace Haiku.Rando.Logic
         private readonly RandoTopology _topology;
         private readonly LogicEvaluator _logic;
         private readonly int? _startScene;
+        private int? _startStation;
         private readonly Dictionary<RandoCheck, RandoCheck> _checkMapping = new Dictionary<RandoCheck, RandoCheck>();
         private bool _randomized;
 
@@ -88,6 +90,7 @@ namespace Haiku.Rando.Logic
                 Topology = _topology,
                 CheckMapping = _checkMapping,
                 StartScene = _startScene,
+                StartStation = _startStation,
                 Logic = _logic.Layers,
             };
         }
@@ -516,6 +519,15 @@ namespace Haiku.Rando.Logic
             if (Settings.Contains(StartingItemSet.Maps))
             {
                 _pool.RemoveAll(c => c.Type == CheckType.MapDisruptor);
+            }
+            if (Settings.TrainLoverMode)
+            {
+                _pool.RemoveAll(c => c.Type == CheckType.Clock);
+                var stations = GameManager.instance.trainStations;
+                var stationRNG = _random.Clone();
+                _startStation = stationRNG.NextRange(0, stations.Length);
+                AddState($"TrainStation[{_startStation}]");
+                AddState("Clock");
             }
         }
 

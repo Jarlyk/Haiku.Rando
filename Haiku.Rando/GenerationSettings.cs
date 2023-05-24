@@ -4,6 +4,7 @@ namespace Haiku.Rando
     {
         public string Seed;
         public bool RandomStartLocation;
+        public bool TrainLoverMode;
         internal Bitset64 Pools;
         internal Bitset64 StartingItems;
         internal Bitset64 Skips;

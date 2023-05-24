@@ -206,6 +206,24 @@ namespace Haiku.Rando
                         GameManager.instance.disruptors[j].destroyed = true;
                     }
                 }
+
+                if (gs.TrainLoverMode && _randomizer.StartStation is int startStation)
+                {
+                    GameManager.instance.trainUnlocked = true;
+                    GameManager.instance.trainStations[startStation].unlockedStation = true;
+                    GameManager.instance.trainRoom = startStation switch
+                    {
+                        0 => 28,
+                        1 => 88,
+                        2 => 179,
+                        3 => 53,
+                        4 => 209,
+                        5 => 136,
+                        6 => 67,
+                        7 => 146,
+                        _ => throw new ArgumentOutOfRangeException($"unknown room for station {_randomizer.StartStation}")
+                    };
+                }
             }
             else
             {
@@ -243,6 +261,10 @@ namespace Haiku.Rando
 
                 var tmpRandom = new Xoroshiro128Plus(seed.S0, seed.S1);
                 startScene = availScenes[tmpRandom.NextRange(0, availScenes.Count)];
+            }
+            else if (gs.TrainLoverMode)
+            {
+                startScene = 9;
             }
             else
             {

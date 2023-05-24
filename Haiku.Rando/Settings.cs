@@ -14,6 +14,7 @@ namespace Haiku.Rando
         public static ConfigEntry<RandomizationLevel> RandoLevel { get; private set; }
         public static ConfigEntry<string> Seed { get; private set; }
         public static ConfigEntry<bool> RandomStartLocation { get; private set; }
+        public static ConfigEntry<bool> TrainLoverMode { get; private set; }
 
         private static List<ConfigEntry<bool>> StartingItemToggles;
         private static List<ConfigEntry<bool>> PoolToggles;
@@ -45,6 +46,7 @@ namespace Haiku.Rando
             RandoLevel = config.Bind(General, "Level", RandomizationLevel.Pickups);
             Seed = config.Bind(General, "Seed", "", "Seed (blank for auto)");
             RandomStartLocation = config.Bind(General, "Random Start Location", false);
+            TrainLoverMode = config.Bind(General, "Train Lover Mode", false);
 
             StartingItemToggles = EnumValues<StartingItemSet>()
                 .Select(c => config.Bind("Starting Items", SplitCamelCase(c.ToString()), false))
@@ -86,6 +88,7 @@ namespace Haiku.Rando
                 Seed = Seed.Value,
                 Level = RandoLevel.Value,
                 RandomStartLocation = RandomStartLocation.Value,
+                TrainLoverMode = TrainLoverMode.Value,
                 StartingItems = BitsetFromToggles(StartingItemToggles),
                 Pools = BitsetFromToggles(PoolToggles),
                 Skips = BitsetFromToggles(SkipToggles)
