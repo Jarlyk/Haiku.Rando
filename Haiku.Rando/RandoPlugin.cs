@@ -88,7 +88,7 @@ namespace Haiku.Rando
                 Logger.LogWarning("StickToTrain patch failed; Train Lover Mode will allow respawn point to be set anywhere");
                 return;
             }
-            c.EmitDelegate((Func<int, int>)(room => _randomizer.Settings.TrainLoverMode ? 9 : room));
+            c.EmitDelegate((Func<int, int>)(room => _randomizer.Settings.TrainLoverMode ? SpecialScenes.Train : room));
         }
 
         private void ReloadTopology()
@@ -276,7 +276,7 @@ namespace Haiku.Rando
             }
             else if (gs.TrainLoverMode)
             {
-                startScene = 9;
+                startScene = SpecialScenes.Train;
             }
             else
             {
