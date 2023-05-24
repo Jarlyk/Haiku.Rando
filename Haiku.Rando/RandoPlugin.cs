@@ -56,6 +56,7 @@ namespace Haiku.Rando
             // and coolant when warping
             On.ReplenishHealth.CheckChipsWhenGameStarts += NoCheckChips;
             On.ReplenishHealth.CheckKeysWhenGameStarts += NoCheckKeys;
+            IL.ReplenishHealth.Update += StickToTrain;
             new MMDetour.Hook(typeof(ReplenishHealth).GetMethod("CheckCoolantWhenGameStarts", BindingFlags.Instance | BindingFlags.NonPublic), NoCheckCoolant);
 
             //TODO: Add bosses as logic conditions
@@ -77,6 +78,17 @@ namespace Haiku.Rando
         private void NoCheckKeys(On.ReplenishHealth.orig_CheckKeysWhenGameStarts orig, ReplenishHealth self)
         {
             if (_randomizer == null) orig(self);
+        }
+
+        private void StickToTrain(ILContext il)
+        {
+            var c = new ILCursor(il);
+            if (!c.TryGotoNext(i => i.MatchStfld(typeof(GameManager), "savePointSceneIndex")))
+            {
+                Logger.LogWarning("StickToTrain patch failed; Train Lover Mode will allow respawn point to be set anywhere");
+                return;
+            }
+            c.EmitDelegate((Func<int, int>)(room => _randomizer.Settings.TrainLoverMode ? 9 : room));
         }
 
         private void ReloadTopology()
