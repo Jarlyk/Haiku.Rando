@@ -49,7 +49,8 @@ namespace Haiku.Rando.Topology
                 foreach (var outTrans in scene.Nodes.OfType<TransitionNode>())
                 {
                     var outSceneId = outTrans.SceneId1 == currentSceneId ? outTrans.SceneId2 : outTrans.SceneId1;
-                    if (!_visitedScenes.ContainsKey(outSceneId) && !pendingScenes.Contains(outSceneId))
+                    // Ignore Old Arcadia rooms for now.
+                    if (outSceneId <= 234 && !_visitedScenes.ContainsKey(outSceneId) && !pendingScenes.Contains(outSceneId))
                     {
                         pendingScenes.Push(outSceneId);
                     }
@@ -209,8 +210,7 @@ namespace Haiku.Rando.Topology
         private string BuildAlias(TransitionNode node, int origin, int destination)
         {
             //If there is no path back, we assume this is a one-way downward transition
-            var sDestination = _visitedScenes[destination];
-            if (sDestination.Edges.All(e => e.Destination != node) && sDestination.Nodes.OfType<TransitionNode>().Count() > 1)
+            if (_visitedScenes.TryGetValue(destination, out var sDestination) && sDestination.Edges.All(e => e.Destination != node) && sDestination.Nodes.OfType<TransitionNode>().Count() > 1)
             {
                 return "Down";
             }

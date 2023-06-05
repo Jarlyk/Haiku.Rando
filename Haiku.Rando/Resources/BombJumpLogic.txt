@@ -601,3 +601,6 @@ Right->Disruptor: FireRes + Ball + Bomb + (
     Grapple + Coolant |
     Grapple + DoubleJump)
 Right->Lever: FireRes + Ball + Bomb + Grapple + (PowerProcessor | Coolant | DoubleJump)
+
+Scene 234 // Entrance to Old Arcadia
+Right->MoneyPile: Ball + Bomb

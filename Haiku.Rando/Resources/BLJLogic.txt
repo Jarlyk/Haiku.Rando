@@ -103,3 +103,6 @@ Left0->MoneyPile*: Light
 
 Scene 214
 Right->Left: FireRes
+
+Scene 234 // Entrance to Old Arcadia
+Right->MoneyPile: true

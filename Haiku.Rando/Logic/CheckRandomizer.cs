@@ -524,8 +524,15 @@ namespace Haiku.Rando.Logic
             {
                 _pool.RemoveAll(c => c.Type == CheckType.Clock);
                 var stations = GameManager.instance.trainStations;
-                var stationRNG = _random.Clone();
-                _startStation = stationRNG.NextRange(0, stations.Length);
+                if (Settings.RandomStartLocation)
+                {
+                    var stationRNG = _random.Clone();
+                    _startStation = stationRNG.NextRange(0, stations.Length);
+                }
+                else
+                {
+                    _startStation = 0;
+                }
                 AddState($"TrainStation[{_startStation}]");
                 AddState("Clock");
             }

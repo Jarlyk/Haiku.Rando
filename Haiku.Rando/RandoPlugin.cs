@@ -258,7 +258,11 @@ namespace Haiku.Rando
 
             var seed = new Seed128(gs.Seed);
 
-            if (gs.RandomStartLocation)
+            if (gs.TrainLoverMode)
+            {
+                startScene = SpecialScenes.Train;
+            }
+            else if (gs.RandomStartLocation)
             {
                 //Pick from any save station except Incinerator, Furnace and Train
                 var availScenes = new List<int>
@@ -273,10 +277,6 @@ namespace Haiku.Rando
 
                 var tmpRandom = new Xoroshiro128Plus(seed.S0, seed.S1);
                 startScene = availScenes[tmpRandom.NextRange(0, availScenes.Count)];
-            }
-            else if (gs.TrainLoverMode)
-            {
-                startScene = SpecialScenes.Train;
             }
             else
             {

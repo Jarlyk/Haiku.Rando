@@ -803,7 +803,8 @@ $Bottom {Left1, Repair, Right1}
 Right1->LeftCorner: Magnet | DoubleJump
 Bottom->Right0: Magnet
 Bottom->Left0: Clock + (Magnet | DoubleJump)
-Left0->*: Clock
+Left0->!Right0: Clock
+Left0->Right0: Clock + Magnet
 Right0->Left0: Clock
 
 // Scene 88 : Pinions Train Station
@@ -2052,3 +2053,9 @@ Right->Lever: FireRes + (Lever | Grapple + Magnet + DoubleJump)
 // Transitions: Right (233-199)
 // Checks: Chip (Chip[3])
 Scene 233
+
+Scene 234 // Entrance to Old Arcadia
+// Transitions: Right (234-35), Left (257-234)
+// Checks: MoneyPile (MoneyPile[187])
+*->Left: false // until we actually support Old Arcadia
+Right->MoneyPile: Blink | Magnet | DoubleJump
