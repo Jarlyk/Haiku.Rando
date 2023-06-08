@@ -56,8 +56,11 @@ namespace Haiku.Rando
             // and coolant when warping
             On.ReplenishHealth.CheckChipsWhenGameStarts += NoCheckChips;
             On.ReplenishHealth.CheckKeysWhenGameStarts += NoCheckKeys;
-            IL.ReplenishHealth.Update += StickToTrain;
             new MMDetour.Hook(typeof(ReplenishHealth).GetMethod("CheckCoolantWhenGameStarts", BindingFlags.Instance | BindingFlags.NonPublic), NoCheckCoolant);
+
+            // for Train Lover Mode
+            IL.ReplenishHealth.Update += StickToTrain;
+            On.TalkToTrainConductor.AssignFirstItemToEvents += EnableAltFirstStation;
 
             //TODO: Add bosses as logic conditions
             //This impacts some transitions
@@ -88,7 +91,19 @@ namespace Haiku.Rando
                 Logger.LogWarning("StickToTrain patch failed; Train Lover Mode will allow respawn point to be set anywhere");
                 return;
             }
-            c.EmitDelegate((Func<int, int>)(room => _randomizer.Settings.TrainLoverMode ? SpecialScenes.Train : room));
+            c.EmitDelegate((Func<int, int>)(room => _randomizer != null && _randomizer.Settings.TrainLoverMode ? SpecialScenes.Train : room));
+        }
+
+        private IEnumerator EnableAltFirstStation(On.TalkToTrainConductor.orig_AssignFirstItemToEvents orig, TalkToTrainConductor self)
+        {
+            if (_randomizer != null && _randomizer.Settings.TrainLoverMode)
+            {
+                self.firstLocation = SceneUtils.FindObjectsOfType<FastTravelButton>()
+                    .Where(b => GameManager.instance.trainStations[b.fastTravelSaveID].unlockedStation)
+                    .Select(b => b.gameObject)
+                    .FirstOrDefault();
+            }
+            return orig(self);
         }
 
         private void ReloadTopology()

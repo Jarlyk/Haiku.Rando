@@ -7,10 +7,12 @@ namespace Haiku.Rando
         private const string presenceKey = "hasRandoData";
         private const string seedKey = "randoSeed";
         private const string randoStartKey = "randoRandomStart";
+        private const string trainLoverModeKey = "randoTrainLover";
         private const string poolsKey = "randoPools";
         private const string startingItemsKey = "randoStartingItems";
         private const string skipsKey = "randoSkips";
         private const string levelKey = "randoLevel";
+        
         private const string collectedLoreKey = "randoCollectedLoreTablets";
         private const string collectedFillerKey = "randoCollectedFillers";
 
@@ -31,6 +33,7 @@ namespace Haiku.Rando
             {
                 Seed = saveFile.Load<string>(seedKey, ""),
                 RandomStartLocation = saveFile.Load<bool>(randoStartKey, false),
+                TrainLoverMode = saveFile.Load<bool>(trainLoverModeKey, false),
                 Pools = new(saveFile.Load<ulong>(poolsKey, 0UL)),
                 StartingItems = new(saveFile.Load<ulong>(startingItemsKey, 0UL)),
                 Skips = new(saveFile.Load<ulong>(skipsKey, 0UL)),
@@ -45,6 +48,7 @@ namespace Haiku.Rando
             saveFile.Save(presenceKey, true);
             saveFile.Save(seedKey, Settings.Seed);
             saveFile.Save(randoStartKey, Settings.RandomStartLocation);
+            saveFile.Save(trainLoverModeKey, Settings.TrainLoverMode);
             saveFile.Save(poolsKey, Settings.Pools.Bits);
             saveFile.Save(startingItemsKey, Settings.StartingItems.Bits);
             saveFile.Save(skipsKey, Settings.Skips.Bits);

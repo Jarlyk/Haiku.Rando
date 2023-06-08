@@ -103,6 +103,10 @@ Left->MoneyPile*: true
 Right1->Left: Blink + AmplifyingTransputer
 Right1->MoneyPile*: Blink + AmplifyingTransputer
 
+Scene 134
+$UpperPiles {MoneyPile0, MoneyPile1}
+*->UpperPiles: DoubleJump
+
 Scene 135
 
 Right->Left0: true
