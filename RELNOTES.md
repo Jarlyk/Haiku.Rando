@@ -1,3 +1,22 @@
+# 2.0 (9 June 2023)
+
+New features:
+
+- Works with the new Obscure Information DLC (patch 1.5.1.2). Older versions of the game are no longer supported.
+  Rooms and items in Old Arcadia are not randomized.
+- Scrap nodes have been added as a new randomizable pool.
+  Adjacent nodes are consolidated into a single check with the combined value of all of the nodes.
+- The Clock repair is randomizable.
+- The new Train Lover Mode starts you in the train with the clock already fixed and one random station unlocked.
+- With Skill Chips on, Bulb Relation will serve as a replacement for Bulblet, with the exception of levers that
+  specifically require Bulblet.
+
+Bug fixes:
+
+- Going through the Magnet boss room left to right is no longer in logic.
+- Fixed false positives in the Sunken Wastes elevator room.
+- "Nothing" items are much less likely to be concentrated near the starting area.
+
 # 1.1.2 (13 May 2023)
 
 Bug fixes:
