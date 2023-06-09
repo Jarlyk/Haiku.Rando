@@ -50,7 +50,7 @@ namespace Haiku.Rando.Topology
                 {
                     var outSceneId = outTrans.SceneId1 == currentSceneId ? outTrans.SceneId2 : outTrans.SceneId1;
                     // Ignore Old Arcadia rooms for now.
-                    if (outSceneId <= 234 && !_visitedScenes.ContainsKey(outSceneId) && !pendingScenes.Contains(outSceneId))
+                    if (outSceneId <= SpecialScenes.LastRoomBeforeOldArcadia && !_visitedScenes.ContainsKey(outSceneId) && !pendingScenes.Contains(outSceneId))
                     {
                         pendingScenes.Push(outSceneId);
                     }
@@ -236,6 +236,10 @@ namespace Haiku.Rando.Topology
             var edgeExits = SceneUtils.FindObjectsOfType<LoadNewLevel>();
             foreach (var exit in edgeExits)
             {
+                if (exit.levelToLoad > SpecialScenes.LastRoomBeforeOldArcadia)
+                {
+                    continue;
+                }
                 bool isRight = exit.transform.localScale.x >= 1f;
                 var trans = GetTransition(BuildPointName(sceneId, exit), TransitionType.RoomEdge, 
                                           isRight ? sceneId : exit.levelToLoad, 
@@ -244,10 +248,10 @@ namespace Haiku.Rando.Topology
                 transitions.Add(trans);
             }
 
-            var doorExits = SceneUtils.FindObjectsOfType<EnterRoomTrigger>().Where(t => !IsCorruptModeOnly(t.gameObject)).ToArray();
-            for (var i = 0; i < doorExits.Length; i++)
+            var doorExits = SceneUtils.FindObjectsOfType<EnterRoomTrigger>()
+                .Where(t => !IsCorruptModeOnly(t.gameObject) && t.levelToLoad <= SpecialScenes.LastRoomBeforeOldArcadia).ToArray();
+            foreach (var exit in doorExits)
             {
-                var exit = doorExits[i];
                 var trans = GetTransition(BuildPointName(sceneId, exit), TransitionType.Door, sceneId, exit.levelToLoad);
                 SetPosition(trans, sceneId, exit.transform.position);
                 var doorAlias = doorExits.Length > 1 ? $"Door{exit.extraInfo}" : "Door";
@@ -279,9 +283,8 @@ namespace Haiku.Rando.Topology
             
             //Create special transition nodes for repair stations
             var repairStations = SceneUtils.FindObjectsOfType<ReplenishHealth>();
-            for (var i = 0; i < repairStations.Length; i++)
+            foreach (var start in repairStations)
             {
-                var start = repairStations[i];
                 var trans = GetTransition($"{sceneId}Repair", TransitionType.RepairStation, sceneId, sceneId);
                 SetPosition(trans, sceneId, start.transform.position);
                 trans.Alias1 = "Repair";

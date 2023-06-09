@@ -18,9 +18,9 @@
 // they're collected.
 
 Scene 10 // Starting area
-
+$WakeChecks {MoneyPile0, Lore}
 *->Right0: Ball + Bomb
-*->MoneyPile0: Ball + Bomb
+*->WakeChecks: Ball + Bomb
 
 Scene 21 // After Magnet repair station
 
@@ -348,7 +348,7 @@ Scene 129
 *->Lever: Ball + Bomb
 
 Scene 130
-Left->Item: Ball + Bomb + PowerProcessor + 3#Coolant
+Left->*: Ball + Bomb + PowerProcessor + 3#Coolant
 
 Scene 131
 *->*: Ball + (Bomb | SelfDetonation + Wrench)

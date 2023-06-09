@@ -37,6 +37,8 @@
 // If this is the main logic file, the assumption is that all edges can be traversed unless restricted here
 // If this is an extension logic file for a skip category, it will only specify the edges that have an alternate traversal logic for the skips
 
+// The Lore[N] numbers in the comments need fixing. Some lore got renumbered with the OI update.
+
 // Scene 5
 // Transitions:
 // Checks:
@@ -58,8 +60,9 @@ Scene 9
 
 // Scene 10 : Starting area; Left0 is drop in from above
 // Transitions: Right1 (10-23bottom), Right0 (10-23top), Left1 (11-10), Left0 (34-10), Repair (10Repair), Wake (10Wake)
-// Checks: Lever (Lever[4]), MoneyPile0 (MoneyPile[10]), MoneyPile2 (MoneyPile[0]), MoneyPile3 (MoneyPile[1]), MoneyPile1 (MoneyPile[2])
+// Checks: Lever (Lever[4]), MoneyPile0 (MoneyPile[10]), MoneyPile2 (MoneyPile[0]), MoneyPile3 (MoneyPile[1]), MoneyPile1 (MoneyPile[2]), Lore (Lore[28])
 Scene 10
+$WakeChecks {MoneyPile0, Lore}
 *->Wake: false
 *->Right0: Magnet
 Wake->Right0: DoubleJump | Blink
@@ -69,13 +72,13 @@ Wake->MoneyPile*: true
 Left1->Lever: Lever
 Left1->Right1: Lever
 Left1->Right0: Magnet + Lever
-Left1->MoneyPile0: Magnet + Lever
+Left1->WakeChecks: Magnet + Lever
 Left1->MoneyPile1: Lever
 Left1->MoneyPile2: Lever
 Left1->MoneyPile3: Lever
 Left0->MoneyPile*: true
 *->Left0: false
-Right0->MoneyPile0: Magnet | DoubleJump
+Right0->WakeChecks: Magnet | DoubleJump
 Right0->MoneyPile1: true
 Right0->MoneyPile2: true
 Right0->MoneyPile3: true
@@ -276,14 +279,16 @@ Scene 34
 Right0->Left: Magnet | DoubleJump
 
 // Scene 35 : Tall room below Bunker
-// Transitions: Right1 (35-34), Right0 (35-42), Left (201-35)
+// Transitions: Right1 (35-34), Right0 (35-42), Left0 (201-35), Left1 (234-35)
 // Checks: Chip (Chip[18])
 Scene 35
-Right1->Right0: Magnet+DoubleJump
-Right1->Chip: Magnet
-Left->Right0: Ball | DoubleJump | Blink | Grapple
-Right0->Left: Transition[201][Left] + (Ball | DoubleJump | Blink | Grapple)
-Right1->Left: Magnet+DoubleJump+Transition[201][Left]
+$Bottom {Left1, Right1}
+*->Bottom: true
+Bottom->Right0: Magnet+DoubleJump
+Bottom->Chip: Magnet
+Left0->Right0: Ball | DoubleJump | Blink | Grapple
+Right0->Left0: Transition[201][Left] + (Ball | DoubleJump | Blink | Grapple)
+Bottom->Left0: Magnet+DoubleJump+Transition[201][Left]
 
 // Scene 36
 // Transitions: Right (36-196), Left (37-36)
@@ -778,8 +783,9 @@ Left->Lore: Blink + Ball
 
 // Scene 84 : Electron fight
 // Transitions: Right (84-75)
-// Checks:
+// Checks: Lore (Lore[25])
 Scene 84
+Right->Lore: true
 
 // Scene 85 : Grapple Pickup
 // Transitions: Left (66-85)
@@ -1168,9 +1174,9 @@ Scene 129
 
 // Scene 130
 // Transitions: Left (129-130)
-// Checks: Item (Item[3])
+// Checks: Item (Item[3]), Lore (Lore[19])
 Scene 130
-Left->Item: WaterRes + Grapple + Magnet | Grapple + DoubleJump
+Left->*: WaterRes + Grapple + Magnet | Grapple + DoubleJump
 
 // Scene 131
 // Transitions: Right0 (131-125), Right1 (131-126), Left (132-131bottom)
@@ -1178,7 +1184,6 @@ Left->Item: WaterRes + Grapple + Magnet | Grapple + DoubleJump
 Scene 131
 *->Right1: (WaterRes | Grapple | Blink) + (Magnet | DoubleJump)
 Left->Right0: DoubleJump
-Left->Right1: Magnet
 Right0->Left: DoubleJump
 Right1->Left: WaterRes | Grapple | Blink
 Right1->Right0: WaterRes + (Magnet | DoubleJump)
@@ -1842,8 +1847,9 @@ Left->*: false
 
 // Scene 201 : Neutron fight
 // Transitions: Right (201-35), Left (60-201)
-// Checks:
+// Checks: Lore (Lore[3])
 Scene 201
+Left->*: true
 
 // Scene 202 : Lower Right Entrance to Bunker
 // Transitions: Left0 (43-202), Left1 (61-202)

@@ -166,7 +166,8 @@ namespace Haiku.Rando.Checks
             new() {"_HUMAN_BREAK_EQUILIBRIUM_1"},
             new() {"_HUMAN_TECHNOFEAT_1"},
             new() {"_HUMAN_DESTRUCTION_1"},
-            new() {"_ELEGY", "_ELEGY_1", "_ELEGY_2", "_ELEGY_3", "_ELEGY_4"},
+            new() {"_BUNKER_SENTIENT_LORE_1", "_BUNKER_SENTIENT_LORE_2", "_BUNKER_SENTIENT_LORE_3"},
+            new() {"_ELEGY", "_ELEGY_ACCOUNT_1_1", "_ELEGY_ACCOUNT_1_2"},
             new() {"_DRILLS_LORE_1", "_DRILLS_LORE_2"},
             new() {"_SECRET_LAB_SMALL_1_1"},
             new() {"_SECRET_LAB_BIG_1"},
@@ -179,15 +180,18 @@ namespace Haiku.Rando.Checks
             new() {"_THE_ARCHIVES_LORE_1", "_THE_ARCHIVES_LORE_2"},
             new() {"_THE_ARCHIVES_TRUTH_LORE_1"},
             new() {"_NATURE_ALWAYS_REVAILS_1", "_NATURE_ALWAYS_REVAILS_2", "_NATURE_ALWAYS_REVAILS_3", "_NATURE_ALWAYS_REVAILS_4"},
-            new() {"_SCUBA_HEAD_HIDDEN_LORE_1", "_SCUBA_HEAD_HIDDEN_LORE_2"},
+            new() {"_SCUBA_HEAD_HIDDEN_LORE_1", "_SCUBA_HEAD_HIDDEN_LORE_2", "_SCUBA_HEAD_HIDDEN_LORE_3"},
             new() {"_SCUBA_HEAD_LORE_1", "_SCUBA_HEAD_LORE_2"},
+            new() {"_ELEGY", "_ELEGY_ACCOUNT_3_1", "_ELEGY_ACCOUNT_3_2"},
             new() {"_WATER_ENERGY_1"},
-            new() {"_FACTORY_SENTIENT_LORE_1", "_FACTORY_SENTIENT_LORE_2"},
+            new() {"_FACTORY_SENTIENT_LORE_1", "_FACTORY_SENTIENT_LORE_2", "_FACTORY_SENTIENT_LORE_3", "_FACTORY_SENTIENT_LORE_4"},
             new() {"_BIG_BROTHER"},
             new() {"_MONEY_SHRINES_EXPLANATION_1", "_MONEY_SHRINES_EXPLANATION_2", "_MONEY_SHRINES_EXPLANATION_3"},
             new() {"_BULB_LORE_1", "_BULB_LORE_2"},
+            new() {"_ELECTRIC_SENTIENT_LORE_1", "_ELECTRIC_SENTIENT_LORE_2", "_ELECTRIC_SENTIENT_LORE_3", "_ELECTRIC_SENTIENT_LORE_4"},
             new() {"_SENTIENT_STATUE_1", "_SENTIENT_STATUE_2"},
-            new() {"_CANDLES_1", "_CANDLES_2"}
+            new() {"_CANDLES_1", "_CANDLES_2"},
+            new() {"_HAIKU_BIRTHPLACE_1"}
         };
 
         private void ShowLoreTabletText(int checkId)

@@ -11,5 +11,6 @@ namespace Haiku.Rando
         public const int GameStart = 10;
         public const int SteamTown = 95;
         public const int Quatern = 170;
+        public const int LastRoomBeforeOldArcadia = 234;
     }
 }
