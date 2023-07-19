@@ -47,6 +47,7 @@ namespace Haiku.Rando
         BombJumps,
         DarkRooms,
         HazardRooms,
-        SkillChips
+        SkillChips,
+        DoubleJumpChains
     }
 }

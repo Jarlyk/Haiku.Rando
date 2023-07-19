@@ -1,0 +1,45 @@
+Scene 10 // starting area
+Repair->Right0: DoubleJump + (Blink | Grapple)
+Right1->Right0: DoubleJump + (Blink | Grapple)
+Left1->Right0: Lever + DoubleJump + (Blink | Grapple)
+
+Scene 21
+$Top {Disruptor, MoneyPile0, MoneyPile1, Right0}
+$BottomRight {Repair, Right1}
+BottomRight->Top: DoubleJump + (Blink | Grapple)
+
+Scene 31
+*->MoneyPile*: DoubleJump + (Blink | Grapple)
+*->Left0: DoubleJump + (Blink | Grapple)
+
+Scene 32
+Left->*: DoubleJump + (Blink | Grapple)
+Right1->*: DoubleJump + (Blink | Grapple)
+
+Scene 35 // Tall room below Bunker
+$Bottom {Left1, Right1}
+$Top {Chip, Right0}
+Bottom->Top: DoubleJump + (Blink | Grapple)
+Bottom->Left0: Transition[201][Left] + DoubleJump + (Blink | Grapple)
+
+Scene 43
+Right->Left*: DoubleJump + (Blink | Grapple)
+
+Scene 45
+Left->PowerCell: DoubleJump + (Blink | Grapple)
+
+Scene 52
+$Bottom {Left1, Right1}
+$Top {Left0, Right0}
+Bottom->Top: DoubleJump + (Blink | Grapple)
+
+Scene 54
+// Blink is required here anyway, so Grapple doesn't matter.
+Right->Left: DoubleJump + Blink
+
+Scene 55
+// Grapple can already cross the gap without chaining.
+Left<->Right: DoubleJump + Blink
+
+Scene 60 // Last bomb barrier before Neutron
+Right1->Right0: Bomb + DoubleJump + (Blink | Grapple)

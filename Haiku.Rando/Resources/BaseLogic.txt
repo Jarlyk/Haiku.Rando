@@ -65,7 +65,7 @@ Scene 10
 $WakeChecks {MoneyPile0, Lore}
 *->Wake: false
 *->Right0: Magnet
-Wake->Right0: DoubleJump | Blink
+Wake->Right0: DoubleJump | Blink | Grapple
 Wake->Right0: Ball + GyroAccelerator
 Wake->MoneyPile*: true
 *->Left1: Lever
@@ -468,8 +468,8 @@ Left->MoneyPile*: Bomb + Blink
 // Transitions: Right (55-54), Left (56-55)
 // Checks:
 Scene 55
-Left->Right: Grapple
-*->*: Grapple + (Magnet | DoubleJump)
+Right->Left: Grapple
+Left->Right: Grapple + (Magnet | DoubleJump)
 
 // Scene 56
 // Transitions: Right1 (56-57), Right0 (56-55)
@@ -2063,5 +2063,5 @@ Scene 233
 Scene 234 // Entrance to Old Arcadia
 // Transitions: Right (234-35), Left (257-234)
 // Checks: MoneyPile (MoneyPile[187])
-*->Left: false // until we actually support Old Arcadia
+// *->Left: transition doesn't exist until we actually support Old Arcadia
 Right->MoneyPile: Blink | Magnet | DoubleJump

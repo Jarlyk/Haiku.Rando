@@ -76,7 +76,7 @@ Right0->Left: Ball + Bomb
 Scene 35 // Tall room below Bunker
 $Up {Right0, Chip}
 Right1->Up: Ball + Bomb + (2#Coolant + PowerProcessor | Magnet + PowerProcessor | Magnet + 3#Coolant)
-Right1->Left: Ball + Bomb + (2#Coolant + PowerProcessor | Magnet + PowerProcessor | Magnet + 3#Coolant) + Transition[201][Left]
+Right1->Left0: Ball + Bomb + (2#Coolant + PowerProcessor | Magnet + PowerProcessor | Magnet + 3#Coolant) + Transition[201][Left]
 
 Scene 38 // Huge room in the middle of Bunker
 
