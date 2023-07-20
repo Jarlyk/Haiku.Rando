@@ -730,7 +730,8 @@ Right->Left: Lever+Ball
 // Transitions: Right (78-63), Left (168-78)
 // Checks:
 Scene 78
-*->*: Magnet
+Left->Right: Magnet | Grapple + DoubleJump
+Right->Left: Magnet | Blink | Grapple + DoubleJump
 
 // Scene 79 : Right of Sealants Room
 // Transitions: Down (79-34), Left1 (77-79), Left0 (81-79)
@@ -1731,11 +1732,13 @@ Right->Lever: Ball+Magnet
 // Transitions: Right0 (186-213), Right1 (186-185), Left (174-186)
 // Checks: Item (Item[3])
 Scene 186
-Left->Right0: Magnet + (Grapple | Blink | DoubleJump) | Grapple + DoubleJump
-*->Right1: Ball + (Magnet | DoubleJump)
-*->Item: Ball + (Magnet | DoubleJump)
+Left->Right0: Magnet + (Grapple | Blink | DoubleJump)
+Left->Item: Ball + Magnet
+*->Right1: Ball + Magnet
 Right1->Left: Ball + Magnet
+Right1->Item: Ball + Magnet
 Right1->Right0: Ball + Magnet + (Grapple | Blink | DoubleJump)
+Right0->Item: Ball + Magnet
 Right0->Left: true
 
 // Scene 187

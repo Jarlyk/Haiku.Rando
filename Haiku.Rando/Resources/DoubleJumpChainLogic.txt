@@ -43,3 +43,71 @@ Left<->Right: DoubleJump + Blink
 
 Scene 60 // Last bomb barrier before Neutron
 Right1->Right0: Bomb + DoubleJump + (Blink | Grapple)
+
+Scene 62 // Mainframe
+$Bottom {Left1, Right1, Door0}
+$Top {Left0, Right0}
+Bottom->Top: DoubleJump + (Blink | Grapple)
+
+Scene 68 // Electrified gauntlet after Car Battery
+Left1->Left0: Ball + DoubleJump + (Blink | Grapple)
+Right->Left0: Ball + DoubleJump + (Blink | Grapple)
+
+Scene 75 // Bomb barriers before Electron
+$Top {Left0, Right}
+Repair->Top: Bomb + DoubleJump + (Blink | Grapple)
+
+Scene 78 // Tricky magnet obstacle course
+// Double jump and grapple don't require any chaining to cross
+Left->Right: DoubleJump + Blink
+
+Scene 87
+!Left0->Right0: Clock + DoubleJump + (Blink | Grapple)
+Left0->Right0: DoubleJump + (Blink | Grapple)
+
+Scene 95 // Steam Town
+*->Chip: DoubleJump + (Blink | Grapple)
+
+Scene 96 // Piston bridge
+// Grapple already crosses the gap by itself
+Left<->Right: DoubleJump + Blink
+
+Scene 100 // Hidden tunnel toward Factory right side
+Left->Right: DoubleJump + (Blink | Grapple)
+
+Scene 175
+// Grapple just lets you go through the saw tunnel
+Right->Left: Lever + DoubleJump + Blink
+Right->Lever: DoubleJump + Blink
+
+Scene 177
+*->MoneyPile*: Ball + DoubleJump + (Blink | Grapple)
+
+Scene 185
+$BuzzsawExit {Left1, Lever}
+Left2->BuzzsawExit: DoubleJump + (Blink | Grapple)
+Left2->Right: DoubleJump + (Blink | Grapple)
+Right->BuzzsawExit: DoubleJump + (Blink | Grapple)
+*->Left0: DoubleJump + (Blink | Ball + Grapple)
+
+Scene 186
+Left->Right0: DoubleJump + (Blink | Grapple)
+Right1->Right0: Ball + DoubleJump + (Blink | Grapple)
+Right1->Left: Ball + DoubleJump + (Blink | Grapple)
+*->Right1: Ball + DoubleJump + (Blink | Grapple)
+*->Item: Ball + DoubleJump + (Blink | Grapple)
+
+Scene 192
+$Up {Left0, PowerCell}
+Left1->Up: DoubleJump + Grapple | DoubleJump + Blink + Coolant
+
+Scene 228 // Grapple gauntlet to left of Bulb Drop
+$Exit {Left, Right}
+$Monument {PowerCell, Lore}
+// Double jump and grapple don't require any chaining to cross
+Exit->Exit: DoubleJump + Blink
+// Blink won't get you through the narrow section in the middle
+Exit->Monument: DoubleJump + Grapple
+
+Scene 230
+Right1->Right0: DoubleJump + (Blink | Grapple)

@@ -152,6 +152,11 @@ Scene 183
 
 Right->Left: true
 
+Scene 186
+
+Right1->Item: Ball + DoubleJump
+Right1->Left: Ball + DoubleJump
+
 Scene 187
 
 // you may have to wait a while for the frogs to line up
