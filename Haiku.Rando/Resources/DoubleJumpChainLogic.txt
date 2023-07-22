@@ -101,6 +101,9 @@ Scene 192
 $Up {Left0, PowerCell}
 Left1->Up: DoubleJump + Grapple | DoubleJump + Blink + Coolant
 
+Scene 198 // Surface Right
+!Right0->PowerCell: WaterRes + DoubleJump + (Blink | Grapple)
+
 Scene 228 // Grapple gauntlet to left of Bulb Drop
 $Exit {Left, Right}
 $Monument {PowerCell, Lore}

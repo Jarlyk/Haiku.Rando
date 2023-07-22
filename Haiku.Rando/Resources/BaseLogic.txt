@@ -1735,8 +1735,10 @@ Scene 186
 Left->Right0: Magnet + (Grapple | Blink | DoubleJump)
 Left->Item: Ball + Magnet
 *->Right1: Ball + Magnet
-Right1->Left: Ball + Magnet
-Right1->Item: Ball + Magnet
+// Reaching the capsule fragment from Right1 can be done with either
+// Magnet or a coyote double jump out of the first ball tunnel in the room.
+Right1->Left: Ball + (Magnet | DoubleJump)
+Right1->Item: Ball + (Magnet | DoubleJump)
 Right1->Right0: Ball + Magnet + (Grapple | Blink | DoubleJump)
 Right0->Item: Ball + Magnet
 Right0->Left: true
