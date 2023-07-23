@@ -1,3 +1,17 @@
+# 2.1 (23 July 2023)
+
+New features:
+
+- A new Double Jump Chain skip category, with logic for movement
+  that uses Blink or Grapple to refresh the double jump in mid-air.
+
+Bug fixes:
+
+- Assorted base logic fixes.
+- The Newtonsoft.JSON DLL is now included in the release zip file;
+  some previous versions had not, and did not work correctly when
+  installed from Scarab as a result.
+
 # 2.0 (9 June 2023)
 
 New features:
