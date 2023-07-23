@@ -75,6 +75,70 @@ Left<->Right: DoubleJump + Blink
 Scene 100 // Hidden tunnel toward Factory right side
 Left->Right: DoubleJump + (Blink | Grapple)
 
+Scene 123
+// If the bomb floor hasn't been broken first, you must make one
+// trip to break it, then fall back down, wait for coolant to refresh,
+// then climb up again.
+// If you don't have water sealant, this will require you to take damage,
+// so we require Wrench so that the trip is guaranteed to be survivable.
+*1->*0: (Wrench | WaterRes) + Bomb + DoubleJump + 3#Coolant + (Blink | Grapple)
+
+Scene 124
+// From left to right, DoubleJump + Grapple already crosses the gap
+// without chaining.
+// From right to left, Grapple alone suffices.
+Left<->Right: DoubleJump + Blink
+
+Scene 130
+Left->*: DoubleJump + (Blink | Grapple)
+
+Scene 135
+*->Chip: DoubleJump + (Blink | Grapple)
+
+Scene 138 // First Tree
+*->Door: DoubleJump + (Blink | Grapple)
+*->Item: DoubleJump + (Blink + Coolant | Grapple)
+Left->Right0: DoubleJump + (Blink | Grapple)
+Right1->Right0: DoubleJump + (Blink | Grapple)
+
+Scene 139 // Entrance to Lost Archives
+*->Left: DoubleJump + (Blink | Grapple)
+
+Scene 140
+$Bottom {Right1, Repair, Lore}
+Right0->Bottom: DoubleJump + Grapple // Blink already suffices by itself
+Bottom->Right0: DoubleJump + (Blink | Grapple)
+
+Scene 143
+Left->PowerCell: DoubleJump + (Blink | Grapple)
+
+Scene 147
+Left->Right0: DoubleJump + (Blink | Grapple)
+// Blink is required anyway to cross a wall, so Grapple is no use.
+Right1->Right0: DoubleJump + Blink
+
+Scene 153
+$TopArea {Left0, Right0}
+$BottomArea {Left1, Right1}
+// Blink is required anyway to cross a wall, so Grapple is no use.
+BottomArea->TopArea: Light + Blink + DoubleJump
+
+Scene 155
+*->Chip: Light + DoubleJump + (Blink | Grapple)
+
+Scene 156
+*->Disruptor: Light + DoubleJump + (Blink | Grapple)
+
+Scene 165
+$Bottom {Left1, Right, Elevator}
+Bottom->MoneyPile*: Light + DoubleJump + (Blink | Grapple)
+
+Scene 207
+// Surprisingly, none of this requires any coolant.
+Left1->Left0: Light + DoubleJump + (Blink | Grapple)
+Left1->Chip: Light + Ball + DoubleJump + (Blink | Grapple)
+Left1->MoneyPile*: Light + DoubleJump + (Blink | Grapple)
+
 Scene 175
 // Grapple just lets you go through the saw tunnel
 Right->Left: Lever + DoubleJump + Blink

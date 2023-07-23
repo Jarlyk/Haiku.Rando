@@ -1004,7 +1004,10 @@ Left1->*: FireRes + (Magnet | DoubleJump)
 Scene 110
 //Heat Drive and Grapple can cross this room
 Right->Left: FireRes + (Light | HeatDrive + Grapple)
-Left->Right: FireRes+HeatDrive+Grapple
+Left->Right: FireRes + HeatDrive + (
+    Grapple |
+    Blink |
+    Ball + DoubleJump) // two ball jumps
 
 // Scene 111
 // Transitions: Right (111-112), Left (69-111)
@@ -1177,7 +1180,7 @@ Scene 129
 // Transitions: Left (129-130)
 // Checks: Item (Item[3]), Lore (Lore[19])
 Scene 130
-Left->*: WaterRes + Grapple + Magnet | Grapple + DoubleJump
+Left->*: Grapple + Magnet + (WaterRes | DoubleJump)
 
 // Scene 131
 // Transitions: Right0 (131-125), Right1 (131-126), Left (132-131bottom)
@@ -1314,7 +1317,7 @@ Repair->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][
 // Checks: Lore (Lore[11]), MapMarker (MapMarker[2])
 Scene 140
 $Bottom {Right1, Repair, Lore}
-Right0->Bottom: Magnet | Blink // or 2-bomb jump
+Right0->Bottom: Magnet | Blink
 Right0->MapMarker: Magnet
 Bottom->Right0: Magnet
 Bottom->MapMarker: Magnet
@@ -1329,6 +1332,9 @@ Scene 141
 // Transitions: Left (132-143)
 // Checks: Chip (Chip[22]), PowerCell (PowerCell[7])
 Scene 143
+// This is what's required to pick up the cell without dunking into
+// the spikes.
+// With a dunk, (DoubleJump | Blink | Grapple) is sufficient.
 Left->PowerCell: Magnet + Grapple | Magnet + Blink + DoubleJump
 
 // Scene 144
