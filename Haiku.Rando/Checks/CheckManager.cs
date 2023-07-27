@@ -80,7 +80,6 @@ namespace Haiku.Rando.Checks
             CheckType.ChipSlot => r => UniversalPickup.ReplaceChipSlot(orig, r),
             CheckType.MapDisruptor => UniversalPickup.ReplaceMapDisruptor,
             CheckType.Lore => r => UniversalPickup.ReplaceLore(orig, r),
-            CheckType.Lever => r => UniversalPickup.ReplaceLever(orig, r),
             CheckType.PowerCell => r => UniversalPickup.ReplacePowerCell(orig, r),
             CheckType.Coolant => r => UniversalPickup.ReplaceCoolant(orig, r),
             CheckType.FireRes => SealantShopItemReplacer.ReplaceFire,
@@ -89,6 +88,7 @@ namespace Haiku.Rando.Checks
             CheckType.MapMarker => r => RustyItemReplacer.ReplaceCheck((RustyType)orig.CheckId, r),
             CheckType.MoneyPile => r => UniversalPickup.ReplaceMoneyPile(orig, r),
             CheckType.Clock => ClockRepairReplacer.ReplaceCheck,
+            CheckType.Lever => r => LeverReplacer.ReplaceCheck(orig, r),
             _ => throw new ArgumentOutOfRangeException($"invalid check type {orig.Type}")
         };
 
@@ -265,9 +265,6 @@ namespace Haiku.Rando.Checks
                     GetCurrentSaveData().CollectedLore.Add(check.CheckId);
                     hasWorldObject = false;
                     break;
-                case CheckType.Lever:
-                    //TODO
-                    break;
                 case CheckType.PartsMonument:
                     //TODO
                     break;
@@ -321,6 +318,10 @@ namespace Haiku.Rando.Checks
                 case CheckType.MoneyPile:
                     InventoryManager.instance.AddSpareParts(check.SaveId);
                     GameManager.instance.moneyPiles[check.CheckId].collected = true;
+                    hasWorldObject = false;
+                    break;
+                case CheckType.Lever:
+                    GameManager.instance.doors[check.CheckId].opened = true;
                     hasWorldObject = false;
                     break;
                 default:

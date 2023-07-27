@@ -498,6 +498,7 @@ namespace Haiku.Rando.Logic
                     }
                 }
             };
+            if (Settings.Contains(Pool.Levers)) AddToPool(CheckType.Lever);
 
             // Starting pool contains all the checks we're going to replace eventually.
             // The checks in the Abandoned Wastes shop are all duplicates of those in the train, and become inaccessible once
