@@ -152,8 +152,8 @@ namespace Haiku.Rando.Checks
             CheckType.Lever => new()
             {
                 Sprite = null,
-                Name = ModText._LEVER_TITLE,
-                Description = ModText._LEVER_DESCRIPTION
+                Name = ModText._LEVER_TITLE(check.CheckId),
+                Description = ModText._LEVER_DESCRIPTION(check.CheckId)
             },
             _ => throw new ArgumentOutOfRangeException($"UIDef not defined for check type {check.Type}")
         };
