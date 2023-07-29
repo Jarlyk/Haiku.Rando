@@ -322,6 +322,14 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.Lever:
                     GameManager.instance.doors[check.CheckId].opened = true;
+                    var vanillaDoor = SceneUtils.FindObjectsOfType<SwitchDoor>()
+                        .Where(s => s.doorID == check.CheckId)
+                        .FirstOrDefault();
+                    if (vanillaDoor != null)
+                    {
+                        // The wait time is the same as in SwitchDoor.OpenDoor.
+                        vanillaDoor.StartCoroutine(vanillaDoor.WaitAndOpenDoor(0.5f));
+                    }
                     hasWorldObject = false;
                     break;
                 default:

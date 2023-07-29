@@ -151,7 +151,7 @@ namespace Haiku.Rando.Checks
             },
             CheckType.Lever => new()
             {
-                Sprite = null,
+                Sprite = leverSprite.Load(),
                 Name = ModText._LEVER_TITLE(check.CheckId),
                 Description = ModText._LEVER_DESCRIPTION(check.CheckId)
             },
@@ -184,6 +184,7 @@ namespace Haiku.Rando.Checks
             }
         }
 
+        private static readonly LazySprite leverSprite = new("Lever.png");
         private static readonly LazySprite loreTabletSprite = new("LoreTablet.png");
         private static readonly LazySprite healthMarkerSprite = new("HealthMapMarker.png");
         private static readonly LazySprite bankMarkerSprite = new("BankMapMarker.png");
