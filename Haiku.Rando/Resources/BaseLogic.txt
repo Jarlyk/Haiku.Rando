@@ -1000,14 +1000,21 @@ Left1->*: FireRes + (Magnet | DoubleJump)
 
 // Scene 110 : Dark bridge over fire
 // Transitions: Right (110-106), Left (158-110)
-// Checks:
+// Checks: Lever (Lever[13])
 Scene 110
 //Heat Drive and Grapple can cross this room
-Right->Left: FireRes + (Light | HeatDrive + Grapple)
-Left->Right: FireRes + HeatDrive + (
-    Grapple |
-    Blink |
-    Ball + DoubleJump) // two ball jumps
+Right->Lever: LIGHT
+Right->Left: FireRes + (Lever | HeatDrive + Grapple)
+Left->Right: FireRes + (
+    Lever |
+    HeatDrive + Grapple |
+    HeatDrive + Blink |
+    HeatDrive + Ball + DoubleJump) // two ball jumps
+Left->Lever: FireRes + LIGHT + (
+    Lever |
+    HeatDrive + Grapple |
+    HeatDrive + Blink |
+    HeatDrive + Ball + DoubleJump) // two ball jumps
 
 // Scene 111
 // Transitions: Right (111-112), Left (69-111)

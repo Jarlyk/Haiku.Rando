@@ -506,6 +506,23 @@ namespace Haiku.Rando.Topology
                 checks.Add(check);
             }
 
+            foreach (var bridge in SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>())
+            {
+                if (!IsCorruptModeOnly(bridge.gameObject))
+                {
+                    var collider = bridge.GetComponent<Collider2D>();
+                    if (!collider)
+                    {
+                        Debug.LogWarning($"Unable to locate switch collider for Door {bridge.doorID}");
+                        continue;
+                    }
+                    var pos = collider.transform.position;
+                    var check = new RandoCheck(CheckType.Lever, sceneId, new Vector2(pos.x, pos.y) + collider.offset, bridge.doorID);
+                    check.Alias = "Lever";
+                    checks.Add(check);
+                }
+            }
+
             // The Steam Town scrap piles all have a pileID of 0, making them indistinguishable
             // from each other. This is likely a vanilla bug.
             if (sceneId != SpecialScenes.SteamTown)

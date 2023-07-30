@@ -330,6 +330,16 @@ namespace Haiku.Rando.Checks
                         // The wait time is the same as in SwitchDoor.OpenDoor.
                         vanillaDoor.StartCoroutine(vanillaDoor.WaitAndOpenDoor(0.5f));
                     }
+                    else
+                    {
+                        var vanillaBridge = SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
+                            .Where(s => s.doorID == check.CheckId)
+                            .FirstOrDefault();
+                        if (vanillaBridge != null)
+                        {
+                            vanillaBridge.StartCoroutine(vanillaBridge.RaiseBridge());
+                        }
+                    }
                     hasWorldObject = false;
                     break;
                 default:
