@@ -322,24 +322,7 @@ namespace Haiku.Rando.Checks
                     break;
                 case CheckType.Lever:
                     GameManager.instance.doors[check.CheckId].opened = true;
-                    var vanillaDoor = SceneUtils.FindObjectsOfType<SwitchDoor>()
-                        .Where(s => s.doorID == check.CheckId)
-                        .FirstOrDefault();
-                    if (vanillaDoor != null)
-                    {
-                        // The wait time is the same as in SwitchDoor.OpenDoor.
-                        vanillaDoor.StartCoroutine(vanillaDoor.WaitAndOpenDoor(0.5f));
-                    }
-                    else
-                    {
-                        var vanillaBridge = SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
-                            .Where(s => s.doorID == check.CheckId)
-                            .FirstOrDefault();
-                        if (vanillaBridge != null)
-                        {
-                            vanillaBridge.StartCoroutine(vanillaBridge.RaiseBridge());
-                        }
-                    }
+                    OpenVanillaDoor(check.CheckId);
                     hasWorldObject = false;
                     break;
                 default:
@@ -361,6 +344,38 @@ namespace Haiku.Rando.Checks
             }
 
             SoundManager.instance.PlayOneShot(refPickup.pickupSFXPath);
+        }
+
+        // If the current scene contains a switch with the given doorID,
+        // opens its door.
+        // Used by lever items to open their vanilla door when they are placed in the
+        // same room as that door.
+        private static void OpenVanillaDoor(int doorID)
+        {
+            var vanillaDoor = SceneUtils.FindObjectsOfType<SwitchDoor>()
+                .Where(s => s.doorID == doorID)
+                .FirstOrDefault();
+            if (vanillaDoor != null)
+            {
+                // The wait time is the same as in SwitchDoor.OpenDoor.
+                vanillaDoor.StartCoroutine(vanillaDoor.WaitAndOpenDoor(0.5f));
+                return;
+            }
+            var vanillaBridge = SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
+                .Where(s => s.doorID == doorID)
+                .FirstOrDefault();
+            if (vanillaBridge != null)
+            {
+                vanillaBridge.StartCoroutine(vanillaBridge.RaiseBridge());
+                return;
+            }
+            var vanillaPistons = SceneUtils.FindObjectsOfType<PistonDoor>()
+                .Where(s => s.doorID == doorID)
+                .FirstOrDefault();
+            if (vanillaPistons != null)
+            {
+                vanillaPistons.StartCoroutine(vanillaPistons.WaitAndOpenDoor());
+            }
         }
 
         private static void GiveMapMarker(RustyType t)

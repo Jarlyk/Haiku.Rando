@@ -42,8 +42,12 @@ namespace Haiku.Rando
             en[_LEVER_DESCRIPTION(9)] = "Allows machines to get around a large garbage magnet.";
             en[_LEVER_TITLE(12)] = "Upper Incinerator Power Cell Lever";
             en[_LEVER_DESCRIPTION(12)] = "This lever unlocks nothing, but merely makes one's life slightly easier.";
+            en[_LEVER_TITLE(13)] = "Incinerator Bridge Lever";
+            en[_LEVER_DESCRIPTION(13)] = "Allows safe passage over a large pit of flames.";
             en[_LEVER_TITLE(15)] = "Electron Return Lever";
             en[_LEVER_DESCRIPTION(15)] = "A great timesaver for those who fall to the third Creator.";
+            en[_LEVER_TITLE(17)] = "Piston Bridge Lever";
+            en[_LEVER_DESCRIPTION(17)] = "Opens the left side entrance to the Steam Town.";
             en[_LEVER_TITLE(20)] = "Bulb Hive Left Lever";
             en[_LEVER_DESCRIPTION(20)] = "Together with its two siblings, opens the way to the Hive.";
             en[_LEVER_TITLE(21)] = "Bulb Hive Middle Lever";
