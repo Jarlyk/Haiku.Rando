@@ -798,8 +798,7 @@ Left->Grapple: DoubleJump + Ball | Grapple
 // Transitions: Right (86-87), Left (68-86)
 // Checks:
 Scene 86
-Right->Left: false
-//TODO: Add pinion lever to checks?  It's not currently in pool, so just treat as backwards impossible for logic
+Right->Left: Lever[17]
 
 // Scene 87
 // Transitions: Right1 (87-88), Right0 (87-89), Left1 (86-87), Left0 (92-87), Repair (87Repair)
@@ -878,10 +877,11 @@ Scene 95
 
 // Scene 96 : Piston bridge
 // Transitions: Right (96-95), Left (93-96)
-// Checks:
+// Checks: Lever (Lever[17])
 Scene 96
-Left<->Right: Grapple
-//TODO: Piston bridge lever is not currently part of checks
+Left<->Right: Grapple | Lever
+Right->Lever: true
+Left->Lever: Grapple | Lever
 
 // Scene 97
 // Transitions: Left (95-97)

@@ -22,6 +22,16 @@ namespace Haiku.Rando.Checks
             );
 
             On.IncineratorBridgeSwitch.Start += ChangeIncineratorActivationCondition;
+            new MMDetour.Hook(
+                typeof(IncineratorBridgeSwitch).GetMethod("TakeDamage", BindingFlags.Public | BindingFlags.Instance),
+                ReplaceIncineratorItem
+            );
+
+            On.PistonDoor.Start += ChangePistonSwitchActivationCondition;
+            new MMDetour.Hook(
+                typeof(PistonDoorSwitch).GetMethod("TakeDamage", BindingFlags.Public | BindingFlags.Instance),
+                ReplacePistonItem
+            );
         }
 
         private static void ChangeActivationCondition(On.SwitchDoor.orig_Start orig, SwitchDoor self)
@@ -95,18 +105,61 @@ namespace Haiku.Rando.Checks
             CheckManager.TriggerCheck(self, lr.replacement);
         }
 
-        private static GameObject FindLever(int doorID)
+        private static void ChangePistonSwitchActivationCondition(
+            On.PistonDoor.orig_Start orig, PistonDoor self)
+        {
+            // Let the bridge come up if it has been unlocked
+            // whether by the vanilla lever, or by a corresponding rando
+            // lever pickup.
+            orig(self);
+
+            var lr = self.GetComponent<LeverReplacer>();
+            if (lr != null)
+            {
+                var gotCheck = CheckManager.AlreadyGotCheck(lr.replacement);
+                self.switchAnim.SetBool("open", !gotCheck);
+                self.switchColl.enabled = gotCheck;
+                // This switch is normally hidden when the Pinion's Expanse
+                // entrance has not been crossed yet; it's very easy to reach
+                // it through other means in a rando, though.
+                self.switchObject.SetActive(true);
+            }
+        }
+
+        private static void ReplacePistonItem(
+            Action<PistonDoorSwitch, int, int, Vector2> orig,
+            PistonDoorSwitch self, int a, int b, Vector2 playerPos)
+        {
+            var lr = self.GetComponent<LeverReplacer>();
+            if (lr != null)
+            {
+                CheckManager.TriggerCheck(self, lr.replacement);
+            }
+            else
+            {
+                orig(self, a, b, playerPos);
+            }
+        }
+
+        private static MonoBehaviour FindLever(int doorID)
         {
             var lever = SceneUtils.FindObjectsOfType<SwitchDoor>()
                 .Where(s => s.doorID == doorID)
                 .FirstOrDefault();
             if (lever != null)
             {
-                return lever.gameObject;
+                return lever;
             }
-            return SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
+            var bridge = SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
                 .Where(s => s.doorID == doorID)
-                .FirstOrDefault()?.gameObject;
+                .FirstOrDefault();
+            if (bridge != null)
+            {
+                return bridge;
+            }
+            return SceneUtils.FindObjectsOfType<PistonDoorSwitch>()
+                .Where(s => s.pistonDoorScript.doorID == doorID)
+                .FirstOrDefault();
         }
 
         public static void ReplaceCheck(RandoCheck orig, RandoCheck replacement)
@@ -119,6 +172,12 @@ namespace Haiku.Rando.Checks
             var lr = lev.gameObject.AddComponent<LeverReplacer>();
             lr.replacement = replacement;
             lr.enabled = true;
+            if (lev is PistonDoorSwitch pds)
+            {
+                var lr2 = pds.pistonDoorScript.gameObject.AddComponent<LeverReplacer>();
+                lr2.replacement = replacement;
+                lr2.enabled = true;
+            }
         }
     }
 }

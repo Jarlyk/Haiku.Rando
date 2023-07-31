@@ -251,6 +251,7 @@ Scene 95 // Steam Town
 
 Scene 96 // Piston bridge
 Left<->Right: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
+Left->Lever: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 
 Scene 168 // Vertical to left of Electric Key shop
 Right1->Right0: Ball + Bomb + 3#Coolant + PowerProcessor

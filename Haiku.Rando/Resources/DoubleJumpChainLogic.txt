@@ -71,6 +71,7 @@ Scene 95 // Steam Town
 Scene 96 // Piston bridge
 // Grapple already crosses the gap by itself
 Left<->Right: DoubleJump + Blink
+Left->Lever: DoubleJump + Blink
 
 Scene 100 // Hidden tunnel toward Factory right side
 Left->Right: DoubleJump + (Blink | Grapple)
