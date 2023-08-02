@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -168,8 +169,8 @@ namespace Haiku.Rando.Topology
         {
             text = text.Trim('(', ')');
             var split = text.Split(',');
-            var x = float.Parse(split[0].Trim());
-            var y = float.Parse(split[1].Trim());
+            var x = float.Parse(split[0].Trim(), CultureInfo.InvariantCulture);
+            var y = float.Parse(split[1].Trim(), CultureInfo.InvariantCulture);
             return new Vector2(x, y);
         }
     }

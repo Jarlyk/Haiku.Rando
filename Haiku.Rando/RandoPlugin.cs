@@ -337,7 +337,7 @@ namespace Haiku.Rando
         {
             CheckManager.Instance.OnSceneLoaded(scene.buildIndex);
 
-            if (_saveData.Settings.Level == RandomizationLevel.Rooms)
+            if (_saveData != null && _saveData.Settings.Level == RandomizationLevel.Rooms)
             {
                 //In room rando, all rooms can disable fire
                 var detector = FindObjectOfType<FireResDetector>();
