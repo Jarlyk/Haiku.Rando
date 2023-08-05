@@ -536,6 +536,11 @@ namespace Haiku.Rando.Topology
                 }
             }
 
+            // No need to check for PistonDoorSwitch. It is not used for any actual
+            // visible levers.
+
+            // Not actually used for visible levers, but kept here since the last topology
+            // was generated with this here.
             foreach (var door in SceneUtils.FindObjectsOfType<PistonDoorSwitch>())
             {
                 if (!IsCorruptModeOnly(door.gameObject))

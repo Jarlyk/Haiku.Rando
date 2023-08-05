@@ -356,21 +356,13 @@ namespace Haiku.Rando.Checks
             switch (doorID)
             {
                 case LeverReplacer.IncineratorLever:
+                case LeverReplacer.PistonLever:
                     var vanillaBridge = SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
                         .Where(s => s.doorID == doorID)
                         .FirstOrDefault();
                     if (vanillaBridge != null)
                     {
                         vanillaBridge.StartCoroutine(vanillaBridge.RaiseBridge());
-                    }
-                    return;
-                case LeverReplacer.PistonLever:
-                    var vanillaPistons = SceneUtils.FindObjectsOfType<PistonDoor>()
-                        .Where(s => s.doorID == doorID)
-                        .FirstOrDefault();
-                    if (vanillaPistons != null)
-                    {
-                        vanillaPistons.StartCoroutine(vanillaPistons.WaitAndOpenDoor());
                     }
                     return;
                 default:
