@@ -414,7 +414,7 @@ Left0->Bottom: true
 Right0->Left0: Ball + (Magnet | DoubleJump)
 Right0->Bottom: Ball
 
-// Scene 49
+// Scene 49: TV Boss
 // Transitions: Right (49-50), Left (48-49)
 // Checks:
 Scene 49
@@ -2082,6 +2082,22 @@ Scene 233
 Scene 234 // Entrance to Old Arcadia
 // Transitions: Right (234-35), Left (257-234)
 // Checks: MoneyPile (MoneyPile[187])
+Left<->*: 
+    Transition[19][Right] + // Magnet
+    Transition[27] + // Tire Mother
+    Transition[201][Left] + // Neutron
+    Transition[49] + // TV
+    Transition[161][Right0] + // Big Drill
+    Transition[137][Left] + // Door
+    Transition[144] + // Creators
+    Transition[128][Right1] + // Scuba Heads
+    Transition[69][Right0] + // Car Battery
+    Transition[84] + // Electron
+    Transition[184] + Magnet + // Buzzsaw
+    Transition[212] + // Big Brother
+    Transition[200][Right] + // Proton
+    Transition[98][Right] + // Mischevious
+    Transition[62] // Virus (Mainframe Vault)
 Left->*: false
 Right->Left: false // actually all the bosses
 Right->MoneyPile: Blink | Magnet | DoubleJump

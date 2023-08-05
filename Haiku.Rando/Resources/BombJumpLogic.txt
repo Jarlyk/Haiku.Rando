@@ -124,7 +124,7 @@ Scene 55
 Left<->Right: Ball + Bomb + PowerProcessor + 3#Coolant
 
 Scene 56
-Right1->*: Ball + Bomb
+Right1->!Left: Ball + Bomb
 
 Scene 57
 *<->Right: Ball + Bomb
