@@ -141,28 +141,25 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        private static MonoBehaviour FindLever(int doorID)
+        private static MonoBehaviour FindLever(int doorID) => doorID switch
         {
-            var lever = SceneUtils.FindObjectsOfType<SwitchDoor>()
-                .Where(s => s.doorID == doorID)
-                .FirstOrDefault();
-            if (lever != null)
-            {
-                return lever;
-            }
-            var bridge = SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
-                .Where(s => s.doorID == doorID)
-                .FirstOrDefault();
-            if (bridge != null)
-            {
-                return bridge;
-            }
-            return SceneUtils.FindObjectsOfType<PistonDoorSwitch>()
-                .Where(s => s.pistonDoorScript.doorID == doorID)
-                .FirstOrDefault();
-        }
+            IncineratorLever =>
+                SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
+                    .Where(s => s.doorID == doorID)
+                    .FirstOrDefault(),
+            PistonLever =>
+                SceneUtils.FindObjectsOfType<PistonDoorSwitch>()
+                    .Where(s => s.pistonDoorScript.doorID == doorID)
+                    .FirstOrDefault(),
+            _ =>
+                SceneUtils.FindObjectsOfType<SwitchDoor>()
+                    .Where(s => s.doorID == doorID)
+                    .FirstOrDefault()
+        };
 
         private const int OldArcadiaElevatorLever = 71;
+        public const int IncineratorLever = 13;
+        public const int PistonLever = 17;
 
         public static void ReplaceCheck(RandoCheck orig, RandoCheck replacement)
         {

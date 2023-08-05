@@ -353,33 +353,37 @@ namespace Haiku.Rando.Checks
         // same room as that door.
         private static void OpenVanillaDoor(int doorID)
         {
-            var vanillaDoors = SceneUtils.FindObjectsOfType<SwitchDoor>()
-                .Where(s => s.doorID == doorID)
-                .ToList();
-            if (vanillaDoors.Count != 0)
+            switch (doorID)
             {
-                // In the case of the Old Arcadia elevator lever, there are two doors.
-                foreach (var d in vanillaDoors)
-                {
-                    // The wait time is the same as in SwitchDoor.OpenDoor.
-                    d.StartCoroutine(d.WaitAndOpenDoor(0.5f));
-                }
-                return;
-            }
-            var vanillaBridge = SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
-                .Where(s => s.doorID == doorID)
-                .FirstOrDefault();
-            if (vanillaBridge != null)
-            {
-                vanillaBridge.StartCoroutine(vanillaBridge.RaiseBridge());
-                return;
-            }
-            var vanillaPistons = SceneUtils.FindObjectsOfType<PistonDoor>()
-                .Where(s => s.doorID == doorID)
-                .FirstOrDefault();
-            if (vanillaPistons != null)
-            {
-                vanillaPistons.StartCoroutine(vanillaPistons.WaitAndOpenDoor());
+                case LeverReplacer.IncineratorLever:
+                    var vanillaBridge = SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
+                        .Where(s => s.doorID == doorID)
+                        .FirstOrDefault();
+                    if (vanillaBridge != null)
+                    {
+                        vanillaBridge.StartCoroutine(vanillaBridge.RaiseBridge());
+                    }
+                    return;
+                case LeverReplacer.PistonLever:
+                    var vanillaPistons = SceneUtils.FindObjectsOfType<PistonDoor>()
+                        .Where(s => s.doorID == doorID)
+                        .FirstOrDefault();
+                    if (vanillaPistons != null)
+                    {
+                        vanillaPistons.StartCoroutine(vanillaPistons.WaitAndOpenDoor());
+                    }
+                    return;
+                default:
+                    var vanillaDoors = SceneUtils.FindObjectsOfType<SwitchDoor>()
+                        .Where(s => s.doorID == doorID)
+                        .ToList();
+                    // In the case of the Old Arcadia elevator lever, there are two doors.
+                    foreach (var d in vanillaDoors)
+                    {
+                        // The wait time is the same as in SwitchDoor.OpenDoor.
+                        d.StartCoroutine(d.WaitAndOpenDoor(0.5f));
+                    }
+                    return;
             }
         }
 
