@@ -179,3 +179,20 @@ Exit->Monument: DoubleJump + Grapple
 
 Scene 230
 Right1->Right0: DoubleJump + (Blink | Grapple)
+
+Scene 248 // Gallery of bosses
+Right1->Right0: DoubleJump + (Blink + 3#Coolant | Grapple + Coolant)
+Right1->Elevator: DoubleJump + Blink + (Grapple | 3#Coolant)
+Right0->*: DoubleJump + Blink
+Elevator->Right*: DoubleJump + Blink
+
+Scene 252 // Main reactor core room
+Left1->Left0: DoubleJump + Grapple + 3#Coolant + Lever
+Left1->MoneyPile*: DoubleJump + Grapple + 3#Coolant + Lever
+Left1->Lever: DoubleJump + Grapple + 3#Coolant
+Left0->Left1: DoubleJump + Grapple + Lever
+
+Scene 255 // Elegy Repair Station
+$Top {Right0, Repair, Left0}
+$Bottom {Right1, Left1}
+Bottom->Top: DoubleJump + (Blink + 3#Coolant | Grapple + 2#Coolant)

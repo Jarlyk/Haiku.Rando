@@ -472,10 +472,11 @@ Right->Left: Grapple
 Left->Right: Grapple + (Magnet | DoubleJump)
 
 // Scene 56
-// Transitions: Right1 (56-57), Right0 (56-55)
+// Transitions: Right1 (56-57), Right0 (56-55), Left (246-56)
 // Checks: Disruptor (MapDisruptor[13])
 Scene 56
-Right1->*: DoubleJump
+Right1->!Left: DoubleJump
+*->Left: false // only opens from the opposite side
 
 // Scene 57
 // Transitions: Right (57-58), Left (56-57), Repair (57Repair)
@@ -2081,5 +2082,125 @@ Scene 233
 Scene 234 // Entrance to Old Arcadia
 // Transitions: Right (234-35), Left (257-234)
 // Checks: MoneyPile (MoneyPile[187])
-// *->Left: transition doesn't exist until we actually support Old Arcadia
+Left->*: false
+Right->Left: false // actually all the bosses
 Right->MoneyPile: Blink | Magnet | DoubleJump
+
+// Transitions: Right (246-56), Left (247-246)
+// Checks: Lore (Lore[29])
+Scene 246
+*->*: true
+
+// Transitions: Elevator (248-247), Right (247-246)
+// Checks:
+Scene 247
+*->*: true
+
+// Transitions: Elevator (248-247), Right1 (248-251), Right0 (248-249)
+// Checks:
+Scene 248 // Gallery of bosses
+Right1->Right0: Magnet + Grapple
+Right1->Elevator: Magnet + Grapple + Blink
+Right0->Right1: Grapple
+Right0->Elevator: (Magnet | DoubleJump) + Grapple + Blink
+Elevator->Right*: Grapple + Blink
+
+// Transitions: Right (249-250), Left (248-249)
+// Checks:
+Scene 249
+*->*: true
+
+// Transitions: Elevator (258-250), Right (250-271door), Left (249-250), Repair (250Repair)
+// Checks:
+Scene 250
+*->*: true
+
+// Transitions: Right1 (251-252bottom), Right0 (251-252top), Left1 (253-251), Left0 (248-251)
+// Checks:
+Scene 251 // Left of the main reactor core room
+$Bottom {Right1, Left1}
+$Top {Right0, Left0}
+Bottom<->Top: false
+Bottom->Bottom: true
+Top->Top: DoubleJump | Blink | Grapple
+
+// Transitions: Left1 (251-252bottom), Left0 (251-252top)
+// Checks: Lever (Lever[75]), MoneyPile3 (MoneyPile[195]), MoneyPile2 (MoneyPile[193]), MoneyPile1 (MoneyPile[194]), MoneyPile0 (MoneyPile[192])
+Scene 252 // Main reactor core room
+Left1->Left0: Magnet + Grapple + Lever
+Left1->MoneyPile*: Magnet + DoubleJump + Grapple + Lever
+Left1->Lever: Magnet + Grapple
+Left0->Left1: Magnet + DoubleJump + Grapple + Lever
+Left0->MoneyPile*: DoubleJump
+Left0->Lever: Lever
+
+// Transitions: Right0 (253-251), Right1 (253-254)
+// Checks:
+Scene 253 // Sinking platforms left of Elegy
+Right0->Right1: true
+Right1->Right0: Magnet | DoubleJump
+
+// Transitions: Right (254-255), Left (253-254), Door (270-254)
+// Checks:
+Scene 254 // Elegy
+Right->Left: DoubleJump | Magnet + Blink | Magnet + Grapple
+Right->Door: Item[0] + WaterRes + (DoubleJump | Blink | Grapple)
+Left->Door: Item[0] + WaterRes
+Left->Right: DoubleJump | Blink | Grapple
+Door->Left: WaterRes + (DoubleJump | Magnet + Blink | Magnet + Grapple)
+Door->Right: WaterRes + (DoubleJump | Blink | Grapple)
+
+// Transitions: Right1 (255-256), Right0 (255-258), Left0 (254-255), Left1 (259-255), Repair (255Repair)
+// Checks:
+Scene 255 // Elegy Repair Station
+$Top {Right0, Repair, Left0}
+$Bottom {Right1, Left1}
+Bottom->Bottom: true
+Bottom->Top: Magnet + DoubleJump + (Blink | Grapple)
+Top->Bottom: DoubleJump | Blink | Grapple
+Left0->Right0: Magnet | DoubleJump
+Left0->Repair: Magnet | DoubleJump
+Right0->Repair: true
+Right0->Left0: true
+Repair->Right0: true
+Repair->Left0: true
+
+// Transitions: Right1 (256-269), Right0 (256-257), Left (255-256)
+// Checks:
+Scene 256 // Narrow winding corridor with 3 spiders
+*->*: true
+
+// Transitions: Right (257-234), Left0 (258-257), Left1 (256-257)
+// Checks:
+Scene 257 // First room of Old Arcadia, with 4 orbs
+*->*: true
+
+// Transitions: Elevator (258-250), Right (258-257), Left (255-258)
+// Checks: Lever (Lever[71])
+Scene 258 // Elevator to the Boss Rush floor
+*->*: Lever
+
+// Transitions: Elevator (260-259), Right (259-255)
+// Checks: MoneyPile2 (MoneyPile[188]), MoneyPile1 (MoneyPile[188]), MoneyPile0 (MoneyPile[188])
+Scene 259 // Elevator to Abandonded Wastes
+*->*: true
+
+// Transitions: Elevator (260-259), Right (260-21)
+// Checks: Lever (Lever[72])
+Scene 260 // Elevator to Old Arcadia from Abandoned Wastes
+Elevator->Lever: true
+Elevator->Right: Lever
+Right->*: Lever
+
+// Transitions: Left (256-269)
+// Checks: MoneyPile0 (MoneyPile[190]), MoneyPile1 (MoneyPile[189])
+Scene 269 // Room with a big saw and two scrap rocks
+Left->MoneyPile*: true
+
+// Transitions: 270-254 (270-254)
+// Checks:
+Scene 270 // Mini reactor core room
+
+// Transitions: Left (250-271door)
+// Checks:
+Scene 271 // Entrance to the practice room

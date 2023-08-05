@@ -605,3 +605,21 @@ Right->Lever: FireRes + Ball + Bomb + Grapple + (PowerProcessor | Coolant | Doub
 
 Scene 234 // Entrance to Old Arcadia
 Right->MoneyPile: Ball + Bomb
+
+Scene 251 // Left of the main reactor core room
+Left0<->Right0: Ball + Bomb
+
+Scene 253 // Sinking platforms left of Elegy
+Right1->Right0: Ball + Bomb
+
+Scene 254 // Elegy
+Left<->Right: Ball + Bomb
+Door<->*: WaterRes + Ball + Bomb
+
+Scene 255 // Elegy Repair Station
+$Top {Right0, Repair, Left0}
+$Bottom {Right1, Left1}
+Bottom->Top: Ball + Bomb + PowerProcessor + 2#Coolant
+Left0->Repair: Ball + Bomb
+Left0->Right0: Ball + Bomb
+Top->Bottom: Ball + Bomb

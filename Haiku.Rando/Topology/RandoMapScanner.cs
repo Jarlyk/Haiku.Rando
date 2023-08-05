@@ -49,8 +49,7 @@ namespace Haiku.Rando.Topology
                 foreach (var outTrans in scene.Nodes.OfType<TransitionNode>())
                 {
                     var outSceneId = outTrans.SceneId1 == currentSceneId ? outTrans.SceneId2 : outTrans.SceneId1;
-                    // Ignore Old Arcadia rooms for now.
-                    if (outSceneId <= SpecialScenes.LastRoomBeforeOldArcadia && !_visitedScenes.ContainsKey(outSceneId) && !pendingScenes.Contains(outSceneId))
+                    if (!IsBossRushScene(outSceneId) && !_visitedScenes.ContainsKey(outSceneId) && !pendingScenes.Contains(outSceneId))
                     {
                         pendingScenes.Push(outSceneId);
                     }
@@ -219,6 +218,9 @@ namespace Haiku.Rando.Topology
             return node.SceneId1 == origin ? "Right" : "Left";
         }
 
+        private static bool IsBossRushScene(int n) =>
+            (n >= 235 && n <= 245) || (n >= 261 && n <= 268);
+
         public RoomScene AnalyzeRoom(int sceneId)
         {
             var scene = new RoomScene(sceneId);
@@ -236,7 +238,7 @@ namespace Haiku.Rando.Topology
             var edgeExits = SceneUtils.FindObjectsOfType<LoadNewLevel>();
             foreach (var exit in edgeExits)
             {
-                if (exit.levelToLoad > SpecialScenes.LastRoomBeforeOldArcadia)
+                if (IsBossRushScene(exit.levelToLoad))
                 {
                     continue;
                 }
@@ -249,7 +251,7 @@ namespace Haiku.Rando.Topology
             }
 
             var doorExits = SceneUtils.FindObjectsOfType<EnterRoomTrigger>()
-                .Where(t => !IsCorruptModeOnly(t.gameObject) && t.levelToLoad <= SpecialScenes.LastRoomBeforeOldArcadia).ToArray();
+                .Where(t => !IsCorruptModeOnly(t.gameObject) && !IsBossRushScene(t.levelToLoad)).ToArray();
             foreach (var exit in doorExits)
             {
                 var trans = GetTransition(BuildPointName(sceneId, exit), TransitionType.Door, sceneId, exit.levelToLoad);
@@ -382,12 +384,14 @@ namespace Haiku.Rando.Topology
             }
         }
 
-        // Unused, presumably leftover checks from development.
+        // Unused, presumably leftover checks from development
+        // and the Badge of Steel rewards from the boss rush.
         private static readonly HashSet<(int sceneId, CheckType type)> ignoredChecks = new()
         {
             (102, CheckType.Chip),
             (104, CheckType.Item),
-            (132, CheckType.PowerCell)
+            (132, CheckType.PowerCell),
+            (249, CheckType.Item)
         };
 
         private List<RandoCheck> FindChecks(int sceneId)
@@ -491,14 +495,23 @@ namespace Haiku.Rando.Topology
                 checks.Add(check);
             }
 
+            // There is a room in Old Arcadia that contains two SwitchDoors with the same
+            // ID, because a single lever controls two doors.
+            var seenLevers = new HashSet<int>();
+
             foreach (var door in SceneUtils.FindObjectsOfType<SwitchDoor>().Where(d => !IsCorruptModeOnly(d.gameObject)))
             {
+                if (seenLevers.Contains(door.doorID))
+                {
+                    continue;
+                }
                 var collider = door.GetComponent<Collider2D>();
                 if (!collider)
                 {
                     Debug.LogWarning($"Unable to locate switch collider for Door {door.doorID}; ignoring");
                     continue;
                 }
+                seenLevers.Add(door.doorID);
 
                 var pos = collider.transform.position;
                 var check = new RandoCheck(CheckType.Lever, sceneId, new Vector2(pos.x, pos.y) + collider.offset, door.doorID);

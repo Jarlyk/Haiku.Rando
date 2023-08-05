@@ -92,7 +92,12 @@ namespace Haiku.Rando
             en[_LEVER_DESCRIPTION(55)] = "Opens a way to the only sealant application machines still functioning in Arcadia.";
             en[_LEVER_TITLE(56)] = "Mischevious Lever";
             en[_LEVER_DESCRIPTION(56)] = "Legend has it that this lever is sentient, and spends its time pranking the other inhabitants of Arcadia.";
-            
+            en[_LEVER_TITLE(71)] = "Old Arcadia Elevator Lever";
+            en[_LEVER_DESCRIPTION(71)] = "Unlocks a connection between the upper and lower parts of Arcadia's birthplace.";
+            en[_LEVER_TITLE(72)] = "Old Arcadia Exit Lever";
+            en[_LEVER_DESCRIPTION(72)] = "Opens a backdoor to the birthplace of Arcadia.";
+            en[_LEVER_TITLE(75)] = "Reactor Core Lever";
+            en[_LEVER_DESCRIPTION(75)] = "Opens the door to the reactor at the heart of Arcadia's birthplace.";
         }
 
         internal static void Hook()

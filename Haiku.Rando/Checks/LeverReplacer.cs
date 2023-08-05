@@ -162,8 +162,15 @@ namespace Haiku.Rando.Checks
                 .FirstOrDefault();
         }
 
+        private const int OldArcadiaElevatorLever = 71;
+
         public static void ReplaceCheck(RandoCheck orig, RandoCheck replacement)
         {
+            if (orig.CheckId == OldArcadiaElevatorLever)
+            {
+                ReplaceOldArcadiaElevatorCheck(replacement);
+                return;
+            }
             var lev = FindLever(orig.CheckId);
             if (lev == null)
             {
@@ -177,6 +184,27 @@ namespace Haiku.Rando.Checks
                 var lr2 = pds.pistonDoorScript.gameObject.AddComponent<LeverReplacer>();
                 lr2.replacement = replacement;
                 lr2.enabled = true;
+            }
+        }
+
+        private static void ReplaceOldArcadiaElevatorCheck(RandoCheck replacement)
+        {
+            // The Old Arcadia elevator lever is actually two levers, one for each door
+            // on each side of the elevator. We attach the check to one lever and disable
+            // the other.
+            var levers = SceneUtils.FindObjectsOfType<SwitchDoor>()
+                .Where(s => s.doorID == OldArcadiaElevatorLever)
+                .ToList();
+            if (levers.Count == 0)
+            {
+                throw new InvalidOperationException($"attempted to replace lever {OldArcadiaElevatorLever} that is not present");
+            }
+            var lr = levers[0].gameObject.AddComponent<LeverReplacer>();
+            lr.replacement = replacement;
+            lr.enabled = true;
+            for (var i = 1; i < levers.Count; i++)
+            {
+                GameObject.Destroy(levers[i].switchCollider.gameObject);
             }
         }
     }

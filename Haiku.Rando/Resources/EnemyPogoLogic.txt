@@ -176,3 +176,9 @@ Right->Left: FireRes
 
 Scene 229
 Left0->MoneyPile*: true // may take a few retries for the frog to cooperate
+
+Scene 251 // Left of the main reactor core room
+Left0<->Right0: true
+
+Scene 253 // Sinking platforms left of Elegy
+Right1->Right0: true

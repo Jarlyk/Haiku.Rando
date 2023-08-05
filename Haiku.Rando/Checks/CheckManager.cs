@@ -191,7 +191,8 @@ namespace Haiku.Rando.Checks
             new() {"_ELECTRIC_SENTIENT_LORE_1", "_ELECTRIC_SENTIENT_LORE_2", "_ELECTRIC_SENTIENT_LORE_3", "_ELECTRIC_SENTIENT_LORE_4"},
             new() {"_SENTIENT_STATUE_1", "_SENTIENT_STATUE_2"},
             new() {"_CANDLES_1", "_CANDLES_2"},
-            new() {"_HAIKU_BIRTHPLACE_1"}
+            new() {"_HAIKU_BIRTHPLACE_1"},
+            new() {"_BIRTHPLACE_LORE_1", "_BIRTHPLACE_LORE_2", "_BIRTHPLACE_LORE_3", "_BIRTHPLACE_LORE_4", "_BIRTHPLACE_LORE_5"}
         };
 
         private void ShowLoreTabletText(int checkId)
@@ -352,13 +353,17 @@ namespace Haiku.Rando.Checks
         // same room as that door.
         private static void OpenVanillaDoor(int doorID)
         {
-            var vanillaDoor = SceneUtils.FindObjectsOfType<SwitchDoor>()
+            var vanillaDoors = SceneUtils.FindObjectsOfType<SwitchDoor>()
                 .Where(s => s.doorID == doorID)
-                .FirstOrDefault();
-            if (vanillaDoor != null)
+                .ToList();
+            if (vanillaDoors.Count != 0)
             {
-                // The wait time is the same as in SwitchDoor.OpenDoor.
-                vanillaDoor.StartCoroutine(vanillaDoor.WaitAndOpenDoor(0.5f));
+                // In the case of the Old Arcadia elevator lever, there are two doors.
+                foreach (var d in vanillaDoors)
+                {
+                    // The wait time is the same as in SwitchDoor.OpenDoor.
+                    d.StartCoroutine(d.WaitAndOpenDoor(0.5f));
+                }
                 return;
             }
             var vanillaBridge = SceneUtils.FindObjectsOfType<IncineratorBridgeSwitch>()
