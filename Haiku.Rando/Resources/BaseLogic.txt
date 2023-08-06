@@ -782,6 +782,9 @@ Right->Lever2: Ball + (Lever0 | Lever1 | Lever2)
 Left->Bulblet: Blink
 Left->Right: Blink + Ball + (Lever0 | Lever1 | Lever2)
 Left->Lore: Blink + Ball
+Left->Lever2: Blink + Ball
+Left->Lever1: Blink + Ball
+Left->Lever0: Blink + Ball + (Lever0 | Lever1 | Lever2)
 
 // Scene 84 : Electron fight
 // Transitions: Right (84-75)
@@ -2082,7 +2085,7 @@ Scene 233
 Scene 234 // Entrance to Old Arcadia
 // Transitions: Right (234-35), Left (257-234)
 // Checks: MoneyPile (MoneyPile[187])
-Left<->*: 
+Left<->*:
     Transition[19][Right] + // Magnet
     Transition[27] + // Tire Mother
     Transition[201][Left] + // Neutron
@@ -2098,7 +2101,6 @@ Left<->*:
     Transition[200][Right] + // Proton
     Transition[98][Right] + // Mischevious
     Transition[62] // Virus (Mainframe Vault)
-Left->*: false
 Right->Left: false // actually all the bosses
 Right->MoneyPile: Blink | Magnet | DoubleJump
 
