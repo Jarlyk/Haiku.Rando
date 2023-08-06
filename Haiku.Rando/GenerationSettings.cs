@@ -38,7 +38,8 @@ namespace Haiku.Rando
     {
         Wrench,
         Whistle,
-        Maps
+        Maps,
+        SpareParts
     }
 
     public enum Skip

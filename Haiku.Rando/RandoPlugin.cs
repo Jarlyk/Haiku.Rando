@@ -235,6 +235,11 @@ namespace Haiku.Rando
                     }
                 }
 
+                if (_randomizer.StartSpareParts > 0)
+                {
+                    InventoryManager.instance.AddSpareParts(_randomizer.StartSpareParts);
+                }
+
                 if (gs.TrainLoverMode && _randomizer.StartStation is int startStation)
                 {
                     GameManager.instance.trainUnlocked = true;
@@ -280,7 +285,8 @@ namespace Haiku.Rando
             }
             else if (gs.RandomStartLocation)
             {
-                //Pick from any save station except Incinerator, Furnace and Train
+                // Pick from any save station except Incinerator, Furnace, Train
+                // and Old Arcadia
                 var availScenes = new List<int>
                     { 10, 15, 21, 71, 57, 41, 75, 195, 172, 194, 87, 113, 139, 140, 167 };
 

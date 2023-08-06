@@ -15,6 +15,7 @@ namespace Haiku.Rando.Logic
         public RandoTopology Topology { get; internal set; }
         public IReadOnlyDictionary<RandoCheck, RandoCheck> CheckMapping { get; internal set; }
         public int? StartScene { get; internal set; }
+        public int StartSpareParts { get; internal set; }
         internal int? StartStation { get; set; }
         public IReadOnlyList<LogicLayer> Logic { get; internal set; }
 
@@ -48,6 +49,7 @@ namespace Haiku.Rando.Logic
         private readonly LogicEvaluator _logic;
         private readonly int? _startScene;
         private int? _startStation;
+        private int _startScrap;
         private readonly Dictionary<RandoCheck, RandoCheck> _checkMapping = new Dictionary<RandoCheck, RandoCheck>();
         private bool _randomized;
 
@@ -91,6 +93,7 @@ namespace Haiku.Rando.Logic
                 CheckMapping = _checkMapping,
                 StartScene = _startScene,
                 StartStation = _startStation,
+                StartSpareParts = _startScrap,
                 Logic = _logic.Layers,
             };
         }
@@ -520,6 +523,11 @@ namespace Haiku.Rando.Logic
             if (Settings.Contains(StartingItemSet.Maps))
             {
                 _pool.RemoveAll(c => c.Type == CheckType.MapDisruptor);
+            }
+            if (Settings.Contains(StartingItemSet.SpareParts))
+            {
+                var scrapRNG = _random.Clone();
+                _startScrap = scrapRNG.NextRange(300, 501);
             }
             if (Settings.TrainLoverMode)
             {
