@@ -7,7 +7,8 @@ This requires that you already have BepInEx and the Haiku.CoreModdingApi install
 ## Usage
 To configure the randomization options, press F1 (with Configuration Editor installed).  Alternately, you can run Haiku once and then edit the config file manually under BepInEx/config/haiku.rando.cfg.
 
-This release supports both item rando and room rando.  The room rando is more likely to have problems, so if you run into any issues, please let me know.
+This mod supports both item rando and room rando.  The room rando is lightly tested and
+therefore more likely to have problems, so if you run into any issues, please let us know.
 
 ## Configuration options
 
@@ -15,15 +16,21 @@ This release supports both item rando and room rando.  The room rando is more li
   pickups, or neither.
 - **Seed**: the randomization seed. If left blank, the game will generate a random seed.
 - **Random Start Location**: if enabled, starts the game at a randomly-chosen repair station instead of the opening cutscene wake location.
-- **Starting Items**: grants Wrench, Whistle, or all Map Disruptors at the start of the game.
+- **Train Lover Mode**: if enabled, starts the game in the train with one station unlocked.
+  If Random Start Location is on, that station is chosen randomly; otherwise it is always
+  Abandoned Wastes.
+- **Starting Items**: grants Wrench, Whistle, all Map Disruptors, or
+  some Spare Parts (exact amount randomized) at the start of the game.
 - **Pool**: selects which locations and respective items will be randomized.
 - **Skips**: allows certain categories of skips to be considered for logic purposes:
     - BLJs
     - Enemy Pogos
     - Bomb Jumps
-    - Dark Rooms (considers all dark rooms traversable without Bulblet, except for the elevator to Sunken Wastes)
-    - Hazard Rooms (considers Surface and some parts of Incinerator traversable without their respective sealants)
-    - Skill Chips (allows Auto Modifier and Self-Detonation to serve as replacements for Ball and Bomb respectively)
+    - Dark Rooms: considers all dark rooms traversable without Bulblet, except for the elevator to Sunken Wastes
+    - Hazard Rooms: considers Surface and some parts of Incinerator traversable without their respective sealants
+    - Skill Chips: allows Auto Modifier and Self-Detonation to serve as replacements for Ball and Bomb respectively
+    - Double Jump Chains: movement that takes advantage of Blink and Grapple refreshing
+    the double jump
 
 ### QoL Options
 
@@ -48,7 +55,7 @@ Thanks to everyone who contributed to logic file development, including: Tomygoo
 Thanks to Schy for helping to get Haiku modding rolling; we miss you Schy
 
 ## Contact
-You can reach me via Github or find me on the Haiku Discord.
+You can reach us via Github or find us on the Haiku Discord.
 
 ## License
 All mods contained herein are released under the standard MIT license, which is a permissive license that allows for free use.  The text of this is included in the LICENSE file in this release.

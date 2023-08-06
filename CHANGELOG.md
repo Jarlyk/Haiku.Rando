@@ -1,3 +1,25 @@
+# 2.2 (6 August 2023)
+
+New features:
+
+- Old Arcadia's rooms and items are included in the randomization. This adds three levers,
+  a lore tablet, and several scrap nodes to the pool.
+- Levers have been added as a new randomizable pool.
+  Lever checks are obtained by striking the lever, and collecting a lever *item* opens
+  the respective gate.
+- There is an option to start the game with a small, randomized amount of spare parts.
+
+Bug fixes:
+
+- The game will no longer fail to start on systems whose locale uses symbols other than `.`
+  (dot) as a decimal separator.
+- Fixed false positives in the Bulb Hive room.
+
+Known issues:
+
+- If randomized, The Old Arcadia elevator lever leaves behind a second, inactive lever
+  when hit. This is purely a cosmetic issue; it otherwise functions as expected.
+
 # 2.1 (23 July 2023)
 
 New features:
