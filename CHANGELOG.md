@@ -1,3 +1,9 @@
+# 2.2.1 (13 August 2023)
+
+Bug fixes:
+
+- Fixed logic false positives in Incinerator and Sunken Wastes
+
 # 2.2 (6 August 2023)
 
 New features:
