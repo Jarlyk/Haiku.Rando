@@ -76,6 +76,9 @@ Left->Lever: DoubleJump + Blink
 Scene 100 // Hidden tunnel toward Factory right side
 Left->Right: DoubleJump + (Blink | Grapple)
 
+Scene 102
+Left->Right*: FireRes + HeatDrive + DoubleJump + (Blink | Grapple)
+
 Scene 123
 // If the bomb floor hasn't been broken first, you must make one
 // trip to break it, then fall back down, wait for coolant to refresh,
@@ -125,7 +128,8 @@ $BottomArea {Left1, Right1}
 BottomArea->TopArea: Light + Blink + DoubleJump
 
 Scene 155
-*->Chip: Light + DoubleJump + (Blink | Grapple)
+Left1->Chip: Light + Lever + DoubleJump + (Blink | Grapple)
+!Left1->Chip: Light + DoubleJump + (Blink | Grapple)
 
 Scene 156
 *->Disruptor: Light + DoubleJump + (Blink | Grapple)

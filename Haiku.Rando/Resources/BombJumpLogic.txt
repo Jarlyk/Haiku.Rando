@@ -253,6 +253,9 @@ Scene 96 // Piston bridge
 Left<->Right: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 Left->Lever: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 
+Scene 102
+Left->Right*: FireRes + Ball + Bomb + HeatDrive
+
 Scene 168 // Vertical to left of Electric Key shop
 Right1->Right0: Ball + Bomb + 3#Coolant + PowerProcessor
 // the power cell can be reached with only 2 consecutive jumps with a landing on the

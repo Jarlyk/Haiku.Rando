@@ -929,8 +929,12 @@ Right1->MoneyPile*: FireRes + (Magnet | DoubleJump)
 // Transitions: Right1 (102-103), Right0 (102-107), Left (101-102)
 // Checks: Lever (Lever[12]), PowerCell (PowerCell[3])
 Scene 102
+$Checks {Lever, PowerCell}
 // getting to the PowerCell requires a precise jump
-*->*: FireRes
+Left->Right*: FireRes + (Lever | Magnet)
+Left->Checks: FireRes
+Right*->Left: FireRes
+Right*->Checks: FireRes
 
 // Scene 103
 // Transitions: Right (103-105), Left0 (102-103), Left1 (104-103), Repair (103Repair)
@@ -1451,16 +1455,18 @@ Right->MoneyPile*: Light
 // Transitions: Right (155-156), Left0 (165-155), Left1 (154-155)
 // Checks: Chip (Chip[11]), Lever (Lever[48])
 Scene 155
+Left1->Left0: Light + Lever + (Magnet | DoubleJump)
+Left1->Right: Light + Lever
 Left1->Lever: Light
-Right->Lever: false
-Left0->Lever: false
+Left1->Chip: Light + Lever + Magnet
+Left0->Left1: Light + Lever
+Left0->Right: Light
+Left0->Right: Light
+Left0->Chip: Light + Magnet
 Right->Left1: Light + Lever + (Magnet | DoubleJump)
 Right->Left0: Light + (Magnet | DoubleJump)
-Left0->Left1: Light+Lever
-Left0->Right: Light
-Left1->Left0: Light + Lever + (Magnet | DoubleJump)
-*->Right: Light 
-*->Chip: Light+Magnet
+Right->Lever: Light + Lever + (Magnet | DoubleJump)
+Right->Chip: Light + Magnet
 
 // Scene 156
 // Transitions: Right (156-157), Left1 (147-156), Left0 (155-156), Repair (156Repair)
