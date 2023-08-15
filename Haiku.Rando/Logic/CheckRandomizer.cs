@@ -480,7 +480,6 @@ namespace Haiku.Rando.Logic
             if (Settings.Contains(Pool.Chips)) AddToPool(CheckType.Chip);
             if (Settings.Contains(Pool.ChipSlots)) AddToPool(CheckType.ChipSlot);
             if (Settings.Contains(Pool.MapDisruptors)) AddToPool(CheckType.MapDisruptor);
-            //if (Settings.IncludeLevers.Value) AddToPool(CheckType.Lever);
             if (Settings.Contains(Pool.PowerCells)) AddToPool(CheckType.PowerCell);
             if (Settings.Contains(Pool.Coolant)) AddToPool(CheckType.Coolant);
             if (Settings.Contains(Pool.Sealants)) AddToPool(CheckType.FireRes);
