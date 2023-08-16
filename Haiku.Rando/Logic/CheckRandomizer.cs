@@ -54,7 +54,7 @@ namespace Haiku.Rando.Logic
         private bool _randomized;
 
         // things that are only needed during randomization
-        private readonly HashSet<string> _acquiredStates = new HashSet<string>();
+        private readonly Dictionary<string, int> _acquiredStates = new Dictionary<string, int>();
         private Bitset64 _startingChipSlotsUsed;
         private readonly CheckPool _startingPool = new CheckPool();
         private readonly CheckPool _pool = new CheckPool();
@@ -609,18 +609,28 @@ namespace Haiku.Rando.Logic
 
         private void AddState(string state)
         {
-            _acquiredStates.Add(state);
-            //Debug.Log($"Added logic state as reachable: {state}");
+            int i = 0;
+            while (i < state.Length)
+            {
+                i = state.IndexOf('[', i);
+                if (i == -1)
+                {
+                    i = state.Length;
+                }
+                var s = state.Substring(0, i);
+                i++;
+                _acquiredStates[s] = _acquiredStates.TryGetValue(s, out var n) ? n + 1 : 1;
+            }
         }
 
         public bool HasState(string state)
         {
-            return _acquiredStates.Contains(state);
+            return _acquiredStates.ContainsKey(state);
         }
 
         public int GetCount(string state)
         {
-            return _acquiredStates.Count(s => s.StartsWith(state));
+            return _acquiredStates.TryGetValue(state, out var n) ? n : 0;
         }
 
         private sealed class CheckPool : List<RandoCheck>

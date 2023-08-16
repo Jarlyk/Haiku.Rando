@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using SysDiag = System.Diagnostics;
 using System.Linq;
 using BepInEx;
 using Haiku.Rando.Checks;
@@ -185,6 +186,10 @@ namespace Haiku.Rando
                 int? startScene = SpecialScenes.GameStart;
                 const int maxRetries = 200;
                 var origSeed = gs.Seed;
+
+                var timer = new SysDiag.Stopwatch();
+                timer.Start();
+
                 for (int i = 0; i < maxRetries; i++)
                 {
                     if (TryRandomize(gs, out startScene))
@@ -204,6 +209,9 @@ namespace Haiku.Rando
                 {
                     Debug.LogWarning($"** Failed to complete Randomization after all allowed attempts; it's possible the settings may not allow for completion **");
                 }
+
+                timer.Stop();
+                Debug.Log($"completed randomization in {timer.ElapsedMilliseconds} ms");
 
                 if (startScene != null)
                 {
