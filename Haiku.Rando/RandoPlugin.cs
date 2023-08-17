@@ -190,9 +190,14 @@ namespace Haiku.Rando
                 var timer = new SysDiag.Stopwatch();
                 timer.Start();
 
+                // A previous room rando may have rewired the topology; make sure we start with the
+                // vanilla topology.
+                ReloadTopology();
+                var eval = LoadLogic(gs);
+
                 for (int i = 0; i < maxRetries; i++)
                 {
-                    if (TryRandomize(gs, out startScene))
+                    if (TryRandomize(gs, eval, out startScene))
                     {
                         success = true;
                         break;
@@ -202,6 +207,10 @@ namespace Haiku.Rando
                         Debug.LogWarning($"Randomization failed: attempt {i+1} of {maxRetries}");
                         //Iterate the seed
                         gs.Seed = $"{origSeed}__attempt{i+1}";
+                        if (gs.Level == RandomizationLevel.Rooms)
+                        {
+                            ReloadTopology();
+                        }
                     }
                 }
 
@@ -279,11 +288,27 @@ namespace Haiku.Rando
             }
         }
 
-        private bool TryRandomize(GenerationSettings gs, out int? startScene)
+        private LogicEvaluator LoadLogic(GenerationSettings gs)
         {
-            // A previous room rando may have rewired the topology; make sure we start with the
-            // vanilla topology.
-            ReloadTopology();
+            var baseLogic = LoadLogicLayer("BaseLogic", gs.Contains);
+            var logicLayers = new List<LogicLayer>() { baseLogic };
+            if (gs.Contains(Skip.EnemyPogos)) logicLayers.Add(LoadLogicLayer("EnemyPogoLogic", gs.Contains));
+            if (gs.Contains(Skip.BLJ)) logicLayers.Add(LoadLogicLayer("BLJLogic", gs.Contains));
+            if (gs.Contains(Skip.BombJumps)) logicLayers.Add(LoadLogicLayer("BombJumpLogic", gs.Contains));
+            if (gs.Contains(Skip.SkillChips)) logicLayers.Add(LoadLogicLayer("SkillChipLogic", gs.Contains));
+            if (gs.Contains(Skip.DoubleJumpChains)) logicLayers.Add(LoadLogicLayer("DoubleJumpChainLogic", gs.Contains));
+            // See the hazard room logic file for why this randomization level check is needed.
+            if (gs.Level == RandomizationLevel.Pickups && gs.Contains(Skip.HazardRooms))
+            {
+                logicLayers.Add(LoadLogicLayer("HazardRoomLogic", gs.Contains));
+            }
+
+            return new(logicLayers);
+        }
+
+        private bool TryRandomize(GenerationSettings gs, LogicEvaluator evaluator, out int? startScene)
+        {
+            
 
             var seed = new Seed128(gs.Seed);
 
@@ -312,21 +337,6 @@ namespace Haiku.Rando
             {
                 startScene = null;
             }
-
-            var baseLogic = LoadLogicLayer("BaseLogic", gs.Contains);
-            var logicLayers = new List<LogicLayer>() { baseLogic };
-            if (gs.Contains(Skip.EnemyPogos)) logicLayers.Add(LoadLogicLayer("EnemyPogoLogic", gs.Contains));
-            if (gs.Contains(Skip.BLJ)) logicLayers.Add(LoadLogicLayer("BLJLogic", gs.Contains));
-            if (gs.Contains(Skip.BombJumps)) logicLayers.Add(LoadLogicLayer("BombJumpLogic", gs.Contains));
-            if (gs.Contains(Skip.SkillChips)) logicLayers.Add(LoadLogicLayer("SkillChipLogic", gs.Contains));
-            if (gs.Contains(Skip.DoubleJumpChains)) logicLayers.Add(LoadLogicLayer("DoubleJumpChainLogic", gs.Contains));
-            // See the hazard room logic file for why this randomization level check is needed.
-            if (gs.Level == RandomizationLevel.Pickups && gs.Contains(Skip.HazardRooms))
-            {
-                logicLayers.Add(LoadLogicLayer("HazardRoomLogic", gs.Contains));
-            }
-
-            var evaluator = new LogicEvaluator(logicLayers);
 
             if (gs.Level == RandomizationLevel.Rooms)
             {
