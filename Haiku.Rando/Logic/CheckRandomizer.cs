@@ -56,11 +56,15 @@ namespace Haiku.Rando.Logic
         // things that are only needed during randomization
         private readonly Dictionary<string, int> _acquiredStates = new Dictionary<string, int>();
         private Bitset64 _startingChipSlotsUsed;
-        private readonly CheckPool _startingPool = new CheckPool();
+        private readonly HashSet<RandoCheck> _startingPool = new();
         private readonly CheckPool _pool = new CheckPool();
-        private readonly List<RandoCheck> _visitedChecks = new List<RandoCheck>();
+        private readonly HashSet<RandoCheck> _visitedChecks = new();
         private readonly List<InLogicCheck> _checksToReplace = new();
         private readonly Xoroshiro128Plus _random;
+        private readonly System.Diagnostics.Stopwatch _mainTimer = new();
+        private readonly System.Diagnostics.Stopwatch _exploreTimer = new();
+        private readonly System.Diagnostics.Stopwatch _updateFrontierTimer = new();
+
 
         public CheckRandomizerBuilder(RandoTopology topology, LogicEvaluator logic, GenerationSettings gs, Seed128 seed, int? startScene)
         {
@@ -84,8 +88,12 @@ namespace Haiku.Rando.Logic
             _randomized = true;
 
             SyncedRng.SequenceSeed = _random.NextULong();
+
+            _mainTimer.Start();
             BuildPool();
             ArrangeChecks();
+            _mainTimer.Stop();
+            Debug.Log($"explore: {_exploreTimer.ElapsedMilliseconds} frontier: {_updateFrontierTimer.ElapsedMilliseconds} total: {_mainTimer.ElapsedMilliseconds}");
             return new()
             {
                 Settings = Settings,
@@ -102,7 +110,7 @@ namespace Haiku.Rando.Logic
         {
             //We're going to explore, keeping track of what we can reach and what frontier of edges are not yet passable
             var frontier = new List<FrontierEdge>();
-            var explored = new List<FrontierEdge>();
+            var explored = new HashSet<GraphEdge>();
             _visitedChecks.Clear();
 
             //Populate our initial frontier based on our start point
@@ -261,6 +269,7 @@ namespace Haiku.Rando.Logic
 
         private void UpdateFrontierLogic(List<FrontierEdge> frontier, int depth)
         {
+            _updateFrontierTimer.Start();
             //Update current missing logic on the frontier
             foreach (var edge in frontier)
             {
@@ -308,6 +317,7 @@ namespace Haiku.Rando.Logic
 
                 edge.Uniqueness = 1 - p;
             }
+            _updateFrontierTimer.Stop();
         }
 
         private void PlaceAllRemainingChecks()
@@ -376,8 +386,9 @@ namespace Haiku.Rando.Logic
             $"Transition[{node.SceneId2}][{node.Alias2}]"
         );
 
-        private void Explore(int depth, List<FrontierEdge> frontier, List<FrontierEdge> explored)
+        private void Explore(int depth, List<FrontierEdge> frontier, HashSet<GraphEdge> explored)
         {
+            _exploreTimer.Start();
             var pendingExploration = new Stack<FrontierEdge>(frontier);
             while (pendingExploration.Count > 0)
             {
@@ -394,7 +405,7 @@ namespace Haiku.Rando.Logic
                 if (_logic.CanTraverse(edge.Edge))
                 {
                     frontier.Remove(edge);
-                    explored.Add(edge);
+                    explored.Add(edge.Edge);
                     if (edge.Edge.Destination is RandoCheck check)
                     {
                         if (!_visitedChecks.Contains(check))
@@ -417,10 +428,15 @@ namespace Haiku.Rando.Logic
                         var (s1, s2) = TransitionNodeStates(node);
                         AddState(s1);
                         AddState(s2);
-                        foreach (var edgeOut in node.Outgoing.Where(e => explored.All(x => x.Edge != e) && pendingExploration.All(x => x.Edge != e) && frontier.All(x => x.Edge != e)))
+                        foreach (var e in node.Outgoing)
                         {
-                            //Debug.Log($"Adding to exploration: {edgeOut.SceneId}:{edgeOut.Name} from {edgeOut.Origin.Name} to {edgeOut.Destination.Name}");
-                            pendingExploration.Push(new FrontierEdge(edgeOut, depth));
+                            var shouldExplore = !explored.Contains(e) &&
+                                pendingExploration.All(x => x.Edge != e) &&
+                                frontier.All(x => x.Edge != e);
+                            if (shouldExplore)
+                            {
+                                pendingExploration.Push(new FrontierEdge(e, depth));
+                            }
                         }
                     }
                 }
@@ -433,6 +449,7 @@ namespace Haiku.Rando.Logic
                     }
                 }
             }
+            _exploreTimer.Stop();
         }
 
         private void ApplyProximityPenalty(RandoCheck origin, int startPenalty)
@@ -506,7 +523,10 @@ namespace Haiku.Rando.Logic
             // The checks in the Abandoned Wastes shop are all duplicates of those in the train, and become inaccessible once
             // the train is unlocked.
             _pool.RemoveAll(IsAbandonedWastesShopItem);
-            _startingPool.AddRange(_pool);
+            foreach (var c in _pool)
+            {
+                _startingPool.Add(c);
+            }
 
             //We remove a few checks from the source pool based on special starting conditions
             if (Settings.Contains(StartingItemSet.Wrench))
@@ -607,6 +627,9 @@ namespace Haiku.Rando.Logic
             return false;
         }
 
+        // This assumes all state names are composed of a word plus zero or more
+        // square-bracket-enclosed words; in other words, they match the following regex:
+        // \w+(\[\w*\])*
         private void AddState(string state)
         {
             int i = 0;
