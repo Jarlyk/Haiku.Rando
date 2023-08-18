@@ -106,18 +106,21 @@ namespace Haiku.Rando.Logic
 
         public static bool MatchesState(int edgeSceneId, RandoCheck check, string stateName)
         {
-            if (stateName == LogicStateNames.Bomb) return IsAbility(check, AbilityId.Bomb);
-            if (stateName == LogicStateNames.Dash) return false;
-            if (stateName == LogicStateNames.DoubleJump) return IsAbility(check, AbilityId.DoubleJump);
-            if (stateName == LogicStateNames.Grapple) return IsAbility(check, AbilityId.Grapple);
-            if (stateName == LogicStateNames.Heal) return check.Type == CheckType.Wrench;
-            if (stateName == LogicStateNames.Ball) return IsAbility(check, AbilityId.Ball);
-            if (stateName == LogicStateNames.Blink) return IsAbility(check, AbilityId.Blink);
-            if (stateName == LogicStateNames.Magnet) return IsAbility(check, AbilityId.Magnet);
-            if (stateName == LogicStateNames.FireRes) return check.Type == CheckType.FireRes;
-            if (stateName == LogicStateNames.WaterRes) return check.Type == CheckType.WaterRes;
-            if (stateName == LogicStateNames.Light) return check.Type == CheckType.Bulblet;
-            if (stateName == LogicStateNames.PowerCell) return check.Type == CheckType.PowerCell;
+            switch (stateName)
+            {
+                case LogicStateNames.Bomb: return IsAbility(check, AbilityId.Bomb);
+                case LogicStateNames.Dash: return false;
+                case LogicStateNames.DoubleJump: return IsAbility(check, AbilityId.DoubleJump);
+                case LogicStateNames.Grapple: return IsAbility(check, AbilityId.Grapple);
+                case LogicStateNames.Heal: return check.Type == CheckType.Wrench;
+                case LogicStateNames.Ball: return IsAbility(check, AbilityId.Ball);
+                case LogicStateNames.Blink: return IsAbility(check, AbilityId.Blink);
+                case LogicStateNames.Magnet: return IsAbility(check, AbilityId.Magnet);
+                case LogicStateNames.FireRes: return check.Type == CheckType.FireRes;
+                case LogicStateNames.WaterRes: return check.Type == CheckType.WaterRes;
+                case LogicStateNames.Light: return check.Type == CheckType.Bulblet;
+                case LogicStateNames.PowerCell: return check.Type == CheckType.PowerCell;
+            }
 
             var bracketIndex = stateName.IndexOf('[');
             if (bracketIndex == -1)

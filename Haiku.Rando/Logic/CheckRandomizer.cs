@@ -280,11 +280,13 @@ namespace Haiku.Rando.Logic
                 var canUnlock = true;
                 foreach (var logic in edge.MissingLogic)
                 {
-                    var matching = _pool
-                                        .Where(c => LogicEvaluator.MatchesState(edge.Edge.SceneId, c, logic.StateName))
-                                        .ToList();
-                    var availCount = matching.Count;
-                    canUnlock &= availCount >= logic.Count;
+                    var availCount = _pool
+                                        .Count(c => LogicEvaluator.MatchesState(edge.Edge.SceneId, c, logic.StateName));
+                    if (availCount < logic.Count)
+                    {
+                        canUnlock = false;
+                        break;
+                    }
                 }
 
                 edge.CanUnlock = canUnlock;
@@ -300,7 +302,7 @@ namespace Haiku.Rando.Logic
                 }
                 else
                 {
-                    logicTotals[logic.StateName] += logic.Count;
+                    logicTotals[logic.StateName] = value + logic.Count;
                 }
             }
 
