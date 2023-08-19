@@ -691,7 +691,7 @@ namespace Haiku.Rando.Topology
 
                     var check = new RandoCheck(type, sceneId, shop.transform.position, itemId)
                     {
-                        SaveId = button.saveID, 
+                        SaveId = button.saveID,
                         IsShopItem = true,
                         Alias = $"ShopItem{shopItemIndex}"
                     };

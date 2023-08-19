@@ -113,7 +113,7 @@ namespace Haiku.Rando.Checks
             switch (check.Type)
             {
                 case CheckType.Item:
-                    return button.item && button.itemID == check.CheckId;
+                    return button.item && button.itemID == check.CheckId && button.saveID == check.SaveId;
                 case CheckType.Chip:
                     return button.chip && GameManager.instance.getChipNumber(button.chipIdentifier) == check.CheckId;
                 case CheckType.ChipSlot:
