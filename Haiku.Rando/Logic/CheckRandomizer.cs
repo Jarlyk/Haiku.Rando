@@ -148,15 +148,15 @@ namespace Haiku.Rando.Logic
                 UpdateFrontierLogic(frontier, depth);
 
                 //Determine possible frontier edges we want to unlock and score them to weight random selection
-                var frontierSet = WeightedSet<FrontierEdge>.Build(frontier.Where(e => e.CanUnlock), WeighFrontier);
-                if (frontierSet.Count == 0)
+                var frontierEdges = frontier.Where(e => e.CanUnlock).ToList();
+                if (frontierEdges.Count == 0)
                 {
                     Debug.LogWarning("Frontier has run out of checks that can be unlocked");
                     PlaceAllRemainingChecks();
                     break;
                 }
-
                 //Randomly choose an edge we want to unlock
+                var frontierSet = new WeightedSet<FrontierEdge>(frontierEdges, WeighFrontier);
                 var nextEdge = frontierSet.PickItem(_random.NextDouble());
                 Debug.Log($"Rando: Chose edge {nextEdge.Edge.SceneId}:{nextEdge.Edge.Name} for placing conditions");
 
@@ -186,7 +186,7 @@ namespace Haiku.Rando.Logic
         {
             Debug.Log($"Satisfying condition {condition}");
             //Find and weigh remaining check locations
-            var candidates = WeightedSet<InLogicCheck>.Build(_checksToReplace, WeighCheckPlacement);
+            var candidates = new WeightedSet<InLogicCheck>(_checksToReplace, WeighCheckPlacement);
 
             //Choose from weighted distribution and replace each check in turn
             for (int i = 0; i < condition.Count; i++)
@@ -226,12 +226,10 @@ namespace Haiku.Rando.Logic
             {
                 throw new RandomizationException($"Ran out of locations to place {newItem.Name}");
             }
-            var original = candidates.PickItem(_random.NextDouble());
-            candidates.Remove(original);
+            var original = candidates.RemoveItem(_random.NextDouble());
             ApplyProximityPenalty(original.Check, 3);
             SetCheckMapping(original.Check, newItem);
             _pool.Remove(newItem);
-            _checksToReplace.Remove(original);
             AddState(LogicEvaluator.GetStateName(newItem));
             Debug.Log($"Replaced check {original.Check.Name} with {newItem.Name}");
         }
