@@ -69,9 +69,9 @@ namespace Haiku.Rando.Logic
         public bool IsFalse(GraphEdge edge)
         {
             var sets = GetAllLogic(edge);
-            return sets.Count > 0 && sets.All(s => s.Conditions.Count == 1 &&
-                                                   s.Conditions[0].StateName
-                                                    .Equals("false", StringComparison.InvariantCultureIgnoreCase));
+            return sets.Count > 0 && sets.All(
+                s => s.Conditions.Count == 1 &&
+                s.Conditions[0].Symbol == LogicSymbol.False);
         }
 
         private IReadOnlyList<LogicCondition> GetMissingLogic(LogicSet set)
@@ -79,10 +79,10 @@ namespace Haiku.Rando.Logic
             var result = new List<LogicCondition>();
             foreach (var condition in set.Conditions)
             {
-                var diff = condition.Count - Context.GetCount(condition.StateName);
+                var diff = condition.Count - Context.GetCount(condition.Symbol);
                 if (diff > 0)
                 {
-                    result.Add(new LogicCondition(condition.StateName, diff));
+                    result.Add(new LogicCondition(condition.Symbol, diff));
                 }
             }
 
@@ -96,137 +96,110 @@ namespace Haiku.Rando.Logic
 
         public bool IsConditionSatsified(LogicCondition condition)
         {
-            if (condition.StateName.Equals("false", StringComparison.InvariantCultureIgnoreCase)) return false;
-            if (condition.StateName.Equals("true", StringComparison.InvariantCultureIgnoreCase)) return true;
-
-            var result = Context.GetCount(condition.StateName) >= condition.Count;
-            //Debug.Log($"Checking condition {condition} => {result}");
-            return result;
+            if (condition.Symbol == LogicSymbol.False)
+            {
+                return false;
+            }
+            if (condition.Count == 0)
+            {
+                return true;
+            }
+            return Context.GetCount(condition.Symbol) >= condition.Count;
         }
 
-        public static bool MatchesState(int edgeSceneId, RandoCheck check, string stateName)
+        public static LogicSymbol SymbolForCheck(RandoCheck check) => check.Type switch
         {
-            switch (stateName)
+            CheckType.Wrench => LogicSymbol.Wrench,
+            CheckType.Bulblet => LogicSymbol.Light,
+            CheckType.Ability => (AbilityId)check.CheckId switch
             {
-                case LogicStateNames.Bomb: return IsAbility(check, AbilityId.Bomb);
-                case LogicStateNames.Dash: return false;
-                case LogicStateNames.DoubleJump: return IsAbility(check, AbilityId.DoubleJump);
-                case LogicStateNames.Grapple: return IsAbility(check, AbilityId.Grapple);
-                case LogicStateNames.Heal: return check.Type == CheckType.Wrench;
-                case LogicStateNames.Ball: return IsAbility(check, AbilityId.Ball);
-                case LogicStateNames.Blink: return IsAbility(check, AbilityId.Blink);
-                case LogicStateNames.Magnet: return IsAbility(check, AbilityId.Magnet);
-                case LogicStateNames.FireRes: return check.Type == CheckType.FireRes;
-                case LogicStateNames.WaterRes: return check.Type == CheckType.WaterRes;
-                case LogicStateNames.Light: return check.Type == CheckType.Bulblet;
-                case LogicStateNames.PowerCell: return check.Type == CheckType.PowerCell;
-            }
-
-            var bracketIndex = stateName.IndexOf('[');
-            if (bracketIndex == -1)
+                AbilityId.Magnet => LogicSymbol.Magnet,
+                AbilityId.Ball => LogicSymbol.Ball,
+                AbilityId.Bomb => LogicSymbol.Bomb,
+                AbilityId.Blink => LogicSymbol.Blink,
+                AbilityId.DoubleJump => LogicSymbol.DoubleJump,
+                AbilityId.Grapple => LogicSymbol.Grapple,
+                _ => LogicSymbol.Nil
+            },
+            CheckType.Item => (ItemId)check.CheckId switch
             {
-                //If no index specifier, only match if in the same room
-                return MatchesType(stateName, check.Type) && check.SceneId == edgeSceneId;
-            }
-
-            var baseName = stateName.Substring(0, bracketIndex);
-            if (!MatchesType(baseName, check.Type)) return false;
-
-            var endIndex = stateName.IndexOf(']');
-            if (endIndex > bracketIndex)
+                ItemId.RustedKey => LogicSymbol.RustedKey,
+                ItemId.ElectricKey => LogicSymbol.ElectricKey,
+                ItemId.GreenSkull => LogicSymbol.GreenSkull,
+                ItemId.RedSkull => LogicSymbol.RedSkull,
+                _ => LogicSymbol.Nil
+            },
+            CheckType.Chip => check.CheckId switch
             {
-                if (int.TryParse(stateName.Substring(bracketIndex + 1, endIndex - bracketIndex - 1), out int checkId))
-                    return check.CheckId == checkId;
-            }
-
-            return false;
-        }
-
-        private static bool IsAbility(RandoCheck check, AbilityId id)
-        {
-            return check.Type == CheckType.Ability && check.CheckId == (int)id;
-        }
-
-        private static bool MatchesType(string stateName, CheckType type) => type switch
-        {
-            CheckType.Chip => stateName == "Chip",
-            CheckType.ChipSlot => stateName == "Slot",
-            CheckType.PowerCell => stateName == "PowerCell",
-            CheckType.Item => stateName == "Item",
-            CheckType.MapDisruptor => stateName == "Disruptor",
-            CheckType.Lever => stateName == "Lever",
-            CheckType.Coolant => stateName == "Coolant",
-            CheckType.TrainStation => stateName == "TrainStation",
-            CheckType.Clock => stateName == "Clock",
-            _ => false
+                1 => LogicSymbol.GyroAccelerator,
+                3 => LogicSymbol.PowerProcessor,
+                6 => LogicSymbol.AutoModifier,
+                11 => LogicSymbol.BulbRelation,
+                16 => LogicSymbol.SelfDetonation,
+                20 => LogicSymbol.AmplifyingTransputer,
+                25 => LogicSymbol.HeatDrive,
+                _ => LogicSymbol.Nil
+            },
+            CheckType.ChipSlot => ChipSlotSymbol(check.CheckId),
+            CheckType.Lever => LeverSymbol(check.CheckId),
+            CheckType.PowerCell => LogicSymbol.PowerCell,
+            CheckType.Coolant => LogicSymbol.Coolant,
+            CheckType.FireRes => LogicSymbol.FireRes,
+            CheckType.WaterRes => LogicSymbol.WaterRes,
+            CheckType.TrainStation => 
+                check.CheckId >= 0 && check.CheckId < 8 ? (LogicSymbol)((int)LogicSymbol.AbandonedWastesTrainStation + check.CheckId) : LogicSymbol.Nil,
+            CheckType.Clock => LogicSymbol.Clock,
+            _ => LogicSymbol.Nil
         };
 
-        public static string GetStateName(RandoCheck check)
-        {
-            switch (check.Type)
+        internal static LogicSymbol ChipSlotSymbol(int slotId) =>
+            ChipSlotColorSymbol(GameManager.instance.chipSlot[slotId].chipSlotColor);
+        
+        internal static LogicSymbol ChipSlotColorSymbol(string color) =>
+            color switch
             {
-                case CheckType.Wrench:
-                    return LogicStateNames.Heal;
-                case CheckType.Bulblet:
-                    return LogicStateNames.Light;
-                case CheckType.Ability:
-                    return GetAbilityStateName((AbilityId)check.CheckId);
-                case CheckType.Item:
-                    return $"Item[{check.CheckId}]";
-                case CheckType.Chip:
-                    return $"Chip[{check.CheckId}]";
-                case CheckType.ChipSlot:
-                    return $"Slot[{check.CheckId}]";
-                case CheckType.MapDisruptor:
-                    return $"Disruptor[{check.CheckId}]";
-                case CheckType.Lore:
-                    return $"Lore[{check.CheckId}]";
-                case CheckType.Lever:
-                    return $"Lever[{check.CheckId}]";
-                case CheckType.PartsMonument:
-                    return null;
-                case CheckType.PowerCell:
-                    return $"PowerCell[{check.CheckId}]";
-                case CheckType.Coolant:
-                    return $"Coolant[{check.SaveId}]";
-                case CheckType.FireRes:
-                    return LogicStateNames.FireRes;
-                case CheckType.WaterRes:
-                    return LogicStateNames.WaterRes;
-                case CheckType.TrainStation:
-                    return $"TrainStation[{check.CheckId}]";
-                case CheckType.Clock:
-                    return "Clock";
-                case CheckType.MapMarker:
-                    return $"Marker[{check.CheckId}]";
-                case CheckType.MoneyPile:
-                    return $"MoneyPile[{check.CheckId}]";
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        public static string GetAbilityStateName(AbilityId id)
+                "red" => LogicSymbol.RedChipSlot,
+                "green" => LogicSymbol.GreenChipSlot,
+                "blue" => LogicSymbol.BlueChipSlot,
+                _ => LogicSymbol.Nil
+            };
+        
+        private static LogicSymbol LeverSymbol(int leverId) => leverId switch
         {
-            switch (id)
-            {
-                case AbilityId.Magnet:
-                    return LogicStateNames.Magnet;
-                case AbilityId.Ball:
-                    return LogicStateNames.Ball;
-                case AbilityId.Bomb:
-                    return LogicStateNames.Bomb;
-                case AbilityId.Blink:
-                    return LogicStateNames.Blink;
-                case AbilityId.DoubleJump:
-                    return LogicStateNames.DoubleJump;
-                case AbilityId.Grapple:
-                    return LogicStateNames.Grapple;
-                case AbilityId.None:
-                    return null;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
+            4 => LogicSymbol.Lever4,
+            6 => LogicSymbol.Lever6,
+            7 => LogicSymbol.Lever7,
+            9 => LogicSymbol.Lever9,
+            12 => LogicSymbol.Lever12,
+            13 => LogicSymbol.Lever13,
+            15 => LogicSymbol.Lever15,
+            17 => LogicSymbol.Lever17,
+            20 => LogicSymbol.Lever20,
+            21 => LogicSymbol.Lever21,
+            22 => LogicSymbol.Lever22,
+            25 => LogicSymbol.Lever25,
+            26 => LogicSymbol.Lever26,
+            27 => LogicSymbol.Lever27,
+            28 => LogicSymbol.Lever28,
+            30 => LogicSymbol.Lever30,
+            37 => LogicSymbol.Lever37,
+            38 => LogicSymbol.Lever38,
+            42 => LogicSymbol.Lever42,
+            44 => LogicSymbol.Lever44,
+            45 => LogicSymbol.Lever45,
+            46 => LogicSymbol.Lever46,
+            47 => LogicSymbol.Lever47,
+            48 => LogicSymbol.Lever48,
+            49 => LogicSymbol.Lever49,
+            51 => LogicSymbol.Lever51,
+            53 => LogicSymbol.Lever53,
+            54 => LogicSymbol.Lever54,
+            55 => LogicSymbol.Lever55,
+            56 => LogicSymbol.Lever56,
+            71 => LogicSymbol.Lever71,
+            72 => LogicSymbol.Lever72,
+            75 => LogicSymbol.Lever75,
+            _ => LogicSymbol.Nil
+        };
     }
 }

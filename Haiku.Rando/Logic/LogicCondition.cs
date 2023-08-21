@@ -6,20 +6,20 @@ namespace Haiku.Rando.Logic
 {
     public sealed class LogicCondition
     {
-        public LogicCondition(string stateName, int count = 1)
+        public LogicCondition(LogicSymbol symbol, int count = 1)
         {
-            StateName = stateName;
+            Symbol = symbol;
             Count = count;
         }
 
-        public string StateName { get; }
+        public LogicSymbol Symbol { get; }
 
         public int Count { get; }
 
         public override string ToString()
         {
-            if (Count == 1) return StateName;
-            return $"{Count}#{StateName}";
+            if (Count == 1) return Symbol.ToString();
+            return $"{Count}#{Symbol}";
         }
     }
 }

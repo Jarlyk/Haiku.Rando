@@ -7,8 +7,6 @@ namespace Haiku.Rando.Logic
 {
     public interface ICheckRandoContext
     {
-        bool HasState(string state);
-
-        int GetCount(string state);
+        int GetCount(LogicSymbol sym);
     }
 }

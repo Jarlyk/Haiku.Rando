@@ -438,7 +438,7 @@ namespace Haiku.Rando.Topology
             foreach (var pickup in SceneUtils.FindObjectsOfType<UnlockTutorial>())
             {
                 var check = new RandoCheck(CheckType.Ability, sceneId, pickup.transform.position, pickup.abilityID);
-                check.Alias = LogicEvaluator.GetAbilityStateName((AbilityId)pickup.abilityID);
+                check.Alias = LogicEvaluator.SymbolForCheck(check).ToString();
                 checks.Add(check);
             }
 

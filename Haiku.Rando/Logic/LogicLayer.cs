@@ -33,46 +33,45 @@ namespace Haiku.Rando.Logic
 
         public IReadOnlyDictionary<GraphEdge, IReadOnlyList<LogicSet>> LogicByEdge { get; }
 
+        private const string TrueTerm = "true";
+
         public static LogicLayer Deserialize(RandoTopology topology, Func<Skip, bool> enabledSkips, StreamReader reader)
         {
             var tokens = TokenizeLogic(reader);
             var macros = new Dictionary<string, List<Token>>()
             {
-                {"PowerProcessor", singleName(LogicStateNames.PowerProcessor)},
-                {"HeatDrive", singleName(LogicStateNames.HeatDrive)},
-                {"AmplifyingTransputer", singleName(LogicStateNames.AmplifyingTransputer)},
-                {"GyroAccelerator", singleName(LogicStateNames.GyroAccelerator)},
-                {"LIGHT", singleName(LogicStateNames.Light)},
-                {"BALL", singleName(LogicStateNames.Ball)},
-                {"BLJ", singleName(enabledSkips(Skip.BLJ) ? "true" : "false")},
-                {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? "true" : "false")},
-                {"BombJumps", singleName(enabledSkips(Skip.BombJumps) ? "true" : "false")}
+                {"false", singleName(nameof(LogicSymbol.False))},
+                {"LIGHT", singleName(nameof(LogicSymbol.Light))},
+                {"BALL", singleName(nameof(LogicSymbol.Ball))},
+                {"BLJ", singleName(enabledSkips(Skip.BLJ) ? TrueTerm : nameof(LogicSymbol.False))},
+                {"EnemyPogos", singleName(enabledSkips(Skip.EnemyPogos) ? TrueTerm : nameof(LogicSymbol.False))},
+                {"BombJumps", singleName(enabledSkips(Skip.BombJumps) ? TrueTerm : nameof(LogicSymbol.False))}
             };
             if (enabledSkips(Skip.SkillChips))
             {
-                macros["Ball"] = new()
+                macros[nameof(LogicSymbol.Ball)] = new()
                 {
-                    new(TokenType.Name, LogicStateNames.Ball, -1),
-                    new(TokenType.Name, LogicStateNames.AutoModifier, -1),
+                    new(TokenType.Name, nameof(LogicSymbol.Ball), -1),
+                    new(TokenType.Name, nameof(LogicSymbol.AutoModifier), -1),
                     new(TokenType.Or, "|", -1)
                 };
-                macros["SelfDetonation"] = singleName(LogicStateNames.SelfDetonation);
+                macros[nameof(LogicSymbol.SelfDetonation)] = singleName(nameof(LogicSymbol.SelfDetonation));
             }
             else
             {
-                macros["SelfDetonation"] = singleName("false");
+                macros[nameof(LogicSymbol.SelfDetonation)] = singleName(nameof(LogicSymbol.False));
             }
 
             if (enabledSkips(Skip.DarkRooms))
             {
-                macros[LogicStateNames.Light] = singleName("true");
+                macros[nameof(LogicSymbol.Light)] = singleName(TrueTerm);
             }
             else if (enabledSkips(Skip.SkillChips))
             {
-                macros[LogicStateNames.Light] = new()
+                macros[nameof(LogicSymbol.Light)] = new()
                 {
-                    new(TokenType.Name, LogicStateNames.Light, -1),
-                    new(TokenType.Name, LogicStateNames.BulbRelation, -1),
+                    new(TokenType.Name, nameof(LogicSymbol.Light), -1),
+                    new(TokenType.Name, nameof(LogicSymbol.BulbRelation), -1),
                     new(TokenType.Or, "|", -1)
                 };
             }
@@ -510,7 +509,7 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private static List<LogicSet> EvalLogicExpression(List<Token> rpn, Func<string, string> expand)
+        private static List<LogicSet> EvalLogicExpression(List<Token> rpn, Func<string, LogicSymbol> expand)
         {
             var stack = new Stack<object>();
 
@@ -519,7 +518,10 @@ namespace Haiku.Rando.Logic
                 switch (cmd.Type)
                 {
                     case TokenType.Name:
-                        stack.Push(new List<LogicSet>() {new (new List<LogicCondition> { new(expand(cmd.Content)) })});
+                        LogicCondition cond = cmd.Content == TrueTerm ?
+                            new(LogicSymbol.Nil, 0) :
+                            new(expand(cmd.Content), 1);
+                        stack.Push(new List<LogicSet>() {new (new List<LogicCondition> { cond })});
                         break;
                     case TokenType.Int:
                         if (!int.TryParse(cmd.Content, out var n))
@@ -561,7 +563,7 @@ namespace Haiku.Rando.Logic
                         }
                         stack.Push(right.Select(
                             ls => new LogicSet(ls.Conditions.Select(
-                                c => new LogicCondition(c.StateName, c.Count * leftN)).ToList())).ToList());
+                                c => new LogicCondition(c.Symbol, c.Count * leftN)).ToList())).ToList());
                         break;
                     default:
                         throw new ArgumentOutOfRangeException($"unexpected token '{cmd.Content}' while evaluating logic expression at line #{cmd.LineNumber}");
@@ -607,10 +609,21 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private static string ExpandAlias(string stateText, RoomScene scene)
+        private static LogicSymbol ExpandAlias(string alias, RoomScene scene)
         {
-            var check = scene.Nodes.OfType<RandoCheck>().FirstOrDefault(c => c.Alias == stateText);
-            return check != null ? LogicEvaluator.GetStateName(check) : stateText;
+            try
+            {
+                return (LogicSymbol)Enum.Parse(typeof(LogicSymbol), alias);
+            }
+            catch (ArgumentException)
+            {
+                var check = scene.Nodes.OfType<RandoCheck>().FirstOrDefault(c => c.Alias == alias);
+                if (check == null)
+                {
+                    throw new InvalidOperationException($"{alias} does not resolve to any checks in scene {scene.SceneId}");
+                }
+                return LogicEvaluator.SymbolForCheck(check);
+            }
         }
     }
 }

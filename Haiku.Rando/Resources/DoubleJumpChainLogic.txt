@@ -20,7 +20,6 @@ Scene 35 // Tall room below Bunker
 $Bottom {Left1, Right1}
 $Top {Chip, Right0}
 Bottom->Top: DoubleJump + (Blink | Grapple)
-Bottom->Left0: Transition[201][Left] + DoubleJump + (Blink | Grapple)
 
 Scene 43
 Right->Left*: DoubleJump + (Blink | Grapple)

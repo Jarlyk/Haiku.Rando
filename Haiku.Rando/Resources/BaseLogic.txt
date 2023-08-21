@@ -49,14 +49,14 @@ Scene 5
 // Transitions: Repair1 (9Repair), Exit28 (28-Train), Repair1 (9Repair), Exit209 (209-Train), Exit136 (136-Train), Exit179 (179-Train), Exit88 (88-Train), Exit146 (146-Train), Exit67 (67-Train), Exit53 (53-Train)
 // Checks: ShopItem0 (Item[5]), ShopItem1 (Item[2]), ShopItem2 (Item[0]), ShopItem3 (Item[7]), ShopItem4 (Item[3]), ShopItem5 (Item[3]), ShopItem6 (Chip[4]), ShopItem7 (Chip[0]), ShopItem8 (Chip[14]), ShopItem9 (Chip[15]), ShopItem10 (Chip[10]), ShopItem11 (Chip[8]), ShopItem12 (ChipSlot[6]), ShopItem13 (ChipSlot[4]), MapMarker (MapMarker[1])
 Scene 9
-*->Exit28: TrainStation[0]
-*->Exit88: TrainStation[1]
-*->Exit179: TrainStation[2]
-*->Exit53: TrainStation[3]
-*->Exit209: TrainStation[4]
-*->Exit136: TrainStation[5]
-*->Exit67: TrainStation[6]
-*->Exit146: TrainStation[7]
+*->Exit28: AbandonedWastesTrainStation
+*->Exit88: PinionsTrainStation
+*->Exit179: FactoryTrainStation
+*->Exit53: BunkerTrainStation
+*->Exit209: DuctsTrainStation
+*->Exit136: RuinsTrainStation
+*->Exit67: CoreTrainStation
+*->Exit146: DerelictHoleTrainStation
 
 // Scene 10 : Starting area; Left0 is drop in from above
 // Transitions: Right1 (10-23bottom), Right0 (10-23top), Left1 (11-10), Left0 (34-10), Repair (10Repair), Wake (10Wake)
@@ -96,7 +96,7 @@ Left->Item: true
 // Checks: MoneyPile (MoneyPile[9])
 // Note that we mark access from Right1 as blocked; this is because can only use key from left
 Scene 12
-*->Right1: Item[0]
+*->Right1: RustedKey
 Right1->*: false
 !Right1->MoneyPile: true
 
@@ -287,8 +287,7 @@ $Bottom {Left1, Right1}
 Bottom->Right0: Magnet+DoubleJump
 Bottom->Chip: Magnet
 Left0->Right0: Ball | DoubleJump | Blink | Grapple
-Right0->Left0: Transition[201][Left] + (Ball | DoubleJump | Blink | Grapple)
-Bottom->Left0: Magnet+DoubleJump+Transition[201][Left]
+*->Left0: false // only opens from the other side
 
 // Scene 36
 // Transitions: Right (36-196), Left (37-36)
@@ -377,15 +376,15 @@ Scene 46
 
 $LeftLever {Left, Lever}
 
-Right0->Door: Item[0]
+Right0->Door: RustedKey
 Right0->Right1: true
 Right0->LeftLever: Lever
 Right0->MoneyPile*: true
-Right1->Door: Item[0]
+Right1->Door: RustedKey
 Right1->Right0: Magnet | DoubleJump
 Right1->LeftLever: Lever + (Magnet | DoubleJump)
 Right1->MoneyPile*: Magnet | DoubleJump
-Left->Door: Lever + Item[0]
+Left->Door: Lever + RustedKey
 Left->Right0: Lever + (Magnet | DoubleJump)
 Left->Right1: Lever
 Left->MoneyPile*: Lever + (Magnet | DoubleJump)
@@ -447,7 +446,7 @@ Scene 52
 Right1->*0: Magnet
 Left1->*0: Magnet
 
-// Scene 53
+// Scene 53: Bunker Station
 // Transitions: Left (52-53), Train (53-Train)
 // Checks: TrainStation (TrainStation[3])
 Scene 53
@@ -528,13 +527,13 @@ Right1->Left0: Magnet
 Right1->Right0: Magnet
 Left0->Right0: Magnet | Grapple
 Right0->Left0: Magnet | Grapple
-*->Door0: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] // requires the individual Creators to be defeated
+*->Door0: 3#CreatorBoss + FireRes // fire res for Proton
 Door0->Left1: true
 Door0->Right1: true
 Door0->Left0: Magnet
 Door0->Right0: Magnet
 *->Door1: false // alternative door to Atom?
-*->MapMarker: Transition[144] // requires the Creators trio to be defeated
+*->MapMarker: CreatorTrioBoss
 
 // Scene 63 : Left of Bulb Hive
 // Transitions: Right0 (63-62), Right1 (63-83), Left0 (78-63), Left1 (64-63)
@@ -802,7 +801,7 @@ Left->Grapple: DoubleJump + Ball | Grapple
 // Transitions: Right (86-87), Left (68-86)
 // Checks:
 Scene 86
-Right->Left: Lever[17]
+Right->Left: Lever17
 
 // Scene 87
 // Transitions: Right1 (87-88), Right0 (87-89), Left1 (86-87), Left0 (92-87), Repair (87Repair)
@@ -877,7 +876,7 @@ Scene 95
 //This means access is a bit unusual, as it involves visiting room 97 and completing it
 //We thus flag the Chip as being gated based on room 97's obstacles
 //TODO: For future room rando, we probably want to keep 95-97 linked, as otherwise logic here gets very wonky (or we can use a transition requirement, like for bosses)
-*->Chip: Magnet | (DoubleJump + Lever[42])
+*->Chip: Magnet | (DoubleJump + Lever42)
 
 // Scene 96 : Piston bridge
 // Transitions: Right (96-95), Left (93-96)
@@ -1303,7 +1302,7 @@ Scene 136
 // Transitions: Right (137-138), Left (134-137)
 // Checks:
 Scene 137
-Left->Right: Item[0]
+Left->Right: RustedKey
 Right->Left: false
 
 // Scene 138: First Tree
@@ -1323,9 +1322,8 @@ Scene 139
 $Bottom {Right, Repair}
 Bottom->Left: Magnet
 Bottom->Lore: Magnet
-// the conditions to be able to defeat Virus
-Left->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] + Transition[62]
-Repair->Right: Transition[84][Right] + Transition[200][Right] + Transition[201][Left] + Transition[62]
+Left->Right: VirusBoss
+Repair->Right: VirusBoss
 
 // Scene 140
 // Transitions: Right0 (140-135), Right1 (140-141), Repair (140Repair)
@@ -1590,7 +1588,7 @@ Right1->PowerCell: Magnet
 // Transitions: Right (169-64), Left (168-169), Door (220-169)
 // Checks:
 Scene 169
-*->Door: Item[1]
+*->Door: ElectricKey
 Right->Left: DoubleJump
 //TODO: BLJ skip
 
@@ -1674,13 +1672,13 @@ Scene 177
 Scene 178
 // No obstacles
 
-// Scene 179
+// Scene 179: Factory Station
 // Transitions: Right (179-173), Left (193-179), Train (179-Train)
 // Checks: Lever (Lever[25]), TrainStation (TrainStation[2])
 Scene 179
 *->Train: Clock+TrainStation
 Left->Lever: true
-Right->Lever: false
+Right->Lever: Lever
 
 // Scene 180
 // Transitions: Right (180-174), Left0 (181-180), Left1 (191-180)
@@ -1862,8 +1860,8 @@ Right1<->Left: WaterRes
 // Checks:
 Scene 199
 *->Right0: Magnet | DoubleJump
-*->Right1: Transition[84][Right] + Transition[200][Right] + Transition[201][Left]
-*->Left: Item[7]+Item[8]
+*->Right1: 3#CreatorBoss + FireRes // fire res for Proton
+*->Left: GreenSkull + RedSkull
 
 // Scene 200 : Proton room
 // Transitions: Right (200-217), Left (198-200)
@@ -2003,7 +2001,7 @@ Scene 220
 // Transitions: Right (221-229), Left (199-221)
 // Checks: Item (Item[0])
 Scene 221
-*->*: Transition[84][Right] + Transition[200][Right] + Transition[201][Left]
+*->*: 3#CreatorBoss + FireRes // fire res for Proton
 
 // Scene 222: Storage Room in Bunker (the one that requires a rusty key)
 // Transitions: 222-46 (222-46)
@@ -2092,22 +2090,10 @@ Scene 234 // Entrance to Old Arcadia
 // Transitions: Right (234-35), Left (257-234)
 // Checks: MoneyPile (MoneyPile[187])
 Left<->*:
-    Transition[19][Right] + // Magnet
-    Transition[27] + // Tire Mother
-    Transition[201][Left] + // Neutron
-    Transition[49] + // TV
-    Transition[161][Right0] + // Big Drill
-    Transition[137][Left] + // Door
-    Transition[144] + // Creators
-    Transition[128][Right1] + // Scuba Heads
-    Transition[69][Right0] + // Car Battery
-    Transition[84] + // Electron
-    Transition[184] + Magnet + // Buzzsaw
-    Transition[212] + // Big Brother
-    Transition[200][Right] + // Proton
-    Transition[98][Right] + // Mischevious
-    Transition[62] // Virus (Mainframe Vault)
-Right->Left: false // actually all the bosses
+    3#CreatorBoss + FireRes + // fire res for Proton
+    CreatorTrioBoss +
+    VirusBoss +
+    10#MiniBoss + Magnet // magnet for Buzzsaw
 Right->MoneyPile: Blink | Magnet | DoubleJump
 
 // Transitions: Right (246-56), Left (247-246)
@@ -2168,8 +2154,8 @@ Right1->Right0: Magnet | DoubleJump
 // Checks:
 Scene 254 // Elegy
 Right->Left: DoubleJump | Magnet + Blink | Magnet + Grapple
-Right->Door: Item[0] + WaterRes + (DoubleJump | Blink | Grapple)
-Left->Door: Item[0] + WaterRes
+Right->Door: RustedKey + WaterRes + (DoubleJump | Blink | Grapple)
+Left->Door: RustedKey + WaterRes
 Left->Right: DoubleJump | Blink | Grapple
 Door->Left: WaterRes + (DoubleJump | Magnet + Blink | Magnet + Grapple)
 Door->Right: WaterRes + (DoubleJump | Blink | Grapple)

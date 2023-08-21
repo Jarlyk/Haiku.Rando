@@ -54,7 +54,7 @@ Left2->MapMarker: Ball + Bomb
 Left2->MoneyPile3: Ball + Bomb
 Left2->MoneyPile*: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 Left1->MapMarker: Ball + Bomb
-Left1->MoneyPile3: Ball + bomb
+Left1->MoneyPile3: Ball + Bomb
 Left1->MoneyPile*: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
 Left0->Left1: Ball + Bomb
 Left0->MoneyPile*: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)
@@ -76,7 +76,6 @@ Right0->Left: Ball + Bomb
 Scene 35 // Tall room below Bunker
 $Up {Right0, Chip}
 Right1->Up: Ball + Bomb + (2#Coolant + PowerProcessor | Magnet + PowerProcessor | Magnet + 3#Coolant)
-Right1->Left0: Ball + Bomb + (2#Coolant + PowerProcessor | Magnet + PowerProcessor | Magnet + 3#Coolant) + Transition[201][Left]
 
 Scene 38 // Huge room in the middle of Bunker
 
@@ -247,7 +246,7 @@ Bottom->Top: Ball + Bomb
 
 Scene 95 // Steam Town
 // see the base logic file for possible further logic requirements about this
-*->Chip: Ball + Bomb + (Lever[42] | PowerProcessor | Coolant | DoubleJump)
+*->Chip: Ball + Bomb + (Lever42 | PowerProcessor | Coolant | DoubleJump)
 
 Scene 96 // Piston bridge
 Left<->Right: Ball + Bomb + (PowerProcessor | Coolant + DoubleJump | 3#Coolant)

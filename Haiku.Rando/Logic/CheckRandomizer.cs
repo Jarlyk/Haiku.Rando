@@ -54,8 +54,8 @@ namespace Haiku.Rando.Logic
         private bool _randomized;
 
         // things that are only needed during randomization
-        private readonly Dictionary<string, int> _acquiredStates = new Dictionary<string, int>();
-        private Bitset64 _startingChipSlotsUsed;
+        private readonly ushort[] _acquiredSymbols = new ushort[NumLogicSymbols];
+        private readonly ushort[] _chipSlotsUsed = new ushort[3];
         private readonly HashSet<RandoCheck> _startingPool = new();
         private readonly CheckPool _pool = new CheckPool();
         private readonly HashSet<RandoCheck> _visitedChecks = new();
@@ -65,6 +65,7 @@ namespace Haiku.Rando.Logic
         private readonly System.Diagnostics.Stopwatch _exploreTimer = new();
         private readonly System.Diagnostics.Stopwatch _updateFrontierTimer = new();
 
+        private const int NumLogicSymbols = (int)LogicSymbol.False;
 
         public CheckRandomizerBuilder(RandoTopology topology, LogicEvaluator logic, GenerationSettings gs, Seed128 seed, int? startScene)
         {
@@ -191,10 +192,10 @@ namespace Haiku.Rando.Logic
             //Choose from weighted distribution and replace each check in turn
             for (int i = 0; i < condition.Count; i++)
             {
-                var match = _pool.FirstOrDefault(c => LogicEvaluator.MatchesState(c.SceneId, c, condition.StateName));
+                var match = _pool.FirstOrDefault(c => condition.Symbol == LogicEvaluator.SymbolForCheck(c));
                 if (match == null)
                 {
-                    throw new RandomizationException($"Failed to locate check for check state {condition.StateName}; logic may not be solvable");
+                    throw new RandomizationException($"Failed to locate check for symbol {condition.Symbol}; logic may not be solvable");
                 }
 
                 // Place extra chip slots as necessary to ensure that all chips that are required for progression
@@ -203,14 +204,15 @@ namespace Haiku.Rando.Logic
                 // chips, but accounting for this is substantially more complex.
                 if (match.Type == CheckType.Chip)
                 {
-                    var color = GameManager.instance.chip[match.CheckId].chipColor;
-                    if (!TryConsumeStartingChipSlot(color))
+                    var color = LogicEvaluator.ChipSlotColorSymbol(GameManager.instance.chip[match.CheckId].chipColor);
+                    var j = (int)color - (int)LogicSymbol.RedChipSlot;
+                    _chipSlotsUsed[j]++;
+                    if (_chipSlotsUsed[j] > _acquiredSymbols[(int)color])
                     {
-                        var slot = _pool.FirstOrDefault(c => c.Type == CheckType.ChipSlot && 
-                        color == GameManager.instance.chipSlot[c.CheckId].chipSlotColor);
+                        var slot = _pool.FirstOrDefault(c => LogicEvaluator.SymbolForCheck(c) == color);
                         if (slot == null)
                         {
-                            throw new RandomizationException($"Ran out of {color} chip slots while placing {match.Name}");
+                            throw new RandomizationException($"Ran out of {color}s while placing {match.Name}");
                         }
                         PlaceItem(candidates, slot);
                     }
@@ -230,7 +232,7 @@ namespace Haiku.Rando.Logic
             ApplyProximityPenalty(original.Check, 3);
             SetCheckMapping(original.Check, newItem);
             _pool.Remove(newItem);
-            AddState(LogicEvaluator.GetStateName(newItem));
+            Acquire(newItem);
             Debug.Log($"Replaced check {original.Check.Name} with {newItem.Name}");
         }
 
@@ -251,20 +253,6 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private bool TryConsumeStartingChipSlot(string color)
-        {
-            var i = color switch
-            {
-                "red" => 0,
-                "green" => 1,
-                "blue" => 2,
-                _ => throw new RandomizationException($"{color} chip slots aren't real and can't hurt me")
-            };
-            var used = _startingChipSlotsUsed.Contains(i);
-            _startingChipSlotsUsed.Add(i);
-            return !used;
-        }
-
         private void UpdateFrontierLogic(List<FrontierEdge> frontier, int depth)
         {
             _updateFrontierTimer.Start();
@@ -279,7 +267,7 @@ namespace Haiku.Rando.Logic
                 foreach (var logic in edge.MissingLogic)
                 {
                     var availCount = _pool
-                                        .Count(c => LogicEvaluator.MatchesState(edge.Edge.SceneId, c, logic.StateName));
+                                        .Count(c => LogicEvaluator.SymbolForCheck(c) == logic.Symbol);
                     if (availCount < logic.Count)
                     {
                         canUnlock = false;
@@ -290,31 +278,21 @@ namespace Haiku.Rando.Logic
                 edge.CanUnlock = canUnlock;
             }
 
-            //Compute total of each missing logic state
-            var logicTotals = new Dictionary<string, int>();
+            //Compute total of each missing logic symbol
+            var logicTotals = new ushort[NumLogicSymbols];
             foreach (var logic in frontier.SelectMany(e => e.MissingLogic))
             {
-                if (!logicTotals.TryGetValue(logic.StateName, out int value))
-                {
-                    logicTotals.Add(logic.StateName, logic.Count);
-                }
-                else
-                {
-                    logicTotals[logic.StateName] = value + logic.Count;
-                }
+                logicTotals[(int)logic.Symbol] += (ushort)logic.Count;
             }
 
             //Compute uniqueness
             foreach (var edge in frontier)
             {
-                int n = 0;
                 double p = 1;
-                for (var i = 0; i < edge.MissingLogic.Count; i++)
+                foreach (var logic in edge.MissingLogic)
                 {
-                    var logic = edge.MissingLogic[i];
-                    p *= logic.Count/(double)logicTotals[logic.StateName];
+                    p *= logic.Count/(double)logicTotals[(int)logic.Symbol];
                 }
-
                 edge.Uniqueness = 1 - p;
             }
             _updateFrontierTimer.Stop();
@@ -381,11 +359,6 @@ namespace Haiku.Rando.Logic
             return (double)(d*d*d)/(1 + check.ProximityPenalty + shopPenalty);
         }
 
-        public static (string, string) TransitionNodeStates(TransitionNode node) => (
-            $"Transition[{node.SceneId1}][{node.Alias1}]",
-            $"Transition[{node.SceneId2}][{node.Alias2}]"
-        );
-
         private void Explore(int depth, List<FrontierEdge> frontier, HashSet<GraphEdge> explored)
         {
             _exploreTimer.Start();
@@ -396,7 +369,7 @@ namespace Haiku.Rando.Logic
                 var edgeLogic = _logic.GetAllLogic(edge.Edge);
                 if (edgeLogic.Count == 1 && 
                     edgeLogic[0].Conditions.Count == 1 && 
-                    string.Equals(edgeLogic[0].Conditions[0].StateName, "false", StringComparison.InvariantCultureIgnoreCase))
+                    edgeLogic[0].Conditions[0].Symbol == LogicSymbol.False)
                 {
                     //Edges with only false logic aren't worth considering
                     continue;
@@ -418,16 +391,15 @@ namespace Haiku.Rando.Logic
                             else if (!IsAbandonedWastesShopItem(check))
                             {
                                 Debug.Log($"Found check {check} at depth {depth} from edge {edge.Edge}; leaving as vanilla");
-                                AddState(LogicEvaluator.GetStateName(check));
+                                Acquire(check);
                             }
                             _visitedChecks.Add(check);
                         }
                     }
                     else if (edge.Edge.Destination is TransitionNode node)
                     {
-                        var (s1, s2) = TransitionNodeStates(node);
-                        AddState(s1);
-                        AddState(s2);
+                        MarkBossTransition(node.SceneId1, node.Alias1);
+                        MarkBossTransition(node.SceneId2, node.Alias2);
                         foreach (var e in node.Outgoing)
                         {
                             var shouldExplore = !explored.Contains(e) &&
@@ -451,6 +423,42 @@ namespace Haiku.Rando.Logic
             }
             _exploreTimer.Stop();
         }
+
+        private void Acquire(RandoCheck c)
+        {
+            _acquiredSymbols[(int)LogicEvaluator.SymbolForCheck(c)]++;
+        }
+
+        private void MarkBossTransition(int sceneId, string alias)
+        {
+            var k = (sceneId, alias);
+            if (_bossTransitions.TryGetValue(k, out var sym))
+            {
+                _acquiredSymbols[(int)sym]++;
+                // Each boss should be counted only once, so that logic relying
+                // on their count functions as intended.
+                _bossTransitions.Remove(k);
+            }
+        }
+
+        private readonly Dictionary<(int, string), LogicSymbol> _bossTransitions = new()
+        {
+            {(19, "Right"), LogicSymbol.MiniBoss}, // Magnet
+            {(27, "Right"), LogicSymbol.MiniBoss}, // Tire Mother
+            {(201, "Left"), LogicSymbol.CreatorBoss}, // Neutron
+            {(49, "Left"), LogicSymbol.MiniBoss}, // TV
+            {(161, "Right0"), LogicSymbol.MiniBoss}, // Big Drill
+            {(137, "Left"), LogicSymbol.MiniBoss}, // Door
+            {(144, "Left"), LogicSymbol.CreatorTrioBoss}, // Creators
+            {(128, "Right1"), LogicSymbol.MiniBoss}, // Scuba Heads
+            {(69, "Right0"), LogicSymbol.MiniBoss}, // Car Battery
+            {(84, "Right"), LogicSymbol.CreatorBoss}, // Elctron
+            {(184, "Right"), LogicSymbol.MiniBoss}, // Buzzsaw (also needs Magnet)
+            {(212, "Left"), LogicSymbol.MiniBoss}, // Big Brother
+            {(200, "Right"), LogicSymbol.CreatorBoss}, // Proton (also needs FireRes)
+            {(98, "Right"), LogicSymbol.MiniBoss}, // Mischevious
+            {(205, "62-205"), LogicSymbol.VirusBoss} // Virus
+        };
 
         private void ApplyProximityPenalty(RandoCheck origin, int startPenalty)
         {
@@ -528,12 +536,17 @@ namespace Haiku.Rando.Logic
                 _startingPool.Add(c);
             }
 
+            // Add the initial chip slots the player starts with
+            _acquiredSymbols[(int)LogicSymbol.RedChipSlot]++;
+            _acquiredSymbols[(int)LogicSymbol.GreenChipSlot]++;
+            _acquiredSymbols[(int)LogicSymbol.BlueChipSlot]++;
+
             //We remove a few checks from the source pool based on special starting conditions
             if (Settings.Contains(StartingItemSet.Wrench))
             {
                 _pool.RemoveAll(c => c.Type == CheckType.Wrench ||
                                     (c.Type == CheckType.Item && c.CheckId == (int)ItemId.Wrench));
-                AddState(LogicStateNames.Heal);
+                _acquiredSymbols[(int)LogicSymbol.Wrench]++;
             }
             if (Settings.Contains(StartingItemSet.Whistle))
             {
@@ -561,8 +574,8 @@ namespace Haiku.Rando.Logic
                 {
                     _startStation = 0;
                 }
-                AddState($"TrainStation[{_startStation}]");
-                AddState("Clock");
+                _acquiredSymbols[(int)LogicSymbol.AbandonedWastesTrainStation  + (int)_startStation]++;
+                _acquiredSymbols[(int)LogicSymbol.Clock]++;
             }
         }
 
@@ -627,34 +640,7 @@ namespace Haiku.Rando.Logic
             return false;
         }
 
-        // This assumes all state names are composed of a word plus zero or more
-        // square-bracket-enclosed words; in other words, they match the following regex:
-        // \w+(\[\w*\])*
-        private void AddState(string state)
-        {
-            int i = 0;
-            while (i < state.Length)
-            {
-                i = state.IndexOf('[', i);
-                if (i == -1)
-                {
-                    i = state.Length;
-                }
-                var s = state.Substring(0, i);
-                i++;
-                _acquiredStates[s] = _acquiredStates.TryGetValue(s, out var n) ? n + 1 : 1;
-            }
-        }
-
-        public bool HasState(string state)
-        {
-            return _acquiredStates.ContainsKey(state);
-        }
-
-        public int GetCount(string state)
-        {
-            return _acquiredStates.TryGetValue(state, out var n) ? n : 0;
-        }
+        public int GetCount(LogicSymbol s) => _acquiredSymbols[(int)s];
 
         private sealed class CheckPool : List<RandoCheck>
         {
