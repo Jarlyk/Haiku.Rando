@@ -79,7 +79,8 @@ namespace Haiku.Rando.Logic
             var result = new List<LogicCondition>();
             foreach (var condition in set.Conditions)
             {
-                var diff = condition.Count - Context.GetCount(condition.Symbol);
+                var count = condition.Symbol == LogicSymbol.False ? 0 : Context.GetCount(condition.Symbol);
+                var diff = condition.Count - count;
                 if (diff > 0)
                 {
                     result.Add(new LogicCondition(condition.Symbol, diff));

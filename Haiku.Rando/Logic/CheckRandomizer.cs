@@ -279,7 +279,8 @@ namespace Haiku.Rando.Logic
             }
 
             //Compute total of each missing logic symbol
-            var logicTotals = new ushort[NumLogicSymbols];
+            // False may appear in the logic, so we need to reserve space for it.
+            var logicTotals = new ushort[NumLogicSymbols + 1];
             foreach (var logic in frontier.SelectMany(e => e.MissingLogic))
             {
                 logicTotals[(int)logic.Symbol] += (ushort)logic.Count;

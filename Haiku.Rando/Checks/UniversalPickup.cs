@@ -189,7 +189,12 @@ namespace Haiku.Rando.Checks
         {
             var obj = SceneUtils.FindObjectsOfType<PowerCell>().FirstOrDefault(
                 p => p.saveID == orig.SaveId)?.gameObject;
-            Replace(obj, replacement, true);
+            var r = Replace(obj, replacement, true);
+            if (orig.SceneId == 98 && SceneUtils.FindObjectOfType<MischievousMechanic>() is MischievousMechanic mm)
+            {
+                r.SetActive(false);
+                mm.reward = r;
+            }
         }
 
         internal static void ReplaceCoolant(RandoCheck orig, RandoCheck replacement)
