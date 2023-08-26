@@ -36,6 +36,26 @@ namespace Haiku.Rando.Logic
             }
         }
 
+        // exported for use by RandoMap
+        public static Dictionary<(int, string), LogicSymbol> BossTransitions() => new()
+        {
+            {(19, "Right"), LogicSymbol.MiniBoss}, // Magnet
+            {(27, "Right"), LogicSymbol.MiniBoss}, // Tire Mother
+            {(201, "Left"), LogicSymbol.CreatorBoss}, // Neutron
+            {(49, "Left"), LogicSymbol.MiniBoss}, // TV
+            {(161, "Right0"), LogicSymbol.MiniBoss}, // Big Drill
+            {(137, "Left"), LogicSymbol.MiniBoss}, // Door
+            {(144, "Left"), LogicSymbol.CreatorTrioBoss}, // Creators
+            {(128, "Right1"), LogicSymbol.MiniBoss}, // Scuba Heads
+            {(69, "Right0"), LogicSymbol.MiniBoss}, // Car Battery
+            {(84, "Right"), LogicSymbol.CreatorBoss}, // Electron
+            {(184, "Right"), LogicSymbol.MiniBoss}, // Buzzsaw (also needs Magnet)
+            {(212, "Left"), LogicSymbol.MiniBoss}, // Big Brother
+            {(200, "Right"), LogicSymbol.CreatorBoss}, // Proton (also needs FireRes)
+            {(98, "Right"), LogicSymbol.MiniBoss}, // Mischevious
+            {(205, null), LogicSymbol.VirusBoss} // Virus
+        };
+
         // This is the maximum number of checks that can fit in a Bitset64.
         // Any more than that will be left blank (not vanilla), by replacing with
         // a check for which AlreadyHasCheck returns true always.
@@ -443,24 +463,7 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        private readonly Dictionary<(int, string), LogicSymbol> _bossTransitions = new()
-        {
-            {(19, "Right"), LogicSymbol.MiniBoss}, // Magnet
-            {(27, "Right"), LogicSymbol.MiniBoss}, // Tire Mother
-            {(201, "Left"), LogicSymbol.CreatorBoss}, // Neutron
-            {(49, "Left"), LogicSymbol.MiniBoss}, // TV
-            {(161, "Right0"), LogicSymbol.MiniBoss}, // Big Drill
-            {(137, "Left"), LogicSymbol.MiniBoss}, // Door
-            {(144, "Left"), LogicSymbol.CreatorTrioBoss}, // Creators
-            {(128, "Right1"), LogicSymbol.MiniBoss}, // Scuba Heads
-            {(69, "Right0"), LogicSymbol.MiniBoss}, // Car Battery
-            {(84, "Right"), LogicSymbol.CreatorBoss}, // Electron
-            {(184, "Right"), LogicSymbol.MiniBoss}, // Buzzsaw (also needs Magnet)
-            {(212, "Left"), LogicSymbol.MiniBoss}, // Big Brother
-            {(200, "Right"), LogicSymbol.CreatorBoss}, // Proton (also needs FireRes)
-            {(98, "Right"), LogicSymbol.MiniBoss}, // Mischevious
-            {(205, null), LogicSymbol.VirusBoss} // Virus
-        };
+        private readonly Dictionary<(int, string), LogicSymbol> _bossTransitions = CheckRandomizer.BossTransitions();
 
         private void ApplyProximityPenalty(RandoCheck origin, int startPenalty)
         {
