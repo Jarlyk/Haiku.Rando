@@ -435,6 +435,7 @@ namespace Haiku.Rando.Logic
             var k = (sceneId, alias);
             if (_bossTransitions.TryGetValue(k, out var sym))
             {
+                Debug.Log($"Got boss {sym} from {sceneId}:{alias}");
                 _acquiredSymbols[(int)sym]++;
                 // Each boss should be counted only once, so that logic relying
                 // on their count functions as intended.
@@ -453,12 +454,12 @@ namespace Haiku.Rando.Logic
             {(144, "Left"), LogicSymbol.CreatorTrioBoss}, // Creators
             {(128, "Right1"), LogicSymbol.MiniBoss}, // Scuba Heads
             {(69, "Right0"), LogicSymbol.MiniBoss}, // Car Battery
-            {(84, "Right"), LogicSymbol.CreatorBoss}, // Elctron
+            {(84, "Right"), LogicSymbol.CreatorBoss}, // Electron
             {(184, "Right"), LogicSymbol.MiniBoss}, // Buzzsaw (also needs Magnet)
             {(212, "Left"), LogicSymbol.MiniBoss}, // Big Brother
             {(200, "Right"), LogicSymbol.CreatorBoss}, // Proton (also needs FireRes)
             {(98, "Right"), LogicSymbol.MiniBoss}, // Mischevious
-            {(205, "62-205"), LogicSymbol.VirusBoss} // Virus
+            {(205, null), LogicSymbol.VirusBoss} // Virus
         };
 
         private void ApplyProximityPenalty(RandoCheck origin, int startPenalty)
