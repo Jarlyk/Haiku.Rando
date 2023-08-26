@@ -183,6 +183,13 @@ Exit->Monument: DoubleJump + Grapple
 Scene 230
 Right1->Right0: DoubleJump + (Blink | Grapple)
 
+Scene 234 // Entrance to Old Arcadia
+Left<->*:
+    3#CreatorBoss + FireRes + // fire res for Proton
+    CreatorTrioBoss +
+    VirusBoss +
+    10#MiniBoss + DoubleJump + (Blink | Grapple) // double jump chain for Buzzsaw
+
 Scene 248 // Gallery of bosses
 Right1->Right0: DoubleJump + (Blink + 3#Coolant | Grapple + Coolant)
 Right1->Elevator: DoubleJump + Blink + (Grapple | 3#Coolant)

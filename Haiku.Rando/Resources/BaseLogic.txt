@@ -1696,21 +1696,21 @@ Scene 181
 // Transitions: Right (182-174), Left1 (181-182bottom), Left0 (181-182)
 // Checks: Lever0 (Lever[44]), Lever1 (Lever[45]), PowerCell (PowerCell[22])
 Scene 182
-Left0->Lever0: true 
-Left1->Lever0: false
+Left0->Lever0: true
+Left1->Lever0: Blink + Lever0 + Lever1
 Right->Lever0: Lever1
-Left0->Lever1: false
+Left0->Lever1: Blink + Lever1
 Left1->Lever1: Lever0
-Right->Lever1: false
-Left0->PowerCell: false
+Right->Lever1: Blink
+Left0->PowerCell: Blink + Lever1
 Left1->PowerCell: Lever0
-Right->PowerCell: false
-Left1->Left0: false 
+Right->PowerCell: Blink
+Left1->Left0: Blink + Lever0 + Lever1
 Right->Left0: Lever1
-Left0->Left1: false
-Right->Left1: false
+Left0->Left1: Blink + Lever0 + Lever1
+Right->Left1: Blink + Lever0
 Left0->Right: Lever1
-Left1->Right: false
+Left1->Right: Blink + Lever0
 
 // Scene 183
 // Transitions: Right (183-185), Left (174-183)
