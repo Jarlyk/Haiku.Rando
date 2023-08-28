@@ -553,6 +553,12 @@ namespace Haiku.Rando.Logic
                                     (c.Type == CheckType.Item && c.CheckId == (int)ItemId.Wrench));
                 _acquiredSymbols[(int)LogicSymbol.Wrench]++;
             }
+            else
+            {
+                // If the Wrench is randomized, we want to leave only one copy of it around.
+                // If it is not, we want to leave zero copies of it in the pool.
+                _pool.RemoveAll(c => c.Type == CheckType.Item && c.CheckId == (int)ItemId.Wrench);
+            }
             if (Settings.Contains(StartingItemSet.Whistle))
             {
                 _pool.RemoveAll(c => c.Type == CheckType.Item && c.CheckId == (int)ItemId.Whistle);
