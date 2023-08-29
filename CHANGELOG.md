@@ -1,3 +1,17 @@
+# 2.2.2 (30 August 2023)
+
+Enhancements:
+
+- Seeds take much less time to generate than in previous versions.
+
+Bug fixes:
+
+- The capsule fragments in Sonnet's shop are no longer always replaced
+  with the same item.
+- Mischievous's power cell check only spawns after defeating the boss.
+- Fixed false logic negatives in the double-lever Factory room.
+- When not starting with Wrench, extraneous Wrenches no longer appear in the item pool. 
+
 # 2.2.1 (13 August 2023)
 
 Bug fixes:
