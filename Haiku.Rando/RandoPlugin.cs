@@ -20,7 +20,7 @@ using Object = UnityEngine.Object;
 
 namespace Haiku.Rando
 {
-    [BepInPlugin("haiku.rando", "Haiku Rando", "2.2.1.0")]
+    [BepInPlugin("haiku.rando", "Haiku Rando", "2.2.2.0")]
     [BepInDependency("haiku.mapi", "1.0")]
     public sealed class RandoPlugin : BaseUnityPlugin
     {
