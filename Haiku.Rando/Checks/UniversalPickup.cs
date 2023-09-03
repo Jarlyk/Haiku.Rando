@@ -6,6 +6,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Haiku.Rando.Topology;
 using UnityEngine;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 
 namespace Haiku.Rando.Checks
 {
@@ -23,6 +25,7 @@ namespace Haiku.Rando.Checks
         {
             On.PickupItem.Start += PickupItem_Start;
             On.PickupItem.TriggerPickup += PickupItemOnTriggerPickup;
+            IL.PianoManager.AddPoint += ChangePianoCondition;
         }
 
         private void Start()
@@ -76,6 +79,19 @@ namespace Haiku.Rando.Checks
             self.gameObject.SetActive(false);
         }
 
+        private static void ChangePianoCondition(ILContext il)
+        {
+            var c = new ILCursor(il);
+
+            c.GotoNext(i => i.MatchBrfalse(out _));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Func<bool, PianoManager, bool>)((orig, pm) =>
+            {
+                var p = pm.reward.GetComponent<UniversalPickup>();
+                return p == null ? orig : CheckManager.AlreadyGotCheck(p.check);
+            }));
+        }
+
         private void OnTriggerEnter2D(Collider2D collision)
         {
             if (!midAir) return;
@@ -125,6 +141,10 @@ namespace Haiku.Rando.Checks
                     newObj.SetActive(false);
                     QuaternRewardReplacer.ReplaceCheck(orig, replacement, newObj);
                 }
+            }
+            else if (orig.CheckId == (int)ItemId.Tape)
+            {
+                Attach(obj, replacement, false);
             }
             else
             {
