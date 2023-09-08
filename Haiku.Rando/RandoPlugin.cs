@@ -98,7 +98,7 @@ namespace Haiku.Rando
 
         private IEnumerator EnableAltFirstStation(On.TalkToTrainConductor.orig_AssignFirstItemToEvents orig, TalkToTrainConductor self)
         {
-            if (_randomizer != null && _randomizer.Settings.TrainLoverMode)
+            if (_randomizer != null && _randomizer.Settings.Contains(Pool.Clock))
             {
                 self.firstLocation = SceneUtils.FindObjectsOfType<FastTravelButton>()
                     .Where(b => GameManager.instance.trainStations[b.fastTravelSaveID].unlockedStation)

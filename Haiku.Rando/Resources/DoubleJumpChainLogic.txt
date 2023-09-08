@@ -185,7 +185,7 @@ Right1->Right0: DoubleJump + (Blink | Grapple)
 
 Scene 234 // Entrance to Old Arcadia
 Left<->*:
-    3#CreatorBoss + FireRes + // fire res for Proton
+    2#NeutronOrElectronBoss + ProtonBoss + FireRes + // fire res for Proton
     CreatorTrioBoss +
     VirusBoss +
     10#MiniBoss + DoubleJump + (Blink | Grapple) // double jump chain for Buzzsaw

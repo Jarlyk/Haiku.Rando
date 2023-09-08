@@ -41,17 +41,17 @@ namespace Haiku.Rando.Logic
         {
             {(19, "Right"), LogicSymbol.MiniBoss}, // Magnet
             {(27, "Right"), LogicSymbol.MiniBoss}, // Tire Mother
-            {(201, "Left"), LogicSymbol.CreatorBoss}, // Neutron
+            {(201, "Left"), LogicSymbol.NeutronOrElectronBoss}, // Neutron
             {(49, "Left"), LogicSymbol.MiniBoss}, // TV
             {(161, "Right0"), LogicSymbol.MiniBoss}, // Big Drill
             {(137, "Left"), LogicSymbol.MiniBoss}, // Door
             {(144, "Left"), LogicSymbol.CreatorTrioBoss}, // Creators
             {(128, "Right1"), LogicSymbol.MiniBoss}, // Scuba Heads
             {(69, "Right0"), LogicSymbol.MiniBoss}, // Car Battery
-            {(84, "Right"), LogicSymbol.CreatorBoss}, // Electron
+            {(84, "Right"), LogicSymbol.NeutronOrElectronBoss}, // Electron
             {(184, "Right"), LogicSymbol.MiniBoss}, // Buzzsaw (also needs Magnet)
             {(212, "Left"), LogicSymbol.MiniBoss}, // Big Brother
-            {(200, "Right"), LogicSymbol.CreatorBoss}, // Proton (also needs FireRes)
+            {(200, "Right"), LogicSymbol.ProtonBoss}, // Proton (also needs FireRes)
             {(98, "Right"), LogicSymbol.MiniBoss}, // Mischevious
             {(205, null), LogicSymbol.VirusBoss} // Virus
         };

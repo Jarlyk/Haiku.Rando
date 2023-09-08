@@ -527,7 +527,7 @@ Right1->Left0: Magnet
 Right1->Right0: Magnet
 Left0->Right0: Magnet | Grapple
 Right0->Left0: Magnet | Grapple
-*->Door0: 3#CreatorBoss + FireRes // fire res for Proton
+*->Door0: 2#NeutronOrElectronBoss + ProtonBoss + FireRes + FireRes // fire res for Proton
 Door0->Left1: true
 Door0->Right1: true
 Door0->Left0: Magnet
@@ -1862,7 +1862,7 @@ Right1<->Left: WaterRes
 // Checks:
 Scene 199
 *->Right0: Magnet | DoubleJump
-*->Right1: 3#CreatorBoss + FireRes // fire res for Proton
+*->Right1: 2#NeutronOrElectronBoss + ProtonBoss + FireRes // fire res for Proton
 *->Left: GreenSkull + RedSkull
 
 // Scene 200 : Proton room
@@ -2003,7 +2003,7 @@ Scene 220
 // Transitions: Right (221-229), Left (199-221)
 // Checks: Item (Item[0])
 Scene 221
-*->*: 3#CreatorBoss + FireRes // fire res for Proton
+*->*: NeutronOrElectronBoss | ProtonBoss + FireRes // fire res for Proton
 
 // Scene 222: Storage Room in Bunker (the one that requires a rusty key)
 // Transitions: 222-46 (222-46)
@@ -2092,7 +2092,7 @@ Scene 234 // Entrance to Old Arcadia
 // Transitions: Right (234-35), Left (257-234)
 // Checks: MoneyPile (MoneyPile[187])
 Left<->*:
-    3#CreatorBoss + FireRes + // fire res for Proton
+    2#NeutronOrElectronBoss + ProtonBoss + FireRes + // fire res for Proton
     CreatorTrioBoss +
     VirusBoss +
     10#MiniBoss + Magnet // magnet for Buzzsaw
