@@ -1111,6 +1111,8 @@ Left->Right0: DoubleJump
 Right1->Right0: Lever + DoubleJump
 Left->Right1: Lever + (DoubleJump | Magnet + Grapple)
 Right0->Right1: Lever
+Right0->Left: true
+Right1->Left: Lever
 
 // Scene 121
 // Transitions: Left (118-121)
