@@ -1,3 +1,12 @@
+# 2.2.3 (9 September 2023)
+
+Bug fixes:
+
+- The piano check now works even if the Cassette Tape has been obtained
+- The train station selector UI now works properly when Clock is randomized but not a starting item
+- Slate's Rusted Key only requires a single Creator in logic instead of all three
+- Fixed a false positive in the Snailbot Burrow lever room
+
 # 2.2.2 (30 August 2023)
 
 Enhancements:
