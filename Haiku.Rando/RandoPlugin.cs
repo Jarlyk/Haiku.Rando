@@ -64,6 +64,11 @@ namespace Haiku.Rando
             IL.ReplenishHealth.Update += StickToTrain;
             On.TalkToTrainConductor.AssignFirstItemToEvents += EnableAltFirstStation;
 
+            // disable the Archives cutscene trigger in the boss rush if it is entered before the Creator trio
+            // fight (possible with lever rando)
+            // if the trigger is activated, it warps the player out of the boss rush, to the real Archives.
+            On.TheArchivesCutscene.Start += DisableArchivesCutsceneInBossRush;
+
             //TODO: Add bosses as logic conditions
             //This impacts some transitions
 
@@ -106,6 +111,15 @@ namespace Haiku.Rando
                     .FirstOrDefault();
             }
             return orig(self);
+        }
+
+        private static void DisableArchivesCutsceneInBossRush(On.TheArchivesCutscene.orig_Start orig, TheArchivesCutscene self)
+        {
+            orig(self);
+            if (BossRushMode.instance is {} brm && (brm.bossRushIsActive || brm.bossRushSelectIsActive))
+            {
+                self.dialogueTrigger.SetActive(false);
+            }
         }
 
         private void ReloadTopology()
