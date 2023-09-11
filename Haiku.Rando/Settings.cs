@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using BepInEx.Configuration;
 using Modding;
+using Haiku.Rando.Multiworld;
 
 namespace Haiku.Rando
 {
@@ -25,9 +26,15 @@ namespace Haiku.Rando
         public static ConfigEntry<bool> SyncedMoney { get; private set; }
         public static ConfigEntry<bool> PreBrokenDoors { get; private set; }
 
+        public static ConfigEntry<bool> MWEnabled { get; private set; }
+        public static ConfigEntry<string> MWServerAddr { get; private set; }
+        public static ConfigEntry<string> MWNickname { get; private set; }
+        public static ConfigEntry<string> MWRoomName { get; private set; }
+
         //Groups of settings
         private const string General = "General";
         private const string QoL = "QoL";
+        private const string Multiworld = "Multiworld";
 
         private static readonly Regex camelCasePattern = new(@"([a-z])([A-Z])");
 
@@ -71,6 +78,35 @@ namespace Haiku.Rando
                                       "Synchronizes money drop randomization from totems and enemies; intended for racing");
             PreBrokenDoors = config.Bind(QoL, "PreBrokenDoors", true,
                                          "Makes breakable doors automatically break upon spawning; required for a few room rando transitions");
+            
+            MWEnabled = config.Bind(Multiworld, "Enabled", false, "Whether to join a multiworld game");
+            MWServerAddr = config.Bind(Multiworld, "Server Address", "127.0.0.1", "The address or address:port of the multiworld server");
+            MWNickname = config.Bind(Multiworld, "Nickname", "", "The nickname other players will see");
+            MWRoomName = config.Bind(Multiworld, "Room Name", "", "The name of the room to join");
+
+            MWEnabled.SettingChanged += (sender, value) =>
+            {
+                
+                if (MWEnabled.Value)
+                {
+                    UnityEngine.Debug.Log("preparing to connect");
+                    try
+                    {
+                        MWConnection.Start();
+                        MWConnection.Current.Connect(MWServerAddr.Value);
+                    }
+                    catch (Exception err)
+                    {
+                        UnityEngine.Debug.Log(err.ToString());
+                    }
+                }
+                else
+                {
+                    UnityEngine.Debug.Log("preparing to disconnect");
+                    MWConnection.Terminate();
+                    UnityEngine.Debug.Log("disconnected");
+                }
+            };
 
             //Save defaults if didn't already exist
             config.Save();
