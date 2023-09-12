@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using SysDiag = System.Diagnostics;
@@ -29,6 +30,8 @@ namespace Haiku.Rando
         private TransitionRandomizer _transRandomizer;
 
         private SaveData _saveData;
+
+        internal readonly static ConcurrentQueue<Action> MainThreadCallbacks = new();
 
         public void Start()
         {
@@ -393,6 +396,11 @@ namespace Haiku.Rando
             if (Input.GetKeyDown(KeyCode.Y) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
             {
                 StartCoroutine(RunMapping());
+            }
+
+            while (MainThreadCallbacks.TryDequeue(out var f))
+            {
+                f();
             }
         }
 

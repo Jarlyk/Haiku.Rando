@@ -59,14 +59,14 @@ namespace Haiku.Rando.Multiworld
                 }
                 catch (Exception err)
                 {
-                    UE.Debug.Log(err.ToString());
+                    Log(err.ToString());
                 }
             }
         }
 
         private void ReadLoop()
         {
-            UE.Debug.Log("Started read loop");
+            Log("Started read loop");
             while (true)
             {
                 try
@@ -75,7 +75,7 @@ namespace Haiku.Rando.Multiworld
                     if (msg is MWMsgDef.MWConnectMessage connMsg)
                     {
                         _uid = connMsg.SenderUid;
-                        UE.Debug.Log($"Connected to {connMsg.ServerName} as UID {_uid}");
+                        Log($"Connected to {connMsg.ServerName} as UID {_uid}");
                     }
                 }
                 catch (ObjectDisposedException)
@@ -84,7 +84,7 @@ namespace Haiku.Rando.Multiworld
                 }
                 catch (Exception err)
                 {
-                    UE.Debug.Log(err.ToString());
+                    Log(err.ToString());
                 }
             }
         }
@@ -119,6 +119,11 @@ namespace Haiku.Rando.Multiworld
                 _conn.Dispose();
                 _client.Dispose();
             }
+        }
+
+        private static void Log(string s)
+        {
+            RandoPlugin.MainThreadCallbacks.Enqueue(() => UE.Debug.Log(s));
         }
     }
 }
