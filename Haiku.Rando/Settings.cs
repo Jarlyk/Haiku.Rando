@@ -89,11 +89,10 @@ namespace Haiku.Rando
                 
                 if (MWEnabled.Value)
                 {
-                    UnityEngine.Debug.Log("preparing to connect");
                     try
                     {
                         MWConnection.Start();
-                        MWConnection.Current.Connect(MWServerAddr.Value);
+                        MWConnection.Current.Connect(MWServerAddr.Value, MWNickname.Value, MWRoomName.Value);
                     }
                     catch (Exception err)
                     {

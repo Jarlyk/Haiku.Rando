@@ -31,7 +31,12 @@ namespace Haiku.Rando
 
         private SaveData _saveData;
 
-        internal readonly static ConcurrentQueue<Action> MainThreadCallbacks = new();
+        private readonly static ConcurrentQueue<Action> MainThreadCallbacks = new();
+
+        internal static void InvokeOnMainThread(Action f)
+        {
+            MainThreadCallbacks.Enqueue(f);
+        }
 
         public void Start()
         {

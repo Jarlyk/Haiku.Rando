@@ -13,6 +13,8 @@ namespace Haiku.Rando.Multiworld
     internal class MWConnection : IDisposable
     {
         private string _serverAddr;
+        private string _nickname;
+        private string _roomName;
         private Net.TcpClient _client;
         private Net.NetworkStream _conn;
         private Timers.Timer _pingTimer;
@@ -83,6 +85,10 @@ namespace Haiku.Rando.Multiworld
                             _pingTimer.Elapsed += (_, _) => Ping();
                             _pingTimer.AutoReset = true;
                             _pingTimer.Enabled = true;
+                            Ready();
+                            break;
+                        case MWMsgDef.MWReadyConfirmMessage rcMsg:
+                            Log($"Joined the room {_roomName} with {rcMsg.Ready} players: {string.Join(", ", rcMsg.Names)}");
                             break;
                         case MWMsgDef.MWPingMessage:
                             Log("Received a server ping");
@@ -103,11 +109,13 @@ namespace Haiku.Rando.Multiworld
             }
         }
 
-        public void Connect(string serverAddr)
+        public void Connect(string serverAddr, string nickname, string roomName)
         {
             _commandQueue.Add(() =>
             {
                 _serverAddr = serverAddr;
+                _nickname = nickname;
+                _roomName = roomName;
                 var i = _serverAddr.IndexOf(':');
                 if (i != -1 && int.TryParse(_serverAddr.Substring(i + 1), out var port))
                 {
@@ -124,9 +132,19 @@ namespace Haiku.Rando.Multiworld
             });
         }
 
-        internal void Ping()
+        private void Ping()
         {
             _commandQueue.Add(() => SendPacked(new MWMsgDef.MWPingMessage() { SenderUid = _uid }));
+        }
+
+        private void Ready()
+        {
+            _commandQueue.Add(() => SendPacked(new MWMsgDef.MWReadyMessage()
+            {
+                Room = _roomName,
+                Nickname = _nickname,
+                ReadyMode = MWMsgDef.Mode.MultiWorld
+            }));
         }
 
         private const double PingInterval = 5000;
@@ -150,7 +168,7 @@ namespace Haiku.Rando.Multiworld
 
         private static void Log(string s)
         {
-            RandoPlugin.MainThreadCallbacks.Enqueue(() => UE.Debug.Log(s));
+            RandoPlugin.InvokeOnMainThread(() => UE.Debug.Log(s));
         }
     }
 }
