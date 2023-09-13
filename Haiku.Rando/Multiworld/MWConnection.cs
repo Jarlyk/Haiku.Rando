@@ -1,6 +1,7 @@
 using System;
 using Net = System.Net.Sockets;
 using Threading = System.Threading;
+using Timers = System.Timers;
 using SyncCollections = System.Collections.Concurrent;
 using MWLib = MultiWorldLib;
 using MWMsg = MultiWorldLib.Messaging;
@@ -14,6 +15,7 @@ namespace Haiku.Rando.Multiworld
         private string _serverAddr;
         private Net.TcpClient _client;
         private Net.NetworkStream _conn;
+        private Timers.Timer _pingTimer;
         private MWMsg.MWMessagePacker _packer;
         private Threading.Thread _writeThread, _readThread;
         private SyncCollections.BlockingCollection<Action> _commandQueue;
@@ -72,10 +74,22 @@ namespace Haiku.Rando.Multiworld
                 try
                 {
                     var msg = _packer.Unpack(new MWMsg.MWPackedMessage(_conn));
-                    if (msg is MWMsgDef.MWConnectMessage connMsg)
+                    switch (msg)
                     {
-                        _uid = connMsg.SenderUid;
-                        Log($"Connected to {connMsg.ServerName} as UID {_uid}");
+                        case MWMsgDef.MWConnectMessage connMsg:
+                            _uid = connMsg.SenderUid;
+                            Log($"Connected to {connMsg.ServerName} as UID {_uid}");
+                            _pingTimer = new(PingInterval);
+                            _pingTimer.Elapsed += (_, _) => Ping();
+                            _pingTimer.AutoReset = true;
+                            _pingTimer.Enabled = true;
+                            break;
+                        case MWMsgDef.MWPingMessage:
+                            Log("Received a server ping");
+                            break;
+                        default:
+                            Log($"got a {msg.GetType().Name}");
+                            break;
                     }
                 }
                 catch (ObjectDisposedException)
@@ -104,16 +118,29 @@ namespace Haiku.Rando.Multiworld
                     _client = new(_serverAddr, MWLib.Consts.DEFAULT_PORT);
                 }
                 _conn = _client.GetStream();
-                var packed = _packer.Pack(new MWMsgDef.MWConnectMessage());
-                _conn.WriteAsync(packed.Buffer, 0, (int)packed.Length);
+                SendPacked(new MWMsgDef.MWConnectMessage());
                 _readThread = new(ReadLoop);
                 _readThread.Start();
             });
         }
 
+        internal void Ping()
+        {
+            _commandQueue.Add(() => SendPacked(new MWMsgDef.MWPingMessage() { SenderUid = _uid }));
+        }
+
+        private const double PingInterval = 5000;
+
+        private void SendPacked(MWMsg.MWMessage msg)
+        {
+            var packed = _packer.Pack(msg);
+            _conn.Write(packed.Buffer, 0, (int)packed.Length);
+        }
+
         public void Dispose()
         {
             _commandQueue.Dispose();
+            _pingTimer.Dispose();
             if (_conn != null)
             {
                 _conn.Dispose();
