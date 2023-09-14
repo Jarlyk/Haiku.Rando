@@ -165,17 +165,18 @@ namespace Haiku.Rando.Checks
             CheckType.Ability => HaikuResources.RefUnlockTutorial.abilities[check.CheckId].title,
             CheckType.Item => (ItemId)check.CheckId switch
             {
-                // TODO: find the correct item strings for these
-                ItemId.RustedKey => "_COOLANT_TITLE",
-                ItemId.ElectricKey => "_COOLANT_TITLE",
-                ItemId.Whistle => "_COOLANT_TITLE",
-                ItemId.CapsuleFragment => "_COOLANT_TITLE",
-                ItemId.Sword => "_COOLANT_TITLE",
-                ItemId.Wrench => "_COOLANT_TITLE",
-                ItemId.Tape => "_COOLANT_TITLE",
-                ItemId.GreenSkull => "_COOLANT_TITLE",
-                ItemId.RedSkull => "_COOLANT_TITLE",
-                _ => "_COOLANT_TITLE"
+                // These are not accessible through normal means when not yet
+                // loaded into a game.
+                ItemId.RustedKey => "_RUSTY_KEY_TITLE",
+                ItemId.ElectricKey => "_ELECTRIC_KEY",
+                ItemId.Whistle => "_WHISTLE_TITLE",
+                ItemId.CapsuleFragment => "_FRAGMENTS_TITLE",
+                ItemId.Sword => "_KILL_SWITCH_TITLE",
+                ItemId.Wrench => "_HEALING_WRENCH_TITLE",
+                ItemId.Tape => "_CASSETTE",
+                ItemId.GreenSkull => "_WEIRD_ARTIFACT",
+                ItemId.RedSkull => "_WEIRD_ARTIFACT",
+                _ => "_WEIRD_ARTIFACT"
             },
             CheckType.Chip => GameManager.instance.chip[check.CheckId].title,
             CheckType.ChipSlot => "_CHIP_SLOT",

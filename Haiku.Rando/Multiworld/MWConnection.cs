@@ -197,7 +197,8 @@ namespace Haiku.Rando.Multiworld
                 SenderUid = _uid,
                 Room = _roomName,
                 Nickname = _nickname,
-                ReadyMode = MWMsgDef.Mode.MultiWorld
+                ReadyMode = MWMsgDef.Mode.MultiWorld,
+                ReadyMetadata = new (string, string)[0]
             }));
         }
 
@@ -206,8 +207,7 @@ namespace Haiku.Rando.Multiworld
             var items = new Collections.List<(string, string)>();
             foreach (var entry in mapping)
             {
-                // TODO: exclude duplicate shop locations
-                if (entry.Value.Type == CType.Filler && entry.Value.CheckId > 900000)
+                if (IsDeletedCheck(entry.Value) || IsDuplicateShopCheck(entry.Key))
                 {
                     continue;
                 }
@@ -234,6 +234,12 @@ namespace Haiku.Rando.Multiworld
             });
         }
 
+        private static bool IsDeletedCheck(RTopology.RandoCheck check) =>
+            check.Type == CType.Filler && check.CheckId > 900000;
+        
+        private static bool IsDuplicateShopCheck(RTopology.RandoCheck check) =>
+            check.SceneId == SpecialScenes.AbandonedWastesStation && check.IsShopItem;
+
         private const double PingInterval = 5000;
 
         private void SendPacked(MWMsg.MWMessage msg)
@@ -245,7 +251,10 @@ namespace Haiku.Rando.Multiworld
         public void Dispose()
         {
             _commandQueue.Dispose();
-            _pingTimer.Dispose();
+            if (_pingTimer != null)
+            {
+                _pingTimer.Dispose();
+            }
             if (_conn != null)
             {
                 _conn.Dispose();
