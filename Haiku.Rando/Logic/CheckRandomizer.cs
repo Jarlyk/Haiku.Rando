@@ -70,7 +70,7 @@ namespace Haiku.Rando.Logic
         private readonly int? _startScene;
         private int? _startStation;
         private int _startScrap;
-        private readonly Dictionary<RandoCheck, RandoCheck> _checkMapping = new Dictionary<RandoCheck, RandoCheck>();
+        private readonly List<(RandoCheck, RandoCheck)> _checkMapping = new();
         private bool _randomized;
 
         // things that are only needed during randomization
@@ -119,7 +119,7 @@ namespace Haiku.Rando.Logic
             {
                 Settings = Settings,
                 Topology = _topology,
-                CheckMapping = _checkMapping,
+                CheckMapping = new InsertionOrderDictionary<RandoCheck, RandoCheck>(_checkMapping),
                 StartScene = _startScene,
                 StartStation = _startStation,
                 StartSpareParts = _startScrap,
@@ -258,7 +258,7 @@ namespace Haiku.Rando.Logic
 
         private void SetCheckMapping(RandoCheck original, RandoCheck newItem)
         {
-            _checkMapping.Add(original, newItem);
+            _checkMapping.Add((original, newItem));
             // Duplicate a subset of train shop checks onto the Abandoned Wastes pre-train shop.
             if (original.IsShopItem && original.SceneId == SpecialScenes.Train)
             {
@@ -267,7 +267,7 @@ namespace Haiku.Rando.Logic
                     .FirstOrDefault();
                 if (outsideLocation != null)
                 {
-                    _checkMapping.Add(outsideLocation, newItem);
+                    _checkMapping.Add((outsideLocation, newItem));
                     Debug.Log($"Replaced duplicate check {outsideLocation.Name} with {newItem.Name}");
                 }
             }
@@ -526,7 +526,7 @@ namespace Haiku.Rando.Logic
                 {
                     if (c.Type == CheckType.MoneyPile && !piles.Contains(c))
                     {
-                        _checkMapping[c] = new RandoCheck(CheckType.Filler, 0, new(0, 0), 999999);
+                        _checkMapping.Add((c, new RandoCheck(CheckType.Filler, 0, new(0, 0), 999999)));
                     }
                 }
             };

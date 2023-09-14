@@ -2,11 +2,15 @@ using System;
 using Net = System.Net.Sockets;
 using Threading = System.Threading;
 using Timers = System.Timers;
+using Collections = System.Collections.Generic;
 using SyncCollections = System.Collections.Concurrent;
 using MWLib = MultiWorldLib;
 using MWMsg = MultiWorldLib.Messaging;
 using MWMsgDef = MultiWorldLib.Messaging.Definitions.Messages;
 using UE = UnityEngine;
+using RChecks = Haiku.Rando.Checks;
+using RTopology = Haiku.Rando.Topology;
+using CType = Haiku.Rando.Topology.CheckType;
 
 namespace Haiku.Rando.Multiworld
 {
@@ -80,7 +84,7 @@ namespace Haiku.Rando.Multiworld
                     {
                         case MWMsgDef.MWConnectMessage connMsg:
                             _uid = connMsg.SenderUid;
-                            Log($"Connected to {connMsg.ServerName} as UID {_uid}");
+                            Log($"MW: Connected to {connMsg.ServerName} as UID {_uid}");
                             _pingTimer = new(PingInterval);
                             _pingTimer.Elapsed += (_, _) => Ping();
                             _pingTimer.AutoReset = true;
@@ -88,10 +92,33 @@ namespace Haiku.Rando.Multiworld
                             Ready();
                             break;
                         case MWMsgDef.MWReadyConfirmMessage rcMsg:
-                            Log($"Joined the room {_roomName} with {rcMsg.Ready} players: {string.Join(", ", rcMsg.Names)}");
+                            Log($"MW: Joined the room {_roomName} with {rcMsg.Ready} players: {string.Join(", ", rcMsg.Names)}");
                             break;
                         case MWMsgDef.MWPingMessage:
                             Log("Received a server ping");
+                            break;
+                        case MWMsgDef.MWRequestRandoMessage:
+                            Log("Received request to generate our rando");
+                            RandoPlugin.InvokeOnMainThread(rp =>
+                            {
+                                UE.Debug.Log("MW: randomizing in main thread");
+                                if (!(Settings.GetGenerationSettings() is {} gs))
+                                {
+                                    UE.Debug.Log("MW: rando requested, but not enabled on our side");
+                                    return;
+                                }
+                                if (string.IsNullOrWhiteSpace(gs.Seed))
+                                {
+                                    gs.Seed = DateTime.Now.Ticks.ToString();
+                                }
+                                rp.ReloadTopology();
+                                if (!rp.RetryRandomize(gs, out var _))
+                                {
+                                    UE.Debug.Log("MW: randomization failed");
+                                    return;
+                                }
+                                SendCheckMapping(rp.Randomizer.CheckMapping);
+                            });
                             break;
                         default:
                             Log($"got a {msg.GetType().Name}");
@@ -108,6 +135,32 @@ namespace Haiku.Rando.Multiworld
                 }
             }
         }
+
+        private static string ExternalName(RTopology.RandoCheck check, int uniqueIndex)
+        {
+            var basename = RChecks.UIDef.Of(check).Name.Replace(' ', '_');
+            return $"{basename}_({uniqueIndex})";
+        }
+
+        private static int Hash(Collections.IReadOnlyDictionary<RTopology.RandoCheck, RTopology.RandoCheck> mapping)
+        {
+            var h = 0;
+            foreach (var entry in mapping)
+            {
+                h = AddToHash(h, entry.Key);
+                h = AddToHash(h, entry.Value);
+            }
+            return h;
+        }
+
+        private static int AddToHash(int hash, RTopology.RandoCheck check)
+        {
+            hash = AddToHash(hash, (int)check.Type);
+            hash = AddToHash(hash, check.CheckId);
+            hash = AddToHash(hash, check.SaveId);
+            return hash;
+        }
+        private static int AddToHash(int hash, int val) => hash * 97 + val;
 
         public void Connect(string serverAddr, string nickname, string roomName)
         {
@@ -141,10 +194,37 @@ namespace Haiku.Rando.Multiworld
         {
             _commandQueue.Add(() => SendPacked(new MWMsgDef.MWReadyMessage()
             {
+                SenderUid = _uid,
                 Room = _roomName,
                 Nickname = _nickname,
                 ReadyMode = MWMsgDef.Mode.MultiWorld
             }));
+        }
+
+        private void SendCheckMapping(Collections.IReadOnlyDictionary<RTopology.RandoCheck, RTopology.RandoCheck> mapping)
+        {
+            var items = new Collections.List<(string, string)>();
+            foreach (var entry in mapping)
+            {
+                var locName = ExternalName(entry.Key, items.Count);
+                var itemName = ExternalName(entry.Value, items.Count);
+                items.Add((itemName, locName));
+            }
+            var itemArr = items.ToArray();
+            var hash = Hash(mapping);
+            _commandQueue.Add(() =>
+            {
+                SendPacked(new MWMsgDef.MWRandoGeneratedMessage()
+                {
+                    SenderUid = _uid,
+                    Items = new Collections.Dictionary<string, (string, string)[]>()
+                    {
+                        {"Main", itemArr}
+                    },
+                    Seed = hash
+                });
+                Log($"MW: sent {items.Count} item placements to server");
+            });
         }
 
         private const double PingInterval = 5000;

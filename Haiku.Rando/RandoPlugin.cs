@@ -31,12 +31,19 @@ namespace Haiku.Rando
 
         private SaveData _saveData;
 
-        private readonly static ConcurrentQueue<Action> MainThreadCallbacks = new();
+        private readonly static ConcurrentQueue<Action<RandoPlugin>> MainThreadCallbacks = new();
 
         internal static void InvokeOnMainThread(Action f)
         {
+            MainThreadCallbacks.Enqueue(_ => f());
+        }
+
+        internal static void InvokeOnMainThread(Action<RandoPlugin> f)
+        {
             MainThreadCallbacks.Enqueue(f);
         }
+
+        internal CheckRandomizer Randomizer => _randomizer;
 
         public void Start()
         {
@@ -130,7 +137,7 @@ namespace Haiku.Rando
             }
         }
 
-        private void ReloadTopology()
+        internal void ReloadTopology()
         {
             using (var stream = Assembly.GetExecutingAssembly()
                                         .GetManifestResourceStream("Haiku.Rando.Resources.HaikuTopology.json"))
@@ -206,8 +213,6 @@ namespace Haiku.Rando
             if (gs != null && gs.Level != RandomizationLevel.None)
             {
                 int? startScene = SpecialScenes.GameStart;
-                const int maxRetries = 200;
-                var origSeed = gs.Seed;
 
                 var timer = new SysDiag.Stopwatch();
                 timer.Start();
@@ -215,28 +220,7 @@ namespace Haiku.Rando
                 // A previous room rando may have rewired the topology; make sure we start with the
                 // vanilla topology.
                 ReloadTopology();
-                var eval = LoadLogic(gs);
-
-                for (int i = 0; i < maxRetries; i++)
-                {
-                    if (TryRandomize(gs, eval, out startScene))
-                    {
-                        success = true;
-                        break;
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"Randomization failed: attempt {i+1} of {maxRetries}");
-                        //Iterate the seed
-                        gs.Seed = $"{origSeed}__attempt{i+1}";
-                        if (gs.Level == RandomizationLevel.Rooms)
-                        {
-                            ReloadTopology();
-                        }
-                    }
-                }
-
-                if (!success)
+                if (!RetryRandomize(gs, out startScene))
                 {
                     Debug.LogWarning($"** Failed to complete Randomization after all allowed attempts; it's possible the settings may not allow for completion **");
                 }
@@ -328,6 +312,33 @@ namespace Haiku.Rando
             return new(logicLayers);
         }
 
+        internal bool RetryRandomize(GenerationSettings gs, out int? startScene)
+        {
+            const int maxRetries = 200;
+
+            var eval = LoadLogic(gs);
+            var origSeed = gs.Seed;
+            for (int i = 0; i < maxRetries; i++)
+            {
+                if (TryRandomize(gs, eval, out startScene))
+                {
+                    return true;
+                }
+                else
+                {
+                    Debug.LogWarning($"Randomization failed: attempt {i+1} of {maxRetries}");
+                    //Iterate the seed
+                    gs.Seed = $"{origSeed}__attempt{i+1}";
+                    if (gs.Level == RandomizationLevel.Rooms)
+                    {
+                        ReloadTopology();
+                    }
+                }
+            }
+            startScene = null;
+            return false;
+        }
+
         private bool TryRandomize(GenerationSettings gs, LogicEvaluator evaluator, out int? startScene)
         {
             
@@ -405,7 +416,14 @@ namespace Haiku.Rando
 
             while (MainThreadCallbacks.TryDequeue(out var f))
             {
-                f();
+                try
+                {
+                    f(this);
+                }
+                catch (Exception err)
+                {
+                    Debug.Log(err.ToString());
+                }
             }
         }
 
