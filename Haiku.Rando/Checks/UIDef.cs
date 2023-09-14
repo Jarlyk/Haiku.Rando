@@ -158,6 +158,50 @@ namespace Haiku.Rando.Checks
             _ => throw new ArgumentOutOfRangeException($"UIDef not defined for check type {check.Type}")
         };
 
+        public static string NameOf(RandoCheck check) => check.Type switch
+        {
+            CheckType.Wrench => "_HEALING_WRENCH_TITLE",
+            CheckType.Bulblet => "_LIGHT_BULB_TITLE",
+            CheckType.Ability => HaikuResources.RefUnlockTutorial.abilities[check.CheckId].title,
+            CheckType.Item => (ItemId)check.CheckId switch
+            {
+                // TODO: find the correct item strings for these
+                ItemId.RustedKey => "_COOLANT_TITLE",
+                ItemId.ElectricKey => "_COOLANT_TITLE",
+                ItemId.Whistle => "_COOLANT_TITLE",
+                ItemId.CapsuleFragment => "_COOLANT_TITLE",
+                ItemId.Sword => "_COOLANT_TITLE",
+                ItemId.Wrench => "_COOLANT_TITLE",
+                ItemId.Tape => "_COOLANT_TITLE",
+                ItemId.GreenSkull => "_COOLANT_TITLE",
+                ItemId.RedSkull => "_COOLANT_TITLE",
+                _ => "_COOLANT_TITLE"
+            },
+            CheckType.Chip => GameManager.instance.chip[check.CheckId].title,
+            CheckType.ChipSlot => "_CHIP_SLOT",
+            CheckType.MapDisruptor => "_DISRUPTOR",
+            CheckType.Lore => ModText._LORE_TITLE,
+            CheckType.PowerCell => "_POWERCELL",
+            CheckType.Coolant => "_COOLANT_TITLE",
+            CheckType.TrainStation => GameManager.instance.trainStations[check.CheckId].title,
+            CheckType.FireRes => "_FIRE_RES_TITLE",
+            CheckType.WaterRes => "_WATER_RES_TITLE",
+            CheckType.Filler => ModText._NOTHING_TITLE,
+            CheckType.MapMarker => (RustyType)check.CheckId switch
+            {
+                RustyType.Health => "_HEALTH_PINS",
+                RustyType.Bank => "_BANK_PINS",
+                RustyType.Train => "_TRAIN_PINS",
+                RustyType.Vendor => "_VENDOR_PINS",
+                RustyType.PowerCell => "_POWERCELL_PINS",
+                _ => "_MARKER"
+            },
+            CheckType.MoneyPile => "_SPARE_PARTS_TITLE",
+            CheckType.Clock => ModText._CLOCK_TITLE,
+            CheckType.Lever => ModText._LEVER_TITLE(check.CheckId),
+            _ => throw new ArgumentOutOfRangeException($"name not defined for check type {check.Type}")
+        };
+
         private class LazySprite
         {
             private object spriteRepr;

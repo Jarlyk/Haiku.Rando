@@ -138,7 +138,7 @@ namespace Haiku.Rando.Multiworld
 
         private static string ExternalName(RTopology.RandoCheck check, int uniqueIndex)
         {
-            var basename = RChecks.UIDef.Of(check).Name.Replace(' ', '_');
+            var basename = LocalizationSystem.GetLocalizedValue(RChecks.UIDef.NameOf(check)).Replace(' ', '_');
             return $"{basename}_({uniqueIndex})";
         }
 
@@ -206,6 +206,11 @@ namespace Haiku.Rando.Multiworld
             var items = new Collections.List<(string, string)>();
             foreach (var entry in mapping)
             {
+                // TODO: exclude duplicate shop locations
+                if (entry.Value.Type == CType.Filler && entry.Value.CheckId > 900000)
+                {
+                    continue;
+                }
                 var locName = ExternalName(entry.Key, items.Count);
                 var itemName = ExternalName(entry.Value, items.Count);
                 items.Add((itemName, locName));
@@ -219,7 +224,9 @@ namespace Haiku.Rando.Multiworld
                     SenderUid = _uid,
                     Items = new Collections.Dictionary<string, (string, string)[]>()
                     {
-                        {"Main", itemArr}
+                        // The group MUST be called exactly this, or the MW server will
+                        // not shuffle together our items with the other players'.
+                        {"Main Item Group", itemArr}
                     },
                     Seed = hash
                 });
