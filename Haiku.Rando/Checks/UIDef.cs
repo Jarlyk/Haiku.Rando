@@ -159,7 +159,7 @@ namespace Haiku.Rando.Checks
             CheckType.Multiworld => new()
             {
                 Sprite = null,
-                Name = MWConnection.NameOfRemoteItem(check.CheckId),
+                Name = ModText._MW_ITEM_TITLE(check.CheckId),
                 Description = ModText._MW_ITEM_DESCRIPTION
             },
             _ => throw new ArgumentOutOfRangeException($"UIDef not defined for check type {check.Type}")

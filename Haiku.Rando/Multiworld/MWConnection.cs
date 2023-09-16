@@ -77,20 +77,6 @@ namespace Haiku.Rando.Multiworld
             }
         }
 
-        public static string NameOfRemoteItem(int checkId)
-        {
-            if (Current == null)
-            {
-                return $"Unavailable Multiworld Item {checkId}";
-            }
-            lock (Current._remoteItems)
-            {
-                var item = Current._remoteItems[checkId];
-                var ownerName = Current._remoteNicknames[item.PlayerId];
-                return $"{ownerName}'s {item.Name.Replace('_', ' ')}";
-            }
-        }
-
         public static void SendItem(int checkId)
         {
             if (Current == null)
@@ -229,12 +215,12 @@ namespace Haiku.Rando.Multiworld
                                             });
                                         }
                                         Log($"MW: Multiworld[{i}] = {name}");
+                                        var ownerName = _remoteNicknames[pid];
+                                        RandoPlugin.InvokeOnMainThread(() =>
+                                        {
+                                            LocalizationSystem.localizedEN[ModText._MW_ITEM_TITLE(i)] = $"{ownerName}'s {name.Replace('_', ' ')}";
+                                        });
                                         c = new(CType.Multiworld, 0, new(0, 0), i);
-                                    }
-                                    if (c == null)
-                                    {
-                                        Log($"MW: null check for {itemName} ???");
-                                        continue;
                                     }
                                     RandoPlugin.InvokeOnMainThread(rp =>
                                     {
@@ -280,6 +266,52 @@ namespace Haiku.Rando.Multiworld
                                     }
                                 }
                                 Log($"MW: received confirmation for unknown item {dsConfirmMsg.Content} for player {dsConfirmMsg.To}");
+                            });
+                            break;
+                        case MWMsgDef.MWRequestCharmNotchCostsMessage:
+                            _commandQueue.Add(() =>
+                            {
+                                SendPacked(new MWMsgDef.MWAnnounceCharmNotchCostsMessage()
+                                {
+                                    SenderUid = _uid,
+                                    PlayerID = _playerId,
+                                    Costs = new()
+                                });
+                            });
+                            break;
+                        case MWMsgDef.MWAnnounceCharmNotchCostsMessage notchCostsMsg:
+                            Log($"got notch costs for player {notchCostsMsg.PlayerID} but ignoring for now");
+                            _commandQueue.Add(() =>
+                            {
+                                SendPacked(new MWMsgDef.MWConfirmCharmNotchCostsReceivedMessage()
+                                {
+                                    SenderUid = _uid,
+                                    PlayerID = notchCostsMsg.PlayerID
+                                });
+                            });
+                            break;
+                        case MWMsgDef.MWDataReceiveMessage recvMsg:
+                            if (recvMsg.Label != MWLib.Consts.MULTIWORLD_ITEM_MESSAGE_LABEL)
+                            {
+                                Log($"MW: received data with unknown label {recvMsg.Label}");
+                                break;
+                            }
+                            if (!_itemsByName.TryGetValue(recvMsg.Content, out var recvCheck))
+                            {
+                                Log($"MW: received unknown item {recvMsg.Content}");
+                                break;
+                            }
+                            Log($"MW: received {recvCheck} from {recvMsg.From}");
+                            ReceiveCheck(recvCheck);
+                            _commandQueue.Add(() =>
+                            {
+                                SendPacked(new MWMsgDef.MWDataReceiveConfirmMessage()
+                                {
+                                    SenderUid = _uid,
+                                    Label = recvMsg.Label,
+                                    Data = recvMsg.Content,
+                                    From = recvMsg.From
+                                });
                             });
                             break;
                         default:
@@ -428,6 +460,7 @@ namespace Haiku.Rando.Multiworld
                 {
                     pid = _remoteItems[id].PlayerId;
                     name = _remoteItems[id].Name;
+                    _remoteItems[id].State = RemoteItemState.Collected;
                 }
                 SendPacked(new MWMsgDef.MWDataSendMessage()
                 {
@@ -436,6 +469,14 @@ namespace Haiku.Rando.Multiworld
                     Content = name,
                     To = pid
                 });
+            });
+        }
+
+        private void ReceiveCheck(RTopology.RandoCheck rc)
+        {
+            RandoPlugin.InvokeOnMainThread(() =>
+            {
+                RChecks.CheckManager.TriggerCheck(null, rc);
             });
         }
 

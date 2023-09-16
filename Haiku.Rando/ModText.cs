@@ -15,6 +15,7 @@ namespace Haiku.Rando
         public static string _CLOCK_DESCRIPTION => "_CLOCK_DESCRIPTION";
         public static string _LEVER_TITLE(int n) => "_LEVER_TITLE_" + n;
         public static string _LEVER_DESCRIPTION(int n) => "_LEVER_DESCRIPTION_" + n;
+        public static string _MW_ITEM_TITLE(int n) => "_MW_ITEM_TITLE_" + n;
         public static string _MW_ITEM_DESCRIPTION => "_MW_ITEM_DESCRIPTION";
 
         private static void Load(On.LocalizationSystem.orig_Init orig)
