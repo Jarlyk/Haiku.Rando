@@ -36,6 +36,12 @@ namespace Haiku.Rando.Logic
             }
         }
 
+        internal void SetCheckMapping(RandoCheck location, RandoCheck item)
+        {
+            var dict = (InsertionOrderDictionary<RandoCheck, RandoCheck>)CheckMapping;
+            dict[location] = item;
+        }
+
         // exported for use by RandoMap
         public static Dictionary<(int, string), LogicSymbol> BossTransitions() => new()
         {

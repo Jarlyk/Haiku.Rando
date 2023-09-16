@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Haiku.Rando.Logic
 {
-    public class InsertionOrderDictionary<K, V> : IReadOnlyDictionary<K, V>
+    internal class InsertionOrderDictionary<K, V> : IReadOnlyDictionary<K, V>
     {
         private readonly Dictionary<K, V> _mapping;
         private readonly K[] _keys;
@@ -25,6 +25,11 @@ namespace Haiku.Rando.Logic
             get
             {
                 return _mapping[key];
+            }
+
+            set
+            {
+                _mapping[key] = value;
             }
         }
 

@@ -189,8 +189,16 @@ namespace Haiku.Rando
             c.EmitDelegate((Action)BeginRando);
         }
 
+        internal Action AltBeginRando;
+
         private void BeginRando()
         {
+            if (AltBeginRando != null)
+            {
+                AltBeginRando();
+                return;
+            }
+
             _randomizer = null;
             _transRandomizer = null;
             CheckManager.Instance.Randomizer = null;
@@ -228,58 +236,7 @@ namespace Haiku.Rando
                 timer.Stop();
                 Debug.Log($"completed randomization in {timer.ElapsedMilliseconds} ms");
 
-                if (startScene != null)
-                {
-                    GameManager.instance.introPlayed = true;
-                    GameManager.instance.savePointSceneIndex = startScene.Value;
-                }
-
-                if (gs.Contains(StartingItemSet.Wrench) && !GameManager.instance.canHeal)
-                {
-                    GameManager.instance.canHeal = true;
-                    InventoryManager.instance.AddItem((int)ItemId.Wrench);
-                }
-
-                if (gs.Contains(StartingItemSet.Whistle) && !CheckManager.HasItem(ItemId.Whistle))
-                {
-                    InventoryManager.instance.AddItem((int)ItemId.Whistle);
-                }
-
-                if (gs.Contains(StartingItemSet.Maps))
-                {
-                    // The following is directly copied from DebugMod's GiveAllMaps.
-                    for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
-                    {
-                        GameManager.instance.mapTiles[i].explored = true;
-                    }
-                    for (int j = 0; j < GameManager.instance.disruptors.Length; j++)
-                    {
-                        GameManager.instance.disruptors[j].destroyed = true;
-                    }
-                }
-
-                if (_randomizer.StartSpareParts > 0)
-                {
-                    InventoryManager.instance.AddSpareParts(_randomizer.StartSpareParts);
-                }
-
-                if (gs.TrainLoverMode && _randomizer.StartStation is int startStation)
-                {
-                    GameManager.instance.trainUnlocked = true;
-                    GameManager.instance.trainStations[startStation].unlockedStation = true;
-                    GameManager.instance.trainRoom = startStation switch
-                    {
-                        0 => 28,
-                        1 => 88,
-                        2 => 179,
-                        3 => 53,
-                        4 => 209,
-                        5 => 136,
-                        6 => 67,
-                        7 => 146,
-                        _ => throw new ArgumentOutOfRangeException($"unknown room for station {_randomizer.StartStation}")
-                    };
-                }
+                GiveStartingState();
             }
             else
             {
@@ -291,6 +248,64 @@ namespace Haiku.Rando
                 //Go back to main menu if failed
                 GameManager.instance.introPlayed = true;
                 GameManager.instance.savePointSceneIndex = 0;
+            }
+        }
+
+        internal void GiveStartingState()
+        {
+            var rando = _randomizer;
+            var gs = rando.Settings;
+            if (rando.StartScene != null)
+            {
+                GameManager.instance.introPlayed = true;
+                GameManager.instance.savePointSceneIndex = rando.StartScene.Value;
+            }
+
+            if (gs.Contains(StartingItemSet.Wrench) && !GameManager.instance.canHeal)
+            {
+                GameManager.instance.canHeal = true;
+                InventoryManager.instance.AddItem((int)ItemId.Wrench);
+            }
+
+            if (gs.Contains(StartingItemSet.Whistle) && !CheckManager.HasItem(ItemId.Whistle))
+            {
+                InventoryManager.instance.AddItem((int)ItemId.Whistle);
+            }
+
+            if (gs.Contains(StartingItemSet.Maps))
+            {
+                // The following is directly copied from DebugMod's GiveAllMaps.
+                for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
+                {
+                    GameManager.instance.mapTiles[i].explored = true;
+                }
+                for (int j = 0; j < GameManager.instance.disruptors.Length; j++)
+                {
+                    GameManager.instance.disruptors[j].destroyed = true;
+                }
+            }
+
+            if (_randomizer.StartSpareParts > 0)
+            {
+                InventoryManager.instance.AddSpareParts(_randomizer.StartSpareParts);
+            }
+
+            if (gs.TrainLoverMode && _randomizer.StartStation is int startStation)
+            {
+                GameManager.instance.trainUnlocked = true;
+                GameManager.instance.trainStations[startStation].unlockedStation = true;
+                GameManager.instance.trainRoom = startStation switch
+                {
+                    0 => 28,
+                    1 => 88,
+                    2 => 179,
+                    3 => 53,
+                    4 => 209,
+                    5 => 136,
+                    6 => 67,
+                    7 => 146,
+                    _ => throw new ArgumentOutOfRangeException($"unknown room for station {_randomizer.StartStation}")
+                };
             }
         }
 
