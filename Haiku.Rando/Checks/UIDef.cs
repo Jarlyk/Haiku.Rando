@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 using Haiku.Rando.Topology;
+using Haiku.Rando.Multiworld;
 
 namespace Haiku.Rando.Checks
 {
@@ -154,6 +155,12 @@ namespace Haiku.Rando.Checks
                 Sprite = leverSprite.Load(),
                 Name = ModText._LEVER_TITLE(check.CheckId),
                 Description = ModText._LEVER_DESCRIPTION(check.CheckId)
+            },
+            CheckType.Multiworld => new()
+            {
+                Sprite = null,
+                Name = MWConnection.NameOfRemoteItem(check.CheckId),
+                Description = ModText._MW_ITEM_DESCRIPTION
             },
             _ => throw new ArgumentOutOfRangeException($"UIDef not defined for check type {check.Type}")
         };

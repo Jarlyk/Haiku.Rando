@@ -15,6 +15,7 @@ namespace Haiku.Rando
         public static string _CLOCK_DESCRIPTION => "_CLOCK_DESCRIPTION";
         public static string _LEVER_TITLE(int n) => "_LEVER_TITLE_" + n;
         public static string _LEVER_DESCRIPTION(int n) => "_LEVER_DESCRIPTION_" + n;
+        public static string _MW_ITEM_DESCRIPTION => "_MW_ITEM_DESCRIPTION";
 
         private static void Load(On.LocalizationSystem.orig_Init orig)
         {
@@ -98,6 +99,8 @@ namespace Haiku.Rando
             en[_LEVER_DESCRIPTION(72)] = "Opens a backdoor to the birthplace of Arcadia.";
             en[_LEVER_TITLE(75)] = "Reactor Core Lever";
             en[_LEVER_DESCRIPTION(75)] = "Opens the door to the reactor at the heart of Arcadia's birthplace.";
+
+            en[_MW_ITEM_DESCRIPTION] = "???";
         }
 
         internal static void Hook()

@@ -251,6 +251,11 @@ namespace Haiku.Rando
             }
         }
 
+        internal void InitSaveData(GenerationSettings gs)
+        {
+            _saveData = new(gs);
+        }
+
         internal void GiveStartingState()
         {
             var rando = _randomizer;

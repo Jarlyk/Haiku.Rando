@@ -12,6 +12,7 @@ using BepInEx.Logging;
 using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
 using Haiku.Rando.UI;
+using Haiku.Rando.Multiworld;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -148,6 +149,7 @@ namespace Haiku.Rando.Checks
             CheckType.Filler => check.CheckId >= CheckRandomizer.MaxFillerChecks || GetCurrentSaveData().CollectedFillers.Contains(check.CheckId),
             CheckType.MapMarker => HasMapMarker((RustyType)check.CheckId),
             CheckType.MoneyPile => GameManager.instance.moneyPiles[check.CheckId].collected,
+            CheckType.Multiworld => MWConnection.AlreadyGotRemoteItem(check.CheckId),
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -324,6 +326,10 @@ namespace Haiku.Rando.Checks
                 case CheckType.Lever:
                     GameManager.instance.doors[check.CheckId].opened = true;
                     OpenVanillaDoor(check.CheckId);
+                    hasWorldObject = false;
+                    break;
+                case CheckType.Multiworld:
+                    MWConnection.SendItem(check.CheckId);
                     hasWorldObject = false;
                     break;
                 default:
