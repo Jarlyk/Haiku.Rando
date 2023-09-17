@@ -17,8 +17,7 @@ namespace Haiku.Rando.Multiworld
     internal class MWConnection : IDisposable
     {
         private string _serverAddr;
-        private string _nickname;
-        private string _roomName;
+        private Action _onConnectAction;
         private Net.TcpClient _client;
         private Net.NetworkStream _conn;
         private Timers.Timer _pingTimer;
@@ -42,13 +41,14 @@ namespace Haiku.Rando.Multiworld
             if (Current == null)
             {
                 Current = new();
+                Current.Connect(serverAddr, () => Current.Join(playerId, randoId, nickname));
             }
             else if (Current._serverAddr != serverAddr)
             {
                 Current.Dispose();
                 Current = new();
+                Current.Connect(serverAddr, () => Current.Join(playerId, randoId, nickname));
             }
-            Current.Join(playerId, randoId, nickname);
         }
 
         public static void Terminate()
@@ -120,11 +120,11 @@ namespace Haiku.Rando.Multiworld
                                 _pingTimer.Elapsed += (_, _) => Ping();
                                 _pingTimer.AutoReset = true;
                                 _pingTimer.Enabled = true;
-                                Ready();
+                                _onConnectAction();
                             });
                             break;
                         case MWMsgDef.MWReadyConfirmMessage rcMsg:
-                            _commandQueue.Add(() => Log($"MW: Joined the room {_roomName} with {rcMsg.Ready} players: {string.Join(", ", rcMsg.Names)}"));
+                            _commandQueue.Add(() => Log($"MW: Joined the room with {rcMsg.Ready} players: {string.Join(", ", rcMsg.Names)}"));
                             break;
                         case MWMsgDef.MWPingMessage:
                             Log("MW: Received a server ping");
@@ -370,11 +370,15 @@ namespace Haiku.Rando.Multiworld
 
         public void Connect(string serverAddr, string nickname, string roomName)
         {
+            Connect(serverAddr, () => Ready(nickname, roomName));
+        }
+
+        public void Connect(string serverAddr, Action onConnect)
+        {
             _commandQueue.Add(() =>
             {
                 _serverAddr = serverAddr;
-                _nickname = nickname;
-                _roomName = roomName;
+                _onConnectAction = onConnect;
                 var i = _serverAddr.IndexOf(':');
                 if (i != -1 && int.TryParse(_serverAddr.Substring(i + 1), out var port))
                 {
@@ -396,13 +400,13 @@ namespace Haiku.Rando.Multiworld
             _commandQueue.Add(() => SendPacked(new MWMsgDef.MWPingMessage() { SenderUid = _uid }));
         }
 
-        private void Ready()
+        private void Ready(string nickname, string roomName)
         {
             SendPacked(new MWMsgDef.MWReadyMessage()
             {
                 SenderUid = _uid,
-                Room = _roomName,
-                Nickname = _nickname,
+                Room = roomName,
+                Nickname = nickname,
                 ReadyMode = MWMsgDef.Mode.MultiWorld,
                 ReadyMetadata = new (string, string)[0]
             });
