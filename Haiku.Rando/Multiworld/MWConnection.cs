@@ -70,6 +70,11 @@ namespace Haiku.Rando.Multiworld
             Current.SendRemoteItem(item);
         }
 
+        public static void NotifySaved()
+        {
+            Current?.DoNotifySaved();
+        }
+
         public MWConnection()
         {
             _commandQueue = new(new SyncCollections.ConcurrentQueue<Action>());
@@ -398,6 +403,11 @@ namespace Haiku.Rando.Multiworld
         private void Ping()
         {
             _commandQueue.Add(() => SendPacked(new MWMsgDef.MWPingMessage() { SenderUid = _uid }));
+        }
+
+        private void DoNotifySaved()
+        {
+            _commandQueue.Add(() => SendPacked(new MWMsgDef.MWSaveMessage() { SenderUid = _uid }));
         }
 
         private void Ready(string nickname, string roomName)

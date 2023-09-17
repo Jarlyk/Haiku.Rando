@@ -176,6 +176,7 @@ namespace Haiku.Rando
                 if (_saveData != null)
                 {
                     _saveData.SaveTo(self.es3SaveFile);
+                    MWConnection.NotifySaved();
                 }
             }
             catch (Exception err)
