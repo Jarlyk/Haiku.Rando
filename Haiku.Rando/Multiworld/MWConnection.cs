@@ -27,26 +27,7 @@ namespace Haiku.Rando.Multiworld
         private SyncCollections.BlockingCollection<Action> _commandQueue;
         private ulong _uid;
         private bool _joinConfirmed;
-        private int _playerId = -1;
-        private int _randoId = -1;
-        private SyncCollections.ConcurrentDictionary<string, RTopology.RandoCheck> _itemsByName;
-        private SyncCollections.ConcurrentDictionary<string, RTopology.RandoCheck> _locationsByName;
-        private Collections.List<RemoteItem> _remoteItems;
-        private string[] _remoteNicknames;
-
-        private class RemoteItem
-        {
-            public int PlayerId;
-            public string Name;
-            public RemoteItemState State;
-        }
-
-        private enum RemoteItemState
-        {
-            Uncollected,
-            Collected,
-            Confirmed
-        }
+        private Collections.List<MWMsg.MWMessage> _messagesHeldUntilJoin = new();
 
         public static MWConnection Current { get; private set; }
 
@@ -54,6 +35,20 @@ namespace Haiku.Rando.Multiworld
         {
             Terminate();
             Current = new();
+        }
+
+        public static void Join(string serverAddr, int playerId, int randoId, string nickname)
+        {
+            if (Current == null)
+            {
+                Current = new();
+            }
+            else if (Current._serverAddr != serverAddr)
+            {
+                Current.Dispose();
+                Current = new();
+            }
+            Current.Join(playerId, randoId, nickname);
         }
 
         public static void Terminate()
@@ -65,26 +60,14 @@ namespace Haiku.Rando.Multiworld
             }
         }
 
-        public static bool AlreadyGotRemoteItem(int checkId)
+        internal static void SendItem(RemoteItem item)
         {
             if (Current == null)
             {
-                throw new InvalidOperationException($"cannot determine status of remote item {checkId} without connection");
-            }
-            lock (Current._remoteItems)
-            {
-                return Current._remoteItems[checkId].State != RemoteItemState.Uncollected;
-            }
-        }
-
-        public static void SendItem(int checkId)
-        {
-            if (Current == null)
-            {
-                UE.Debug.Log($"cannot send item {checkId} without connection");
+                UE.Debug.Log($"cannot send item {item.Name} to player {item.PlayerId} without connection");
                 return;
             }
-            Current.SendRemoteItem(checkId);
+            Current.SendRemoteItem(item);
         }
 
         public MWConnection()
@@ -165,85 +148,82 @@ namespace Haiku.Rando.Multiworld
                                     UE.Debug.Log("MW: randomization failed");
                                     return;
                                 }
-                                SendCheckMapping(rp.Randomizer.CheckMapping);
+                                SendCheckMapping(rp.Randomizer.CheckMapping, rp.Randomizer.Topology);
                             });
                             break;
                         case MWMsgDef.MWResultMessage resultMsg:
-                            if (_itemsByName == null)
+                            RandoPlugin.InvokeOnMainThread(rp =>
                             {
-                                Log("MW: received result too early");
-                                break;
-                            }
-                            _commandQueue.Add(() =>
-                            {
-                                _playerId = resultMsg.PlayerId;
-                                _randoId = resultMsg.RandoId;
-                                _remoteNicknames = resultMsg.Nicknames;
-                                _remoteItems = new();
+                                var save = rp.InitSaveData(rp.Randomizer.Settings);
+                                save.MW = new()
+                                {
+                                    ServerAddr = _serverAddr,
+                                    PlayerId = resultMsg.PlayerId,
+                                    RandoId = resultMsg.RandoId,
+                                    RemoteItems = new(),
+                                    RemoteNicknames = resultMsg.Nicknames,
+                                    PatchedPlacements = new()
+                                };
+
                                 if (!resultMsg.Placements.TryGetValue(SingularGroup, out var pairs))
                                 {
-                                    Log("MW: no placements for group {SingularGroup}");
+                                    UE.Debug.Log("MW: no placements for group {SingularGroup}");
                                     return;
                                 }
+
+                                var allChecks = rp.Randomizer.Topology.Checks;
+
                                 foreach (var (itemName, locName) in pairs)
                                 {
-                                    if (!_locationsByName.TryGetValue(locName, out var loc))
+                                    var locI = ParseLocalCheckName(locName);
+                                    if (!(locI >= 0 && locI < allChecks.Count))
                                     {
-                                        Log($"MW: unknown location in rando result: {locName}");
+                                        UE.Debug.Log($"MW: unknown location in rando result: {locName}");
                                         continue;
                                     }
-                                    RTopology.RandoCheck c;
+                                    int itemI;
                                     var (pid, name) = ParseMWItemName(itemName);
-                                    if (pid == -1 || pid == _playerId)
+                                    if (pid == -1 || pid == save.MW.PlayerId)
                                     {
-                                        if (!_itemsByName.TryGetValue(name, out c))
+                                        itemI = ParseLocalCheckName(name);
+                                        if (!(itemI >= 0 && itemI < allChecks.Count))
                                         {
-                                            Log($"MW: unknown item in rando result: {name}");
+                                            Log($"MW: unknown local item in rando result: {name}");
                                             continue;
                                         }
                                     }
                                     else
                                     {
-                                        int i;
-                                        lock (_remoteItems)
+                                        var i = save.MW.RemoteItems.Count;
+                                        save.MW.RemoteItems.Add(new()
                                         {
-                                            i = _remoteItems.Count;
-                                            _remoteItems.Add(new()
-                                            {
-                                                PlayerId = pid,
-                                                Name = name
-                                            });
-                                        }
-                                        Log($"MW: Multiworld[{i}] = {name}");
-                                        var ownerName = _remoteNicknames[pid];
-                                        RandoPlugin.InvokeOnMainThread(() =>
-                                        {
-                                            LocalizationSystem.localizedEN[ModText._MW_ITEM_TITLE(i)] = $"{ownerName}'s {name.Replace('_', ' ')}";
+                                            PlayerId = pid,
+                                            Name = name
                                         });
-                                        c = new(CType.Multiworld, 0, new(0, 0), i);
+                                        UE.Debug.Log($"MW: Multiworld[{i}] = {name}");
+                                        // must start numbering at -1 to avoid
+                                        // confusion with local items
+                                        itemI = -save.MW.RemoteItems.Count;
                                     }
-                                    RandoPlugin.InvokeOnMainThread(rp =>
+                                    save.MW.PatchedPlacements.Add(new()
                                     {
-                                        rp.Randomizer.SetCheckMapping(loc, c);
+                                        LocationIndex = locI,
+                                        ItemIndex = itemI
                                     });
                                 }
-                                Join();
                             });
                             break;
                         case MWMsgDef.MWJoinConfirmMessage:
                             _commandQueue.Add(() =>
                             {
                                 _joinConfirmed = true;
-                            });
-                            RandoPlugin.InvokeOnMainThread(rp =>
-                            {
-                                rp.AltBeginRando = () =>
+                                foreach (var msg in _messagesHeldUntilJoin)
                                 {
-                                    rp.InitSaveData(rp.Randomizer.Settings);
-                                    rp.GiveStartingState();
-                                };
-                                UE.Debug.Log("MW: joined and ready to start");
+                                    SendPacked(msg);
+                                }
+                                _messagesHeldUntilJoin = null;
                             });
+                            Log("MW: joined");
                             break;
                         case MWMsgDef.MWDataSendConfirmMessage dsConfirmMsg:
                             if (dsConfirmMsg.Label != MWLib.Consts.MULTIWORLD_ITEM_MESSAGE_LABEL)
@@ -251,31 +231,30 @@ namespace Haiku.Rando.Multiworld
                                 Log($"MW: data send confirmation has invalid label {dsConfirmMsg.Label}; content={dsConfirmMsg.Content} to={dsConfirmMsg.To}");
                                 break;
                             }
-                            _commandQueue.Add(() =>
+                            RandoPlugin.InvokeOnMainThread(rp =>
                             {
-                                lock (_remoteItems)
+                                if (rp.ConfirmRemoteCheck(dsConfirmMsg.Content, dsConfirmMsg.To))
                                 {
-                                    foreach (var ri in _remoteItems)
-                                    {
-                                        if (ri.Name == dsConfirmMsg.Content && ri.PlayerId == dsConfirmMsg.To)
-                                        {
-                                            ri.State = RemoteItemState.Confirmed;
-                                            Log($"MW: received confirmation of sent item {dsConfirmMsg.Content} for player {dsConfirmMsg.To}");
-                                            return;
-                                        }
-                                    }
+                                    UE.Debug.Log($"MW: received confirmation of sent item {dsConfirmMsg.Content} for player {dsConfirmMsg.To}");
                                 }
-                                Log($"MW: received confirmation for unknown item {dsConfirmMsg.Content} for player {dsConfirmMsg.To}");
+                                else
+                                {
+                                    UE.Debug.Log($"MW: received confirmation for unknown item {dsConfirmMsg.Content} for player {dsConfirmMsg.To}");
+                                }
                             });
                             break;
                         case MWMsgDef.MWRequestCharmNotchCostsMessage:
-                            _commandQueue.Add(() =>
+                            RandoPlugin.InvokeOnMainThread(rp =>
                             {
-                                SendPacked(new MWMsgDef.MWAnnounceCharmNotchCostsMessage()
+                                var pid = rp.MWPlayerId();
+                                _commandQueue.Add(() =>
                                 {
-                                    SenderUid = _uid,
-                                    PlayerID = _playerId,
-                                    Costs = new()
+                                    SendPacked(new MWMsgDef.MWAnnounceCharmNotchCostsMessage()
+                                    {
+                                        SenderUid = _uid,
+                                        PlayerID = pid,
+                                        Costs = new()
+                                    });
                                 });
                             });
                             break;
@@ -296,13 +275,14 @@ namespace Haiku.Rando.Multiworld
                                 Log($"MW: received data with unknown label {recvMsg.Label}");
                                 break;
                             }
-                            if (!_itemsByName.TryGetValue(recvMsg.Content, out var recvCheck))
+                            var itemI = ParseLocalCheckName(recvMsg.Content);
+                            RandoPlugin.InvokeOnMainThread(rp =>
                             {
-                                Log($"MW: received unknown item {recvMsg.Content}");
-                                break;
-                            }
-                            Log($"MW: received {recvCheck} from {recvMsg.From}");
-                            ReceiveCheck(recvCheck);
+                                if (!rp.GiveCheck(itemI))
+                                {
+                                    UE.Debug.Log($"MW: received unknown item {recvMsg.Content}");
+                                }
+                            });
                             _commandQueue.Add(() =>
                             {
                                 SendPacked(new MWMsgDef.MWDataReceiveConfirmMessage()
@@ -359,10 +339,13 @@ namespace Haiku.Rando.Multiworld
             return (-1, name);
         }
 
-        private static string ExternalName(RTopology.RandoCheck check, int uniqueIndex)
+        private static int ParseLocalCheckName(string name)
         {
-            var basename = LocalizationSystem.GetLocalizedValue(RChecks.UIDef.NameOf(check)).Replace(' ', '_');
-            return $"{basename}_({uniqueIndex})";
+            if (!name.EndsWith(")")) return -1;
+            var i = name.LastIndexOf('(');
+            if (i == -1) return -1;
+            if (int.TryParse(name.Substring(i + 1, name.Length - i - 2), out var n)) return n;
+            return -1;
         }
 
         private static int Hash(Collections.IReadOnlyDictionary<RTopology.RandoCheck, RTopology.RandoCheck> mapping)
@@ -425,50 +408,50 @@ namespace Haiku.Rando.Multiworld
             });
         }
 
-        public void Join()
+        private void Join(int playerId, int randoId, string nickname)
         {
             _commandQueue.Add(() =>
             {
-                if (_playerId == -1)
+                if (playerId == -1)
                 {
                     Log("MW: trying to join too early");
                     return;
                 }
+                _joinConfirmed = false;
                 SendPacked(new MWMsgDef.MWJoinMessage()
                 {
                     SenderUid = _uid,
-                    DisplayName = _nickname,
-                    PlayerId = _playerId,
-                    RandoId = _randoId,
+                    DisplayName = nickname,
+                    PlayerId = playerId,
+                    RandoId = randoId,
                     Mode = MWMsgDef.Mode.MultiWorld
                 });
             });
         }
 
-        internal void SendRemoteItem(int id)
+        internal void SendRemoteItem(RemoteItem item)
         {
+            item.State = RemoteItemState.Collected;
+            var pid = item.PlayerId;
+            var name = item.Name;
+
             _commandQueue.Add(() =>
             {
-                if (!_joinConfirmed)
-                {
-                    Log("MW: not in the room to send items");
-                    return;
-                }
-                int pid;
-                string name;
-                lock (_remoteItems)
-                {
-                    pid = _remoteItems[id].PlayerId;
-                    name = _remoteItems[id].Name;
-                    _remoteItems[id].State = RemoteItemState.Collected;
-                }
-                SendPacked(new MWMsgDef.MWDataSendMessage()
+                var msg = new MWMsgDef.MWDataSendMessage()
                 {
                     SenderUid = _uid,
                     Label = MWLib.Consts.MULTIWORLD_ITEM_MESSAGE_LABEL,
                     Content = name,
                     To = pid
-                });
+                };
+                if (_joinConfirmed)
+                {
+                    SendPacked(msg);
+                }
+                else
+                {
+                    _messagesHeldUntilJoin.Add(msg);
+                }
             });
         }
 
@@ -480,10 +463,14 @@ namespace Haiku.Rando.Multiworld
             });
         }
 
-        private void SendCheckMapping(Collections.IReadOnlyDictionary<RTopology.RandoCheck, RTopology.RandoCheck> mapping)
+        private static string ExternalName(RTopology.RandoCheck check)
         {
-            var locationsByName = new SyncCollections.ConcurrentDictionary<string, RTopology.RandoCheck>();
-            var itemsByName = new SyncCollections.ConcurrentDictionary<string, RTopology.RandoCheck>();
+            var basename = LocalizationSystem.GetLocalizedValue(RChecks.UIDef.NameOf(check)).Replace(' ', '_');
+            return $"{basename}_({check.Index})";
+        }
+
+        private void SendCheckMapping(Collections.IReadOnlyDictionary<RTopology.RandoCheck, RTopology.RandoCheck> mapping, RTopology.RandoTopology topology)
+        {
             var items = new Collections.List<(string, string)>();
             foreach (var entry in mapping)
             {
@@ -491,24 +478,19 @@ namespace Haiku.Rando.Multiworld
                 {
                     continue;
                 }
-                var locName = ExternalName(entry.Key, items.Count);
-                var itemName = ExternalName(entry.Value, items.Count);
-                locationsByName[locName] = entry.Key;
-                itemsByName[itemName] = entry.Value;
+                var locName = ExternalName(entry.Key);
+                var itemName = ExternalName(entry.Value);
                 items.Add((itemName, locName));
             }
             var itemArr = items.ToArray();
             var hash = Hash(mapping);
             _commandQueue.Add(() =>
             {
-                _locationsByName = locationsByName;
-                _itemsByName = itemsByName;
                 SendPacked(new MWMsgDef.MWRandoGeneratedMessage()
                 {
                     SenderUid = _uid,
                     Items = new Collections.Dictionary<string, (string, string)[]>()
                     {
-                        
                         {SingularGroup, itemArr}
                     },
                     Seed = hash

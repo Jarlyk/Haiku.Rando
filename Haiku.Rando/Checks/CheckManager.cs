@@ -149,7 +149,7 @@ namespace Haiku.Rando.Checks
             CheckType.Filler => check.CheckId >= CheckRandomizer.MaxFillerChecks || GetCurrentSaveData().CollectedFillers.Contains(check.CheckId),
             CheckType.MapMarker => HasMapMarker((RustyType)check.CheckId),
             CheckType.MoneyPile => GameManager.instance.moneyPiles[check.CheckId].collected,
-            CheckType.Multiworld => MWConnection.AlreadyGotRemoteItem(check.CheckId),
+            CheckType.Multiworld => GetCurrentSaveData().MW.RemoteItems[check.CheckId].State != RemoteItemState.Uncollected,
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -329,7 +329,7 @@ namespace Haiku.Rando.Checks
                     hasWorldObject = false;
                     break;
                 case CheckType.Multiworld:
-                    MWConnection.SendItem(check.CheckId);
+                    MWConnection.SendItem(GetCurrentSaveData().MW.RemoteItems[check.CheckId]);
                     hasWorldObject = false;
                     break;
                 default:

@@ -12,6 +12,7 @@ using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
 using Haiku.Rando.UI;
 using Haiku.Rando.Util;
+using Haiku.Rando.Multiworld;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MMDetour = MonoMod.RuntimeDetour;
@@ -30,6 +31,7 @@ namespace Haiku.Rando
         private TransitionRandomizer _transRandomizer;
 
         private SaveData _saveData;
+        private SaveData _presetSaveData;
 
         private readonly static ConcurrentQueue<Action<RandoPlugin>> MainThreadCallbacks = new();
 
@@ -189,16 +191,8 @@ namespace Haiku.Rando
             c.EmitDelegate((Action)BeginRando);
         }
 
-        internal Action AltBeginRando;
-
         private void BeginRando()
         {
-            if (AltBeginRando != null)
-            {
-                AltBeginRando();
-                return;
-            }
-
             _randomizer = null;
             _transRandomizer = null;
             CheckManager.Instance.Randomizer = null;
@@ -206,14 +200,21 @@ namespace Haiku.Rando
 
             // Add rando save data to the file if it does not already have it, and it's a
             // newly-started file (which introPlayed is a proxy for).
-            if (_saveData == null && !GameManager.instance.introPlayed &&
-                Settings.GetGenerationSettings() is GenerationSettings s)
+            if (_saveData == null && !GameManager.instance.introPlayed)
             {
-                if (string.IsNullOrWhiteSpace(s.Seed))
+                if (_presetSaveData != null)
                 {
-                    s.Seed = DateTime.Now.Ticks.ToString();
+                    _saveData = _presetSaveData;
+                    _presetSaveData = null;
                 }
-                _saveData = new(s);
+                else if (Settings.GetGenerationSettings() is GenerationSettings s)
+                {
+                    if (string.IsNullOrWhiteSpace(s.Seed))
+                    {
+                        s.Seed = DateTime.Now.Ticks.ToString();
+                    }
+                    _saveData = new(s);
+                }
             }
             var gs = _saveData?.Settings;
 
@@ -228,7 +229,11 @@ namespace Haiku.Rando
                 // A previous room rando may have rewired the topology; make sure we start with the
                 // vanilla topology.
                 ReloadTopology();
-                if (!RetryRandomize(gs, out startScene))
+                if (RetryRandomize(gs, out startScene))
+                {
+                    success = true;
+                }
+                else
                 {
                     Debug.LogWarning($"** Failed to complete Randomization after all allowed attempts; it's possible the settings may not allow for completion **");
                 }
@@ -237,6 +242,14 @@ namespace Haiku.Rando
                 Debug.Log($"completed randomization in {timer.ElapsedMilliseconds} ms");
 
                 GiveStartingState();
+
+                if (_saveData.MW != null)
+                {
+                    var mw = _saveData.MW;
+                    MWConnection.Join(mw.ServerAddr, mw.PlayerId, mw.RandoId, mw.SelfNickname);
+                    mw.ApplyText();
+                    mw.ApplyPlacements(_randomizer);
+                }
             }
             else
             {
@@ -251,10 +264,46 @@ namespace Haiku.Rando
             }
         }
 
-        internal void InitSaveData(GenerationSettings gs)
+        internal SaveData InitSaveData(GenerationSettings gs)
         {
-            _saveData = new(gs);
+            _presetSaveData = new(gs);
+            return _presetSaveData;
         }
+
+        internal bool GiveCheck(int i)
+        {
+            if (_randomizer == null)
+            {
+                return false;
+            }
+            var allChecks = _randomizer.Topology.Checks;
+            if (!(i >= 0 && i < allChecks.Count))
+            {
+                return false;
+            }
+            CheckManager.TriggerCheck(null, allChecks[i]);
+            return true;
+        }
+
+        internal bool ConfirmRemoteCheck(string name, int playerId)
+        {
+            if (_saveData == null || _saveData.MW == null)
+            {
+                return false;
+            }
+            foreach (var ri in _saveData.MW.RemoteItems)
+            {
+                if (ri.Name == name && ri.PlayerId == playerId)
+                {
+                    ri.State = RemoteItemState.Confirmed;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        internal int MWPlayerId() =>
+            _saveData != null && _saveData.MW != null ? _saveData.MW.PlayerId : -1;
 
         internal void GiveStartingState()
         {

@@ -1,4 +1,5 @@
 using Haiku.Rando.Checks;
+using Haiku.Rando.Multiworld;
 
 namespace Haiku.Rando
 {
@@ -19,6 +20,7 @@ namespace Haiku.Rando
         public GenerationSettings Settings;
         public Bitset64 CollectedLore;
         public Bitset64 CollectedFillers;
+        public MWSaveData MW;
 
         public static SaveData Load(ES3File saveFile) =>
             saveFile.Load<bool>(presenceKey, false) ? new(saveFile) : null;
@@ -41,6 +43,7 @@ namespace Haiku.Rando
             };
             CollectedLore = new(saveFile.Load<ulong>(collectedLoreKey, 0UL));
             CollectedFillers = new(saveFile.Load<ulong>(collectedFillerKey, 0UL));
+            MW = MWSaveData.Load(saveFile);
         }
 
         public void SaveTo(ES3File saveFile)
@@ -55,6 +58,10 @@ namespace Haiku.Rando
             saveFile.Save(levelKey, (int)Settings.Level);
             saveFile.Save(collectedLoreKey, CollectedLore.Bits);
             saveFile.Save(collectedFillerKey, CollectedFillers.Bits);
+            if (MW != null)
+            {
+                MW.SaveTo(saveFile);
+            }
             saveFile.Sync();
         }
     }
