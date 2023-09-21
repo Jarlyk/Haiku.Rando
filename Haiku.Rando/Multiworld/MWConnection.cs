@@ -49,6 +49,10 @@ namespace Haiku.Rando.Multiworld
                 Current = new();
                 Current.Connect(serverAddr, () => Current.Join(playerId, randoId, nickname));
             }
+            else
+            {
+                Current.Join(playerId, randoId, nickname);
+            }
         }
 
         public static void Terminate()
@@ -191,7 +195,7 @@ namespace Haiku.Rando.Multiworld
                                     if (pid == -1 || pid == save.MW.PlayerId)
                                     {
                                         itemI = ParseLocalCheckName(name);
-                                        if (!(itemI >= 0 && itemI < allChecks.Count))
+                                        if (itemI < 0)
                                         {
                                             Log($"MW: unknown local item in rando result: {name}");
                                             continue;

@@ -277,12 +277,14 @@ namespace Haiku.Rando
             {
                 return false;
             }
-            var allChecks = _randomizer.Topology.Checks;
-            if (!(i >= 0 && i < allChecks.Count))
+            if (i < 0)
             {
                 return false;
             }
-            CheckManager.TriggerCheck(null, allChecks[i]);
+            var allChecks = _randomizer.Topology.Checks;
+            var check = i < allChecks.Count ? allChecks[i] :
+                new RandoCheck(CheckType.Filler, 0, new(0, 0), i - allChecks.Count);
+            CheckManager.TriggerCheck(null, check);
             return true;
         }
 

@@ -343,6 +343,9 @@ namespace Haiku.Rando.Logic
             for (var i = _pool.Count; i < _checksToReplace.Count; i++)
             {
                 var filler = new RandoCheck(CheckType.Filler, 0, new(0, 0), i - _pool.Count);
+                // Zero is not appropriate value for the index, as there is
+                // an actual check at index 0 in the topology.
+                filler.Index = _topology.Checks.Count + filler.CheckId;
                 if (i - _pool.Count >= CheckRandomizer.MaxFillerChecks)
                 {
                     Debug.Log("Out of filler checks. Will leave placement blank.");
