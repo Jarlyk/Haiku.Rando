@@ -92,9 +92,19 @@ namespace Haiku.Rando.Multiworld
             foreach (var pp in PatchedPlacements)
             {
                 var loc = allChecks[pp.LocationIndex];
-                var item = pp.ItemIndex >= 0 ?
-                    allChecks[pp.ItemIndex] :
-                    new RTopology.RandoCheck(CType.Multiworld, 0, new(0, 0), -pp.ItemIndex - 1);
+                RTopology.RandoCheck item;
+                if (pp.ItemIndex < 0)
+                {
+                    item = new(CType.Multiworld, 0, new(0, 0), -pp.ItemIndex - 1);
+                }
+                else if (pp.ItemIndex < allChecks.Count)
+                {
+                    item = allChecks[pp.ItemIndex];
+                }
+                else
+                {
+                    item = new(CType.Filler, 0, new(0, 0), pp.ItemIndex - allChecks.Count);
+                }
                 rando.SetCheckMapping(loc, item);
             }
         }

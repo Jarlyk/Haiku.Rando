@@ -284,7 +284,7 @@ namespace Haiku.Rando
             var allChecks = _randomizer.Topology.Checks;
             var check = i < allChecks.Count ? allChecks[i] :
                 new RandoCheck(CheckType.Filler, 0, new(0, 0), i - allChecks.Count);
-            CheckManager.TriggerCheck(null, check);
+            CheckManager.TriggerCheck(this, check);
             return true;
         }
 
@@ -465,11 +465,6 @@ namespace Haiku.Rando
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
         {
             CheckManager.Instance.OnSceneLoaded(scene.buildIndex);
-
-            for (var i = 0; i < InventoryManager.instance.items.Length; i++)
-            {
-                Debug.Log($"Item {i} name = {InventoryManager.instance.items[i].itemName}");
-            }
 
             if (_saveData != null && _saveData.Settings.Level == RandomizationLevel.Rooms)
             {
