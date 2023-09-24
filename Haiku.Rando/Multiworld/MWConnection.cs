@@ -125,6 +125,10 @@ namespace Haiku.Rando.Multiworld
                             {
                                 _uid = connMsg.SenderUid;
                                 Log($"MW: Connected to {connMsg.ServerName} as UID {_uid}");
+                                RandoPlugin.InvokeOnMainThread(rp =>
+                                {
+                                    rp.ShowMWStatus($"Connected to {connMsg.ServerName}");
+                                });
                                 _pingTimer = new(PingInterval);
                                 _pingTimer.Elapsed += (_, _) => Ping();
                                 _pingTimer.AutoReset = true;
@@ -134,6 +138,10 @@ namespace Haiku.Rando.Multiworld
                             break;
                         case MWMsgDef.MWReadyConfirmMessage rcMsg:
                             _commandQueue.Add(() => Log($"MW: Joined the room with {rcMsg.Ready} players: {string.Join(", ", rcMsg.Names)}"));
+                            RandoPlugin.InvokeOnMainThread(rp =>
+                            {
+                                rp.ShowMWStatus($"Joined to room with {string.Join(", ", rcMsg.Names)}");
+                            });
                             break;
                         case MWMsgDef.MWPingMessage:
                             Log("MW: Received a server ping");
@@ -220,6 +228,7 @@ namespace Haiku.Rando.Multiworld
                                         ItemIndex = itemI
                                     });
                                 }
+                                rp.ShowMWStatus("Ready to join");
                             });
                             break;
                         case MWMsgDef.MWJoinConfirmMessage:

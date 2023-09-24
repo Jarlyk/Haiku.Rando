@@ -90,6 +90,7 @@ namespace Haiku.Rando
             //This impacts some transitions
 
             gameObject.AddComponent<RecentPickupDisplay>();
+            gameObject.AddComponent<MWStatusDisplay>();
         }
 
         private void NoCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
@@ -286,6 +287,11 @@ namespace Haiku.Rando
                 new RandoCheck(CheckType.Filler, 0, new(0, 0), i - allChecks.Count);
             CheckManager.TriggerCheck(this, check);
             return true;
+        }
+
+        internal void ShowMWStatus(string s)
+        {
+            gameObject.GetComponent<MWStatusDisplay>().Text = s;
         }
 
         internal bool ConfirmRemoteCheck(string name, int playerId)
