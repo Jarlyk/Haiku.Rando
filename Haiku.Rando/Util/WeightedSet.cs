@@ -64,15 +64,16 @@ namespace Haiku.Rando.Util
             }
 
             var i = PickItemIndex(t);
+            // _items.Count >= 2 at this point
             var item = _items[i];
             _items[i] = _items[_items.Count - 1];
-            _items.RemoveAt(_items.Count - 1);
+            var wAdded = _partialSums[_items.Count - 1] - _partialSums[_items.Count - 2];
             var wRemoved = _partialSums[i];
             if (i > 0)
             {
                 wRemoved -= _partialSums[i - 1];
             }
-            var wAdded = _partialSums[_items.Count - 1] - _partialSums[_items.Count - 2];
+            _items.RemoveAt(_items.Count - 1);
             for (var j = i; j < _items.Count; j++)
             {
                 _partialSums[j] -= wRemoved;
