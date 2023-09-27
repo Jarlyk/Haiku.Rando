@@ -1,3 +1,10 @@
+# 2.2.4 (27 September 2023)
+
+Bug fixes:
+
+- An issue that caused seed generation to frequently fail (manifested as a lockup on 
+  entering the game) under certain combinations of pools and skips has been resolved.
+
 # 2.2.3 (9 September 2023)
 
 Bug fixes:
