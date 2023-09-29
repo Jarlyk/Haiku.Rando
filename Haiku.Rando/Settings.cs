@@ -79,36 +79,12 @@ namespace Haiku.Rando
             PreBrokenDoors = config.Bind(QoL, "PreBrokenDoors", true,
                                          "Makes breakable doors automatically break upon spawning; required for a few room rando transitions");
             
-            MWEnabled = config.Bind(Multiworld, "Enabled", false, "Whether to join a multiworld game");
             MWServerAddr = config.Bind(Multiworld, "Server Address", "127.0.0.1", "The address or address:port of the multiworld server");
             MWNickname = config.Bind(Multiworld, "Nickname", "", "The nickname other players will see");
             MWRoomName = config.Bind(Multiworld, "Room Name", "", "The name of the room to join");
             ConfigManagerUtil.createButton(config, ReadyMW, Multiworld, "Ready", "Connect to the server and join a room");
             ConfigManagerUtil.createButton(config, DisconnectMW, Multiworld, "Disconnect", "Disconnect from the server");
             ConfigManagerUtil.createButton(config, StartMW, Multiworld, "Start MW", "Begin shuffling items between worlds");
-
-            MWEnabled.SettingChanged += (sender, value) =>
-            {
-                
-                if (MWEnabled.Value)
-                {
-                    try
-                    {
-                        MWConnection.Start();
-                        MWConnection.Current.Connect(MWServerAddr.Value, MWNickname.Value, MWRoomName.Value);
-                    }
-                    catch (Exception err)
-                    {
-                        UnityEngine.Debug.Log(err.ToString());
-                    }
-                }
-                else
-                {
-                    UnityEngine.Debug.Log("preparing to disconnect");
-                    MWConnection.Terminate();
-                    UnityEngine.Debug.Log("disconnected");
-                }
-            };
 
             //Save defaults if didn't already exist
             config.Save();
