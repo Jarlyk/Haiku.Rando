@@ -83,6 +83,9 @@ namespace Haiku.Rando
             MWServerAddr = config.Bind(Multiworld, "Server Address", "127.0.0.1", "The address or address:port of the multiworld server");
             MWNickname = config.Bind(Multiworld, "Nickname", "", "The nickname other players will see");
             MWRoomName = config.Bind(Multiworld, "Room Name", "", "The name of the room to join");
+            ConfigManagerUtil.createButton(config, ReadyMW, Multiworld, "Ready", "Connect to the server and join a room");
+            ConfigManagerUtil.createButton(config, DisconnectMW, Multiworld, "Disconnect", "Disconnect from the server");
+            ConfigManagerUtil.createButton(config, StartMW, Multiworld, "Start MW", "Begin shuffling items between worlds");
 
             MWEnabled.SettingChanged += (sender, value) =>
             {
@@ -109,6 +112,26 @@ namespace Haiku.Rando
 
             //Save defaults if didn't already exist
             config.Save();
+        }
+
+        private static void ReadyMW()
+        {
+            MWConnection.Start();
+            MWConnection.Current.Connect(MWServerAddr.Value, MWNickname.Value, MWRoomName.Value);
+        }
+
+        private static void DisconnectMW()
+        {
+            MWConnection.Terminate();
+            RandoPlugin.InvokeOnMainThread(rp => rp.ShowMWStatus(""));
+        }
+
+        private static void StartMW()
+        {
+            if (MWConnection.Current != null)
+            {
+                MWConnection.Current.StartRandomization();
+            }
         }
 
         public static GenerationSettings GetGenerationSettings()

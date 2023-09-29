@@ -251,6 +251,7 @@ namespace Haiku.Rando
                     MWConnection.Join(mw.ServerAddr, mw.PlayerId, mw.RandoId, mw.SelfNickname);
                     mw.ApplyText();
                     mw.ApplyPlacements(_randomizer);
+                    ShowMWStatus("");
                 }
             }
             else

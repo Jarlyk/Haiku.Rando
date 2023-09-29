@@ -456,6 +456,18 @@ namespace Haiku.Rando.Multiworld
             });
         }
 
+        internal void StartRandomization()
+        {
+            _commandQueue.Add(() =>
+            {
+                SendPacked(new MWMsgDef.MWInitiateGameMessage()
+                {
+                    SenderUid = _uid,
+                    Settings = """{"RandomizationAlgorithm": "Default"}"""
+                });
+            });
+        }
+
         internal void SendRemoteItem(RemoteItem item)
         {
             item.State = RemoteItemState.Collected;
