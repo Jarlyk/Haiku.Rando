@@ -102,11 +102,38 @@ namespace Haiku.Rando
             en[_LEVER_DESCRIPTION(75)] = "Opens the door to the reactor at the heart of Arcadia's birthplace.";
 
             en[_MW_ITEM_DESCRIPTION] = "???";
+
+            // There are builtin keys for these, but they have the text written
+            // L I K E   T H I S so they're not useful for our purposes.
+            en["_RANDO_AREA_AW"] = "Abandoned Wastes";
+            en["_RANDO_AREA_LB"] = "Last Bunker";
+            en["_RANDO_AREA_CC"] = "Central Core";
+            en["_RANDO_AREA_PE"] = "Pinion's Expanse";
+            en["_RANDO_AREA_IB"] = "Incinerator Burner";
+            en["_RANDO_AREA_WD"] = "Water Ducts";
+            en["_RANDO_AREA_FR"] = "Forgotten Ruins";
+            en["_RANDO_AREA_SW"] = "Sunken Wastes";
+            en["_RANDO_AREA_RL"] = "Research Lab";
+            en["_RANDO_AREA_FF"] = "Factory Facility";
+            en["_RANDO_AREA_RS"] = "Ruined Surface";
+            en["_RANDO_AREA_BF"] = "Blazing Furnace";
+            en["_RANDO_AREA_OA"] = "Old Arcadia";
+        }
+
+        private static string GetLiteralString(On.LocalizationSystem.orig_GetLocalizedValue orig, string key)
+        {
+            if (key.StartsWith("$"))
+            {
+                return key.Substring(1);
+            }
+            UnityEngine.Debug.Log("Loading text key: " + key);
+            return orig(key);
         }
 
         internal static void Hook()
         {
             On.LocalizationSystem.Init += Load;
+            On.LocalizationSystem.GetLocalizedValue += GetLiteralString;
         }
     }
 }
