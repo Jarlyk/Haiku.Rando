@@ -21,7 +21,7 @@ namespace Haiku.Rando
                 return new()
                 {
                     Where = LocalizationSystem.GetLocalizedValue("_RANDO_AREA_" + code),
-                    ShowInCornerPopup = true
+                    ShowInCornerPopup = false
                 };
             }
             return null;

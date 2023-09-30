@@ -63,6 +63,7 @@ namespace Haiku.Rando.UI
                                                            CanvasUtil.GameFont);
                 _textEntries[i] = textPanel.GetComponent<Text>();
                 _textEntries[i].verticalOverflow = VerticalWrapMode.Overflow;
+                _textEntries[i].lineSpacing = .5f;
                 textPanel.name = $"TextPanel{i}";
             }
         }

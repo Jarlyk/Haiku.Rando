@@ -273,7 +273,7 @@ namespace Haiku.Rando
             return _presetSaveData;
         }
 
-        internal bool GiveCheck(int i)
+        internal bool GiveCheck(int i, LocationText where)
         {
             if (_randomizer == null)
             {
@@ -286,7 +286,7 @@ namespace Haiku.Rando
             var allChecks = _randomizer.Topology.Checks;
             var check = i < allChecks.Count ? allChecks[i] :
                 new RandoCheck(CheckType.Filler, 0, new(0, 0), i - allChecks.Count);
-            CheckManager.TriggerCheck(this, check);
+            CheckManager.TriggerCheck(this, check, where);
             return true;
         }
 

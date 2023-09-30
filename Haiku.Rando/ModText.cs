@@ -126,7 +126,6 @@ namespace Haiku.Rando
             {
                 return key.Substring(1);
             }
-            UnityEngine.Debug.Log("Loading text key: " + key);
             return orig(key);
         }
 

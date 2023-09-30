@@ -296,7 +296,12 @@ namespace Haiku.Rando.Multiworld
                             var itemI = ParseLocalCheckName(recvMsg.Content);
                             RandoPlugin.InvokeOnMainThread(rp =>
                             {
-                                if (!rp.GiveCheck(itemI))
+                                var where = new LocationText()
+                                {
+                                    Where = recvMsg.From,
+                                    ShowInCornerPopup = true
+                                };
+                                if (!rp.GiveCheck(itemI, where))
                                 {
                                     UE.Debug.Log($"MW: received unknown item {recvMsg.Content}");
                                 }

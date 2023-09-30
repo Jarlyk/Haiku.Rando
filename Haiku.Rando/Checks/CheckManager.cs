@@ -231,6 +231,11 @@ namespace Haiku.Rando.Checks
             Instance.DoTriggerCheck(self, check, LocationText.OfCurrentScene());
         }
 
+        public static void TriggerCheck(MonoBehaviour self, RandoCheck check, LocationText where)
+        {
+            Instance.DoTriggerCheck(self, check, where);
+        }
+
         private void DoTriggerCheck(MonoBehaviour self, RandoCheck check, LocationText where)
         {
             var refPickup = HaikuResources.RefPickupItem;
