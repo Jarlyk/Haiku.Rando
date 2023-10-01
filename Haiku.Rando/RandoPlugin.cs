@@ -253,9 +253,14 @@ namespace Haiku.Rando
                     mw.ApplyPlacements(_randomizer);
                     ShowMWStatus("");
                 }
+                else
+                {
+                    MWConnection.Terminate();
+                }
             }
             else
             {
+                MWConnection.Terminate();
                 success = true;
             }
 
@@ -271,6 +276,17 @@ namespace Haiku.Rando
         {
             _presetSaveData = new(gs);
             return _presetSaveData;
+        }
+
+        internal void ReconnectMW()
+        {
+            var mw = _saveData?.MW;
+            if (mw != null)
+            {
+                MWConnection.Terminate();
+                MWConnection.Join(mw.ServerAddr, mw.PlayerId, mw.RandoId, mw.SelfNickname);
+                Logger.LogInfo("MW: reconnecting");
+            }
         }
 
         internal bool GiveCheck(int i, LocationText where)

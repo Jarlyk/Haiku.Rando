@@ -21,6 +21,7 @@ namespace Haiku.Rando.Multiworld
         private Net.TcpClient _client;
         private Net.NetworkStream _conn;
         private Timers.Timer _pingTimer;
+        private int _unansweredPings;
         private MWMsg.MWMessagePacker _packer;
         private Threading.Thread _writeThread, _readThread;
         private SyncCollections.BlockingCollection<Action> _commandQueue;
@@ -59,6 +60,7 @@ namespace Haiku.Rando.Multiworld
         {
             if (Current != null)
             {
+                Current.Disconnect();
                 Current.Dispose();
                 Current = null;
             }
@@ -126,10 +128,6 @@ namespace Haiku.Rando.Multiworld
                             {
                                 _uid = connMsg.SenderUid;
                                 Log($"MW: Connected to {connMsg.ServerName} as UID {_uid}");
-                                RandoPlugin.InvokeOnMainThread(rp =>
-                                {
-                                    rp.ShowMWStatus($"Connected to {connMsg.ServerName}");
-                                });
                                 _pingTimer = new(PingInterval);
                                 _pingTimer.Elapsed += (_, _) => Ping();
                                 _pingTimer.AutoReset = true;
@@ -145,7 +143,10 @@ namespace Haiku.Rando.Multiworld
                             });
                             break;
                         case MWMsgDef.MWPingMessage:
-                            Log("MW: Received a server ping");
+                            _commandQueue.Add(() =>
+                            {
+                                _unansweredPings = 0;
+                            });
                             break;
                         case MWMsgDef.MWRequestRandoMessage:
                             Log("MW: Received request to generate our rando");
@@ -425,7 +426,26 @@ namespace Haiku.Rando.Multiworld
 
         private void Ping()
         {
-            _commandQueue.Add(() => SendPacked(new MWMsgDef.MWPingMessage() { SenderUid = _uid }));
+            _commandQueue.Add(() =>
+            {
+                _unansweredPings++;
+                if (_unansweredPings == ReconnectThreshold)
+                {
+                    RandoPlugin.InvokeOnMainThread(rp => rp.ReconnectMW());
+                }
+                else
+                {
+                    SendPacked(new MWMsgDef.MWPingMessage() { SenderUid = _uid });
+                }
+            });
+        }
+
+        private void Disconnect()
+        {
+            _commandQueue.Add(() =>
+            {
+                SendPacked(new MWDisconnectMessage() { SenderUid = _uid });
+            });
         }
 
         private void DoNotifySaved()
@@ -554,6 +574,7 @@ namespace Haiku.Rando.Multiworld
             check.SceneId == SpecialScenes.AbandonedWastesStation && check.IsShopItem;
 
         private const double PingInterval = 5000;
+        private const int ReconnectThreshold = 5;
 
         private void SendPacked(MWMsg.MWMessage msg)
         {
