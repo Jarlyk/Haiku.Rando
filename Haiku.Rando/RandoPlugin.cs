@@ -290,6 +290,21 @@ namespace Haiku.Rando
             return true;
         }
 
+        internal void ResendUnconfirmedItems()
+        {
+            if (_saveData.MW == null)
+            {
+                return;
+            }
+            foreach (var ri in _saveData.MW.RemoteItems)
+            {
+                if (ri.State == RemoteItemState.Collected)
+                {
+                    MWConnection.SendItem(ri);
+                }
+            }
+        }
+
         internal void ShowMWStatus(string s)
         {
             gameObject.GetComponent<MWStatusDisplay>().Text = s;

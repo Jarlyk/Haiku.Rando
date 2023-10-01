@@ -66,6 +66,7 @@ namespace Haiku.Rando.Multiworld
 
         internal static void SendItem(RemoteItem item)
         {
+            item.State = RemoteItemState.Collected;
             if (Current == null)
             {
                 UE.Debug.Log($"cannot send item {item.Name} to player {item.PlayerId} without connection");
@@ -240,6 +241,10 @@ namespace Haiku.Rando.Multiworld
                                     SendPacked(msg);
                                 }
                                 _messagesHeldUntilJoin = null;
+                            });
+                            RandoPlugin.InvokeOnMainThread(rp =>
+                            {
+                                rp.ResendUnconfirmedItems();
                             });
                             Log("MW: joined");
                             break;
@@ -475,7 +480,6 @@ namespace Haiku.Rando.Multiworld
 
         internal void SendRemoteItem(RemoteItem item)
         {
-            item.State = RemoteItemState.Collected;
             var pid = item.PlayerId;
             var name = item.Name;
 
