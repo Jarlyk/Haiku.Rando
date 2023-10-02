@@ -323,6 +323,39 @@ namespace Haiku.Rando.Multiworld
                                 });
                             });
                             break;
+                        case MWMsgDef.MWDatasReceiveMessage forfeitMsg:
+                            RandoPlugin.InvokeOnMainThread(rp =>
+                            {
+                                UE.Debug.Log($"MW: receiving {forfeitMsg.Datas.Count} forfeited items");
+                                var where = new LocationText()
+                                {
+                                    Where = forfeitMsg.From,
+                                    ShowInCornerPopup = true
+                                };
+                                foreach (var (label, content) in forfeitMsg.Datas)
+                                {
+                                    if (label != MWLib.Consts.MULTIWORLD_ITEM_MESSAGE_LABEL)
+                                    {
+                                        UE.Debug.Log($"MW: received data with unknown label {label}");
+                                        continue;
+                                    }
+                                    var itemI = ParseLocalCheckName(content);
+                                    if (!rp.GiveCheck(itemI, where))
+                                    {
+                                        UE.Debug.Log($"MW: received unknown item {content}");
+                                    }
+                                }
+                            });
+                            _commandQueue.Add(() =>
+                            {
+                                SendPacked(new MWMsgDef.MWDatasReceiveConfirmMessage()
+                                {
+                                    SenderUid = _uid,
+                                    Count = forfeitMsg.Datas.Count,
+                                    From = forfeitMsg.From
+                                });
+                            });
+                            break;
                         default:
                             Log($"MW: got a {msg.GetType().Name}");
                             break;
