@@ -289,6 +289,40 @@ namespace Haiku.Rando
             }
         }
 
+        internal void EjectMW()
+        {
+            var mw = _saveData?.MW;
+            if (mw != null)
+            {
+                var othersItems = mw.RemoteItems.Where(ri => ri.State == RemoteItemState.Uncollected).ToList();
+                MWConnection.SendManyItems(othersItems);
+            }
+        }
+
+        internal void ConfirmEjectMW(int numConfirmedItems)
+        {
+            var mw = _saveData?.MW;
+            if (mw == null)
+            {
+                Logger.LogInfo($"MW: eject confirmation failed: confirmed {numConfirmedItems} but MW save data not loaded");
+                return;
+            }
+            var n = mw.RemoteItems.Count(ri => ri.State == RemoteItemState.Collected);
+            if (numConfirmedItems != n)
+            {
+                Logger.LogInfo($"MW: eject confirmation failed: confirmed {numConfirmedItems} but had {n} awaiting confirmation");
+                return;
+            }
+            foreach (var ri in mw.RemoteItems)
+            {
+                if (ri.State == RemoteItemState.Collected)
+                {
+                    ri.State = RemoteItemState.Confirmed;
+                }
+            }
+            CameraBehavior.instance.ShowLeftCornerUI(null, ModText._MW_EJECT, "", 6);
+        }
+
         internal bool GiveCheck(int i, LocationText where)
         {
             if (_randomizer == null)

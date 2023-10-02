@@ -17,6 +17,7 @@ namespace Haiku.Rando
         public static string _LEVER_DESCRIPTION(int n) => "_LEVER_DESCRIPTION_" + n;
         public static string _MW_ITEM_TITLE(int n) => "_MW_ITEM_TITLE_" + n;
         public static string _MW_ITEM_DESCRIPTION => "_MW_ITEM_DESCRIPTION";
+        public static string _MW_EJECT => "_MW_EJECT";
 
         private static void Load(On.LocalizationSystem.orig_Init orig)
         {
@@ -102,6 +103,7 @@ namespace Haiku.Rando
             en[_LEVER_DESCRIPTION(75)] = "Opens the door to the reactor at the heart of Arcadia's birthplace.";
 
             en[_MW_ITEM_DESCRIPTION] = "???";
+            en[_MW_EJECT] = "Ejected";
 
             // There are builtin keys for these, but they have the text written
             // L I K E   T H I S so they're not useful for our purposes.

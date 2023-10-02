@@ -85,6 +85,7 @@ namespace Haiku.Rando
             ConfigManagerUtil.createButton(config, ReadyMW, Multiworld, "Ready", "Connect to the server and join a room");
             ConfigManagerUtil.createButton(config, DisconnectMW, Multiworld, "Disconnect", "Disconnect from the server");
             ConfigManagerUtil.createButton(config, StartMW, Multiworld, "Start MW", "Begin shuffling items between worlds");
+            ConfigManagerUtil.createButton(config, EjectMW, Multiworld, "Eject", "Send out all items belonging to other players");
 
             //Save defaults if didn't already exist
             config.Save();
@@ -108,6 +109,11 @@ namespace Haiku.Rando
             {
                 MWConnection.Current.StartRandomization();
             }
+        }
+
+        private static void EjectMW()
+        {
+            RandoPlugin.InvokeOnMainThread(rp => rp.EjectMW());
         }
 
         public static GenerationSettings GetGenerationSettings()

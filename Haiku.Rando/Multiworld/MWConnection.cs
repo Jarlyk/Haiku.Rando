@@ -3,6 +3,7 @@ using Net = System.Net.Sockets;
 using Threading = System.Threading;
 using Timers = System.Timers;
 using Collections = System.Collections.Generic;
+using static System.Linq.Enumerable;
 using SyncCollections = System.Collections.Concurrent;
 using MWLib = MultiWorldLib;
 using MWMsg = MultiWorldLib.Messaging;
@@ -68,6 +69,11 @@ namespace Haiku.Rando.Multiworld
 
         internal static void SendItem(RemoteItem item)
         {
+            if (item.State != RemoteItemState.Uncollected)
+            {
+                UE.Debug.Log($"item {item.Name} for player {item.PlayerId} already collected");
+                return;
+            }
             item.State = RemoteItemState.Collected;
             if (Current == null)
             {
@@ -75,6 +81,20 @@ namespace Haiku.Rando.Multiworld
                 return;
             }
             Current.SendRemoteItem(item);
+        }
+
+        internal static void SendManyItems(Collections.List<RemoteItem> items)
+        {
+            foreach (var it in items)
+            {
+                it.State = RemoteItemState.Collected;
+            }
+            if (Current == null)
+            {
+                UE.Debug.Log("cannot send bulk items without connection");
+                return;
+            }
+            Current.SendManyRemoteItems(items);
         }
 
         public static void NotifySaved()
@@ -265,6 +285,12 @@ namespace Haiku.Rando.Multiworld
                                 {
                                     UE.Debug.Log($"MW: received confirmation for unknown item {dsConfirmMsg.Content} for player {dsConfirmMsg.To}");
                                 }
+                            });
+                            break;
+                        case MWMsgDef.MWDatasSendConfirmMessage forfeitConfirmMsg:
+                            RandoPlugin.InvokeOnMainThread(rp =>
+                            {
+                                rp.ConfirmEjectMW(forfeitConfirmMsg.DatasCount);
                             });
                             break;
                         case MWMsgDef.MWRequestCharmNotchCostsMessage:
@@ -544,6 +570,28 @@ namespace Haiku.Rando.Multiworld
                     Label = MWLib.Consts.MULTIWORLD_ITEM_MESSAGE_LABEL,
                     Content = name,
                     To = pid
+                };
+                if (_joinConfirmed)
+                {
+                    SendPacked(msg);
+                }
+                else
+                {
+                    _messagesHeldUntilJoin.Add(msg);
+                }
+            });
+        }
+
+        internal void SendManyRemoteItems(Collections.List<RemoteItem> items)
+        {
+            _commandQueue.Add(() =>
+            {
+                var datas = items.Select(it => (MWLib.Consts.MULTIWORLD_ITEM_MESSAGE_LABEL, it.Name, it.PlayerId)).ToList();
+
+                var msg = new MWMsgDef.MWDatasSendMessage()
+                {
+                    SenderUid = _uid,
+                    Datas = datas
                 };
                 if (_joinConfirmed)
                 {
