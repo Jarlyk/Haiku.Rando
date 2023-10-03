@@ -250,7 +250,7 @@ namespace Haiku.Rando.Multiworld
                                         ItemIndex = itemI
                                     });
                                 }
-                                rp.ShowMWStatus("Ready to join");
+                                rp.ShowMWStatus($"Ready to join - hash: {resultMsg.GeneratedHash}");
                             });
                             break;
                         case MWMsgDef.MWJoinConfirmMessage:

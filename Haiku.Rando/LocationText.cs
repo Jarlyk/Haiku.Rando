@@ -40,10 +40,11 @@ namespace Haiku.Rando
         private const string RS = "RS";
         private const string BF = "BF";
         private const string OA = "OA";
+        private const string TT = "TT";
         
         private static readonly string[] areaNamesByScene = new string[]
         {
-            /* 000 */ "", "", "", "", "", "", "", "", "", "",
+            /* 000 */ "", "", "", "", "", "", "", "", "", TT,
             /* 010 */ AW, AW, AW, AW, AW, AW, AW, AW, AW, AW,
             /* 020 */ AW, AW, AW, AW, AW, AW, AW, AW, AW, AW,
             /* 030 */ LB, LB, LB, LB, LB, LB, LB, LB, LB, LB,
@@ -57,7 +58,7 @@ namespace Haiku.Rando
             /* 110 */ IB, WD, WD, WD, WD, WD, WD, WD, WD, WD,
             /* 120 */ WD, WD, WD, WD, WD, WD, WD, WD, WD, WD,
             /* 130 */ WD, FR, FR, FR, FR, FR, FR, FR, FR, FR,
-            /* 140 */ WD, FR, "", FR, FR, FR, SW, FR, "", "",
+            /* 140 */ FR, FR, "", FR, FR, FR, SW, FR, "", "",
             /* 150 */ "", SW, SW, SW, SW, SW, SW, SW, SW, RL,
             /* 160 */ SW, SW, SW, RL, RL, SW, AW, CC, CC, CC,
             /* 170 */ CC, FF, FF, FF, FF, FF, FF, FF, FF, FF,

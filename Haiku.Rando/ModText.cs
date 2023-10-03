@@ -120,6 +120,7 @@ namespace Haiku.Rando
             en["_RANDO_AREA_RS"] = "Ruined Surface";
             en["_RANDO_AREA_BF"] = "Blazing Furnace";
             en["_RANDO_AREA_OA"] = "Old Arcadia";
+            en["_RANDO_AREA_TT"] = "Traveling Town";
         }
 
         private static string GetLiteralString(On.LocalizationSystem.orig_GetLocalizedValue orig, string key)
