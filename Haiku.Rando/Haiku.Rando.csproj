@@ -43,6 +43,9 @@
     <Reference Include="Haiku.CoreModdingApi">
       <HintPath>..\lib\Haiku.CoreModdingApi.dll</HintPath>
     </Reference>
+    <Reference Include="MultiWorldLib">
+      <HintPath>..\lib\MultiWorldLib.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\lib\BepInEx\Mono.Cecil.dll</HintPath>
     </Reference>

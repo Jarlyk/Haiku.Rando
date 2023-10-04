@@ -12,6 +12,7 @@ using BepInEx.Logging;
 using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
 using Haiku.Rando.UI;
+using Haiku.Rando.Multiworld;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -148,6 +149,7 @@ namespace Haiku.Rando.Checks
             CheckType.Filler => check.CheckId >= CheckRandomizer.MaxFillerChecks || GetCurrentSaveData().CollectedFillers.Contains(check.CheckId),
             CheckType.MapMarker => HasMapMarker((RustyType)check.CheckId),
             CheckType.MoneyPile => GameManager.instance.moneyPiles[check.CheckId].collected,
+            CheckType.Multiworld => GetCurrentSaveData().MW.RemoteItems[check.CheckId].State != RemoteItemState.Uncollected,
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -226,10 +228,15 @@ namespace Haiku.Rando.Checks
 
         public static void TriggerCheck(MonoBehaviour self, RandoCheck check)
         {
-            Instance.DoTriggerCheck(self, check);
+            Instance.DoTriggerCheck(self, check, LocationText.OfCurrentScene());
         }
 
-        private void DoTriggerCheck(MonoBehaviour self, RandoCheck check)
+        public static void TriggerCheck(MonoBehaviour self, RandoCheck check, LocationText where)
+        {
+            Instance.DoTriggerCheck(self, check, where);
+        }
+
+        private void DoTriggerCheck(MonoBehaviour self, RandoCheck check, LocationText where)
         {
             var refPickup = HaikuResources.RefPickupItem;
             bool hasWorldObject = true;
@@ -326,17 +333,21 @@ namespace Haiku.Rando.Checks
                     OpenVanillaDoor(check.CheckId);
                     hasWorldObject = false;
                     break;
+                case CheckType.Multiworld:
+                    MWConnection.SendItem(GetCurrentSaveData().MW.RemoteItems[check.CheckId]);
+                    hasWorldObject = false;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
             if (check.Type == CheckType.Lore)
             {
                 var uidef = UIDef.Of(check);
-                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name);
+                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name, where?.Where);
             }
             else
             {
-                ShowCheckPopup(check);
+                ShowCheckPopup(check, where);
             }
 
             if (hasWorldObject)
@@ -403,26 +414,31 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        private static void ShowCheckPopup(RandoCheck check)
+        private static void ShowCheckPopup(RandoCheck check, LocationText where)
         {
             var uidef = UIDef.Of(check);
-            CameraBehavior.instance.ShowLeftCornerUI(uidef.Sprite, uidef.Name, "", PickupTextDuration);
+            var desc = "";
+            if (where != null && where.ShowInCornerPopup)
+            {
+                desc = "$from " + where.Where;
+            }
+            CameraBehavior.instance.ShowLeftCornerUI(uidef.Sprite, uidef.Name, desc, PickupTextDuration);
             switch (check.Type)
             {
                 case CheckType.PowerCell:
                     var collectedCount = GameManager.instance.powerCells.Count(p => p.collected);
                     var annotatedName = $"{CameraBehavior.instance.leftCornerTitleText.text} ({collectedCount})";
                     CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
-                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName);
+                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName, where?.Where);
                     break;
                 case CheckType.MoneyPile:
                     var value = check.SaveId;
                     annotatedName = $"{value} {CameraBehavior.instance.leftCornerTitleText.text}";
                     CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
-                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName);
+                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName, where?.Where);
                     break;
                 default:
-                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name);
+                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name, where?.Where);
                     break;
             }
         }

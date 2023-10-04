@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 using Haiku.Rando.Topology;
+using Haiku.Rando.Multiworld;
 
 namespace Haiku.Rando.Checks
 {
@@ -155,7 +156,58 @@ namespace Haiku.Rando.Checks
                 Name = ModText._LEVER_TITLE(check.CheckId),
                 Description = ModText._LEVER_DESCRIPTION(check.CheckId)
             },
+            CheckType.Multiworld => new()
+            {
+                Sprite = null,
+                Name = ModText._MW_ITEM_TITLE(check.CheckId),
+                Description = ModText._MW_ITEM_DESCRIPTION
+            },
             _ => throw new ArgumentOutOfRangeException($"UIDef not defined for check type {check.Type}")
+        };
+
+        public static string NameOf(RandoCheck check) => check.Type switch
+        {
+            CheckType.Wrench => "_HEALING_WRENCH_TITLE",
+            CheckType.Bulblet => "_LIGHT_BULB_TITLE",
+            CheckType.Ability => HaikuResources.RefUnlockTutorial.abilities[check.CheckId].title,
+            CheckType.Item => (ItemId)check.CheckId switch
+            {
+                // These are not accessible through normal means when not yet
+                // loaded into a game.
+                ItemId.RustedKey => "_RUSTY_KEY_TITLE",
+                ItemId.ElectricKey => "_ELECTRIC_KEY",
+                ItemId.Whistle => "_WHISTLE_TITLE",
+                ItemId.CapsuleFragment => "_FRAGMENTS_TITLE",
+                ItemId.Sword => "_KILL_SWITCH_TITLE",
+                ItemId.Wrench => "_HEALING_WRENCH_TITLE",
+                ItemId.Tape => "_CASSETTE",
+                ItemId.GreenSkull => "_WEIRD_ARTIFACT",
+                ItemId.RedSkull => "_WEIRD_ARTIFACT",
+                _ => "_WEIRD_ARTIFACT"
+            },
+            CheckType.Chip => GameManager.instance.chip[check.CheckId].title,
+            CheckType.ChipSlot => "_CHIP_SLOT",
+            CheckType.MapDisruptor => "_DISRUPTOR",
+            CheckType.Lore => ModText._LORE_TITLE,
+            CheckType.PowerCell => "_POWERCELL",
+            CheckType.Coolant => "_COOLANT_TITLE",
+            CheckType.TrainStation => GameManager.instance.trainStations[check.CheckId].title,
+            CheckType.FireRes => "_FIRE_RES_TITLE",
+            CheckType.WaterRes => "_WATER_RES_TITLE",
+            CheckType.Filler => ModText._NOTHING_TITLE,
+            CheckType.MapMarker => (RustyType)check.CheckId switch
+            {
+                RustyType.Health => "_HEALTH_PINS",
+                RustyType.Bank => "_BANK_PINS",
+                RustyType.Train => "_TRAIN_PINS",
+                RustyType.Vendor => "_VENDOR_PINS",
+                RustyType.PowerCell => "_POWERCELL_PINS",
+                _ => "_MARKER"
+            },
+            CheckType.MoneyPile => "_SPARE_PARTS_TITLE",
+            CheckType.Clock => ModText._CLOCK_TITLE,
+            CheckType.Lever => ModText._LEVER_TITLE(check.CheckId),
+            _ => throw new ArgumentOutOfRangeException($"name not defined for check type {check.Type}")
         };
 
         private class LazySprite

@@ -55,13 +55,15 @@ namespace Haiku.Rando.UI
                 _imageEntries[i].enabled = false;
                 imagePanel.name = $"ImagePanel{i}";
 
-                var textPanel = CanvasUtil.CreateTextPanel(_entryPanels[i], "", 8, TextAnchor.MiddleLeft,
+                var textPanel = CanvasUtil.CreateTextPanel(_entryPanels[i], "", 7, TextAnchor.MiddleLeft,
                                                            new CanvasUtil.RectData(new Vector2(-16, 0),
                                                                new Vector2(0, 0),
                                                                new Vector2(0, 0),
                                                                new Vector2(1, 1)),
                                                            CanvasUtil.GameFont);
                 _textEntries[i] = textPanel.GetComponent<Text>();
+                _textEntries[i].verticalOverflow = VerticalWrapMode.Overflow;
+                _textEntries[i].lineSpacing = .5f;
                 textPanel.name = $"TextPanel{i}";
             }
         }
@@ -75,15 +77,15 @@ namespace Haiku.Rando.UI
             }
         }
 
-        public static void AddRecentPickup(Sprite image, string title)
+        public static void AddRecentPickup(Sprite image, string title, string where)
         {
             if (instance)
             {
-                instance.DoAddRecentPickup(image, title);
+                instance.DoAddRecentPickup(image, title, where);
             }
         }
 
-        private void DoAddRecentPickup(Sprite image, string title)
+        private void DoAddRecentPickup(Sprite image, string title, string where)
         {
             //Push existing entries down the list
             for (int i = EntryCount - 1; i >= 1; i--)
@@ -93,7 +95,13 @@ namespace Haiku.Rando.UI
                 _imageEntries[i].enabled = _imageEntries[i].sprite != null;
             }
 
-            _textEntries[0].text = title.StartsWith("_") ? LocalizationSystem.GetLocalizedValue(title) : title;
+            var text = title.StartsWith("_") ? LocalizationSystem.GetLocalizedValue(title) : title;
+            if (where != null)
+            {
+                text = text + "\nfrom " + where;
+            }
+
+            _textEntries[0].text = text;
             _imageEntries[0].sprite = image;
             _imageEntries[0].enabled = _imageEntries[0].sprite != null;
         }

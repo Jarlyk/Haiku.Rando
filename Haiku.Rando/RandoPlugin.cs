@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using SysDiag = System.Diagnostics;
@@ -11,6 +12,7 @@ using Haiku.Rando.Logic;
 using Haiku.Rando.Topology;
 using Haiku.Rando.UI;
 using Haiku.Rando.Util;
+using Haiku.Rando.Multiworld;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MMDetour = MonoMod.RuntimeDetour;
@@ -29,6 +31,21 @@ namespace Haiku.Rando
         private TransitionRandomizer _transRandomizer;
 
         private SaveData _saveData;
+        private SaveData _presetSaveData;
+
+        private readonly static ConcurrentQueue<Action<RandoPlugin>> MainThreadCallbacks = new();
+
+        internal static void InvokeOnMainThread(Action f)
+        {
+            MainThreadCallbacks.Enqueue(_ => f());
+        }
+
+        internal static void InvokeOnMainThread(Action<RandoPlugin> f)
+        {
+            MainThreadCallbacks.Enqueue(f);
+        }
+
+        internal CheckRandomizer Randomizer => _randomizer;
 
         public void Start()
         {
@@ -73,6 +90,7 @@ namespace Haiku.Rando
             //This impacts some transitions
 
             gameObject.AddComponent<RecentPickupDisplay>();
+            gameObject.AddComponent<MWStatusDisplay>();
         }
 
         private void NoCheckChips(On.ReplenishHealth.orig_CheckChipsWhenGameStarts orig, ReplenishHealth self)
@@ -122,7 +140,7 @@ namespace Haiku.Rando
             }
         }
 
-        private void ReloadTopology()
+        internal void ReloadTopology()
         {
             using (var stream = Assembly.GetExecutingAssembly()
                                         .GetManifestResourceStream("Haiku.Rando.Resources.HaikuTopology.json"))
@@ -159,6 +177,7 @@ namespace Haiku.Rando
                 if (_saveData != null)
                 {
                     _saveData.SaveTo(self.es3SaveFile);
+                    MWConnection.NotifySaved();
                 }
             }
             catch (Exception err)
@@ -183,14 +202,21 @@ namespace Haiku.Rando
 
             // Add rando save data to the file if it does not already have it, and it's a
             // newly-started file (which introPlayed is a proxy for).
-            if (_saveData == null && !GameManager.instance.introPlayed &&
-                Settings.GetGenerationSettings() is GenerationSettings s)
+            if (_saveData == null && !GameManager.instance.introPlayed)
             {
-                if (string.IsNullOrWhiteSpace(s.Seed))
+                if (_presetSaveData != null)
                 {
-                    s.Seed = DateTime.Now.Ticks.ToString();
+                    _saveData = _presetSaveData;
+                    _presetSaveData = null;
                 }
-                _saveData = new(s);
+                else if (Settings.GetGenerationSettings() is GenerationSettings s)
+                {
+                    if (string.IsNullOrWhiteSpace(s.Seed))
+                    {
+                        s.Seed = DateTime.Now.Ticks.ToString();
+                    }
+                    _saveData = new(s);
+                }
             }
             var gs = _saveData?.Settings;
 
@@ -198,8 +224,6 @@ namespace Haiku.Rando
             if (gs != null && gs.Level != RandomizationLevel.None)
             {
                 int? startScene = SpecialScenes.GameStart;
-                const int maxRetries = 200;
-                var origSeed = gs.Seed;
 
                 var timer = new SysDiag.Stopwatch();
                 timer.Start();
@@ -207,28 +231,11 @@ namespace Haiku.Rando
                 // A previous room rando may have rewired the topology; make sure we start with the
                 // vanilla topology.
                 ReloadTopology();
-                var eval = LoadLogic(gs);
-
-                for (int i = 0; i < maxRetries; i++)
+                if (RetryRandomize(gs, out startScene))
                 {
-                    if (TryRandomize(gs, eval, out startScene))
-                    {
-                        success = true;
-                        break;
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"Randomization failed: attempt {i+1} of {maxRetries}");
-                        //Iterate the seed
-                        gs.Seed = $"{origSeed}__attempt{i+1}";
-                        if (gs.Level == RandomizationLevel.Rooms)
-                        {
-                            ReloadTopology();
-                        }
-                    }
+                    success = true;
                 }
-
-                if (!success)
+                else
                 {
                     Debug.LogWarning($"** Failed to complete Randomization after all allowed attempts; it's possible the settings may not allow for completion **");
                 }
@@ -236,61 +243,24 @@ namespace Haiku.Rando
                 timer.Stop();
                 Debug.Log($"completed randomization in {timer.ElapsedMilliseconds} ms");
 
-                if (startScene != null)
-                {
-                    GameManager.instance.introPlayed = true;
-                    GameManager.instance.savePointSceneIndex = startScene.Value;
-                }
+                GiveStartingState();
 
-                if (gs.Contains(StartingItemSet.Wrench) && !GameManager.instance.canHeal)
+                if (_saveData.MW != null)
                 {
-                    GameManager.instance.canHeal = true;
-                    InventoryManager.instance.AddItem((int)ItemId.Wrench);
+                    var mw = _saveData.MW;
+                    MWConnection.Join(mw.ServerAddr, mw.PlayerId, mw.RandoId, mw.SelfNickname);
+                    mw.ApplyText();
+                    mw.ApplyPlacements(_randomizer);
+                    ShowMWStatus("");
                 }
-
-                if (gs.Contains(StartingItemSet.Whistle) && !CheckManager.HasItem(ItemId.Whistle))
+                else
                 {
-                    InventoryManager.instance.AddItem((int)ItemId.Whistle);
-                }
-
-                if (gs.Contains(StartingItemSet.Maps))
-                {
-                    // The following is directly copied from DebugMod's GiveAllMaps.
-                    for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
-                    {
-                        GameManager.instance.mapTiles[i].explored = true;
-                    }
-                    for (int j = 0; j < GameManager.instance.disruptors.Length; j++)
-                    {
-                        GameManager.instance.disruptors[j].destroyed = true;
-                    }
-                }
-
-                if (_randomizer.StartSpareParts > 0)
-                {
-                    InventoryManager.instance.AddSpareParts(_randomizer.StartSpareParts);
-                }
-
-                if (gs.TrainLoverMode && _randomizer.StartStation is int startStation)
-                {
-                    GameManager.instance.trainUnlocked = true;
-                    GameManager.instance.trainStations[startStation].unlockedStation = true;
-                    GameManager.instance.trainRoom = startStation switch
-                    {
-                        0 => 28,
-                        1 => 88,
-                        2 => 179,
-                        3 => 53,
-                        4 => 209,
-                        5 => 136,
-                        6 => 67,
-                        7 => 146,
-                        _ => throw new ArgumentOutOfRangeException($"unknown room for station {_randomizer.StartStation}")
-                    };
+                    MWConnection.Terminate();
                 }
             }
             else
             {
+                MWConnection.Terminate();
                 success = true;
             }
 
@@ -299,6 +269,172 @@ namespace Haiku.Rando
                 //Go back to main menu if failed
                 GameManager.instance.introPlayed = true;
                 GameManager.instance.savePointSceneIndex = 0;
+            }
+        }
+
+        internal SaveData InitSaveData(GenerationSettings gs)
+        {
+            _presetSaveData = new(gs);
+            return _presetSaveData;
+        }
+
+        internal void ReconnectMW()
+        {
+            var mw = _saveData?.MW;
+            if (mw != null)
+            {
+                MWConnection.Terminate();
+                MWConnection.Join(mw.ServerAddr, mw.PlayerId, mw.RandoId, mw.SelfNickname);
+                Logger.LogInfo("MW: reconnecting");
+            }
+        }
+
+        internal void EjectMW()
+        {
+            var mw = _saveData?.MW;
+            if (mw != null)
+            {
+                var othersItems = mw.RemoteItems.Where(ri => ri.State == RemoteItemState.Uncollected).ToList();
+                MWConnection.SendManyItems(othersItems);
+            }
+        }
+
+        internal void ConfirmEjectMW(int numConfirmedItems)
+        {
+            var mw = _saveData?.MW;
+            if (mw == null)
+            {
+                Logger.LogInfo($"MW: eject confirmation failed: confirmed {numConfirmedItems} but MW save data not loaded");
+                return;
+            }
+            var n = mw.RemoteItems.Count(ri => ri.State == RemoteItemState.Collected);
+            if (numConfirmedItems != n)
+            {
+                Logger.LogInfo($"MW: eject confirmation failed: confirmed {numConfirmedItems} but had {n} awaiting confirmation");
+                return;
+            }
+            foreach (var ri in mw.RemoteItems)
+            {
+                if (ri.State == RemoteItemState.Collected)
+                {
+                    ri.State = RemoteItemState.Confirmed;
+                }
+            }
+            CameraBehavior.instance.ShowLeftCornerUI(null, ModText._MW_EJECT, "", 6);
+        }
+
+        internal bool GiveCheck(int i, LocationText where)
+        {
+            if (_randomizer == null)
+            {
+                return false;
+            }
+            if (i < 0)
+            {
+                return false;
+            }
+            var allChecks = _randomizer.Topology.Checks;
+            var check = i < allChecks.Count ? allChecks[i] :
+                new RandoCheck(CheckType.Filler, 0, new(0, 0), i - allChecks.Count);
+            CheckManager.TriggerCheck(this, check, where);
+            return true;
+        }
+
+        internal void ResendUnconfirmedItems()
+        {
+            if (_saveData.MW == null)
+            {
+                return;
+            }
+            foreach (var ri in _saveData.MW.RemoteItems)
+            {
+                if (ri.State == RemoteItemState.Collected)
+                {
+                    MWConnection.SendItem(ri);
+                }
+            }
+        }
+
+        internal void ShowMWStatus(string s)
+        {
+            gameObject.GetComponent<MWStatusDisplay>().Text = s;
+        }
+
+        internal bool ConfirmRemoteCheck(string name, int playerId)
+        {
+            if (_saveData == null || _saveData.MW == null)
+            {
+                return false;
+            }
+            foreach (var ri in _saveData.MW.RemoteItems)
+            {
+                if (ri.Name == name && ri.PlayerId == playerId)
+                {
+                    ri.State = RemoteItemState.Confirmed;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        internal int MWPlayerId() =>
+            _saveData != null && _saveData.MW != null ? _saveData.MW.PlayerId : -1;
+
+        internal void GiveStartingState()
+        {
+            var rando = _randomizer;
+            var gs = rando.Settings;
+            if (rando.StartScene != null)
+            {
+                GameManager.instance.introPlayed = true;
+                GameManager.instance.savePointSceneIndex = rando.StartScene.Value;
+            }
+
+            if (gs.Contains(StartingItemSet.Wrench) && !GameManager.instance.canHeal)
+            {
+                GameManager.instance.canHeal = true;
+                InventoryManager.instance.AddItem((int)ItemId.Wrench);
+            }
+
+            if (gs.Contains(StartingItemSet.Whistle) && !CheckManager.HasItem(ItemId.Whistle))
+            {
+                InventoryManager.instance.AddItem((int)ItemId.Whistle);
+            }
+
+            if (gs.Contains(StartingItemSet.Maps))
+            {
+                // The following is directly copied from DebugMod's GiveAllMaps.
+                for (int i = 0; i < GameManager.instance.mapTiles.Length; i++)
+                {
+                    GameManager.instance.mapTiles[i].explored = true;
+                }
+                for (int j = 0; j < GameManager.instance.disruptors.Length; j++)
+                {
+                    GameManager.instance.disruptors[j].destroyed = true;
+                }
+            }
+
+            if (_randomizer.StartSpareParts > 0)
+            {
+                InventoryManager.instance.AddSpareParts(_randomizer.StartSpareParts);
+            }
+
+            if (gs.TrainLoverMode && _randomizer.StartStation is int startStation)
+            {
+                GameManager.instance.trainUnlocked = true;
+                GameManager.instance.trainStations[startStation].unlockedStation = true;
+                GameManager.instance.trainRoom = startStation switch
+                {
+                    0 => 28,
+                    1 => 88,
+                    2 => 179,
+                    3 => 53,
+                    4 => 209,
+                    5 => 136,
+                    6 => 67,
+                    7 => 146,
+                    _ => throw new ArgumentOutOfRangeException($"unknown room for station {_randomizer.StartStation}")
+                };
             }
         }
 
@@ -318,6 +454,33 @@ namespace Haiku.Rando
             }
 
             return new(logicLayers);
+        }
+
+        internal bool RetryRandomize(GenerationSettings gs, out int? startScene)
+        {
+            const int maxRetries = 200;
+
+            var eval = LoadLogic(gs);
+            var origSeed = gs.Seed;
+            for (int i = 0; i < maxRetries; i++)
+            {
+                if (TryRandomize(gs, eval, out startScene))
+                {
+                    return true;
+                }
+                else
+                {
+                    Debug.LogWarning($"Randomization failed: attempt {i+1} of {maxRetries}");
+                    //Iterate the seed
+                    gs.Seed = $"{origSeed}__attempt{i+1}";
+                    if (gs.Level == RandomizationLevel.Rooms)
+                    {
+                        ReloadTopology();
+                    }
+                }
+            }
+            startScene = null;
+            return false;
         }
 
         private bool TryRandomize(GenerationSettings gs, LogicEvaluator evaluator, out int? startScene)
@@ -393,6 +556,18 @@ namespace Haiku.Rando
             if (Input.GetKeyDown(KeyCode.Y) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
             {
                 StartCoroutine(RunMapping());
+            }
+
+            while (MainThreadCallbacks.TryDequeue(out var f))
+            {
+                try
+                {
+                    f(this);
+                }
+                catch (Exception err)
+                {
+                    Debug.Log(err.ToString());
+                }
             }
         }
 

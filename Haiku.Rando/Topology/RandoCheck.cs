@@ -30,6 +30,8 @@ namespace Haiku.Rando.Topology
 
         public string Alias { get; set; }
 
+        public int Index { get; set; }
+
         public string GetAlias(int sceneId) => Alias;
 
         public Vector2 GetPosition(int sceneId) => Position;

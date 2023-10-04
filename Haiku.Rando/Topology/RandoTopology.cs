@@ -87,6 +87,7 @@ namespace Haiku.Rando.Topology
             for (int i = 0; i < checks.Length; i++)
             {
                 checks[i] = FromDto(ref dto.checks[i]);
+                checks[i].Index = i;
                 GetScene(scenes, checks[i].SceneId).Nodes.Add(checks[i]);
             }
 
