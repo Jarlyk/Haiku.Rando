@@ -44,6 +44,34 @@ These options are mostly for convenience, and don't affect the randomization at 
 - **Pre-Broken Doors**: opens breakable doors automatically upon entering the
   room; required for some transitions in room rando
 
+### Multiworld
+
+This randomizer supports multiworld games, where items are shuffled between several different players'
+worlds. It uses the same protocol as [Hollow Knight's multiworld][hkmw], which enables it to work
+with the regular multiworld server for that game as well as to play mixed Haiku/HK multiworld
+randomizers.
+
+To play a multiworld game in Haiku:
+
+1. Set the server address, your nickname and a room name in the configuration as appropriate.
+2. Enable randomization and select your settings as with a single-world game.
+2. Press the Ready button in the config panel; if successful, a message will appear on screen indicating which players are in the same room.
+3. Once this messsage appears, one player should press "Start MW" to generate the multiworld seed
+   for everyone. (this can be done from Hollow Knight as well as Haiku)
+4. When the multiworld is successfully generated, you will see a message indicating you are ready to
+   join, along with a hash that you can compare with other players to verify they have the same seed.
+5. At this point, open a new save file to join you to the multiworld.
+6. You should save your game as soon as possible so that you can rejoin later if your game crashes
+   or otherwise fails to save.
+
+If you must leave the game early, the "Eject" button will return all items in your world that
+belong to other players, to their respective owners.
+
+If you need to change your server, nickname or room name during the setup, press Disconnect, adjust 
+your settings, then press Ready again.
+
+[hkmw]: https://github.com/Shadudev/HollowKnight.MultiWorld/blob/master/MultiWorldMod/README.md
+
 ## Building
 This Git repo includes the Haiku API dependency, but does not include the Unity or Haiku Assemblies.  Prior to building, you'll need to copy the necessary files from the Managed folder in your Haiku installation to the lib/Game folder.  This particular mod also relies on the publicizer, so you will then need to copy the publicized Assembly-CSharp.dll into the lib/Game folder as well.
 

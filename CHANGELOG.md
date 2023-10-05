@@ -1,9 +1,23 @@
+# 2.3 (5 October 2023)
+
+New features:
+
+- Multiworld support, compatible with [Hollow Knight's][hkmw]. All randomization settings in either
+  game, as well as connections for HK, are supported.
+- The recent items list now shows the area each item was obtained in, or the originating player for
+  items sent by other players in a multiworld game.
+
+[hkmw]: https://github.com/Shadudev/HollowKnight.MultiWorld/blob/master/MultiWorldMod/README.md
+
 # 2.2.4 (27 September 2023)
 
 Bug fixes:
 
 - An issue that caused seed generation to frequently fail (manifested as a lockup on 
   entering the game) under certain combinations of pools and skips has been resolved.
+- The Creator trio cutscene is no longer interactable if the fight is entered in Old
+  Arcadia before it is done in the Lost Archives. This can happen when lever rando is
+  enabled.
 
 # 2.2.3 (9 September 2023)
 
