@@ -148,7 +148,6 @@ namespace Haiku.Rando.Checks
             CheckType.PartsMonument => false,
             CheckType.MapMarker => HasMapMarker((RustyType)check.CheckId),
             CheckType.MoneyPile => GameManager.instance.moneyPiles[check.CheckId].collected,
-            CheckType.Multiworld => GetCurrentSaveData().MW.RemoteItems[check.CheckId].State != RemoteItemState.Uncollected,
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -314,10 +313,6 @@ namespace Haiku.Rando.Checks
                 case CheckType.Lever:
                     GameManager.instance.doors[check.CheckId].opened = true;
                     OpenVanillaDoor(check.CheckId);
-                    hasWorldObject = false;
-                    break;
-                case CheckType.Multiworld:
-                    MWConnection.SendItem(GetCurrentSaveData().MW.RemoteItems[check.CheckId]);
                     hasWorldObject = false;
                     break;
                 default:

@@ -237,7 +237,8 @@ namespace Haiku.Rando.Multiworld
                                         save.MW.RemoteItems.Add(new()
                                         {
                                             PlayerId = pid,
-                                            Name = name
+                                            Name = name,
+                                            Index = i
                                         });
                                         UE.Debug.Log($"MW: Multiworld[{i}] = {name}");
                                         // must start numbering at -1 to avoid

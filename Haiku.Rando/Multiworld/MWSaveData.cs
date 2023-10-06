@@ -50,7 +50,8 @@ namespace Haiku.Rando.Multiworld
                 {
                     PlayerId = saveFile.Load<int>(remoteItemPidPrefix + i, -1),
                     Name = saveFile.Load<string>(remoteItemNamePrefix + i, ""),
-                    State = (RemoteItemState)saveFile.Load<int>(remoteItemStatePrefix + i, 0)
+                    State = (RemoteItemState)saveFile.Load<int>(remoteItemStatePrefix + i, 0),
+                    Index = i
                 });
             }
 
@@ -96,7 +97,8 @@ namespace Haiku.Rando.Multiworld
                 RTopology.IRandoItem item;
                 if (pp.ItemIndex < 0)
                 {
-                    item = new RTopology.RandoCheck(CType.Multiworld, 0, new(0, 0), -pp.ItemIndex - 1);
+                    var i = -pp.ItemIndex - 1;
+                    item = RemoteItems[i];
                 }
                 else if (pp.ItemIndex < allChecks.Count)
                 {
@@ -142,20 +144,6 @@ namespace Haiku.Rando.Multiworld
             // Sync not needed since this is never run on its own,
             // only as part of SaveData.SaveTo
         }
-    }
-
-    internal class RemoteItem
-    {
-        public int PlayerId;
-        public string Name;
-        public RemoteItemState State;
-    }
-
-    internal enum RemoteItemState
-    {
-        Uncollected,
-        Collected,
-        Confirmed
     }
 
     internal struct Placement

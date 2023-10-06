@@ -25,7 +25,6 @@ namespace Haiku.Rando.Topology
         Clock,
         RESERVED,
         MapMarker,
-        MoneyPile,
-        Multiworld
+        MoneyPile
     }
 }
