@@ -93,12 +93,6 @@ namespace Haiku.Rando.Checks
                 Name = "_WATER_RES_TITLE",
                 Description = "_WATER_RES_DESCRIPTION"
             },
-            CheckType.Filler => new()
-            {
-                Sprite = null,
-                Name = ModText._NOTHING_TITLE,
-                Description = ModText._NOTHING_DESCRIPTION
-            },
             CheckType.MapMarker => (RustyType)check.CheckId switch
             {
                 RustyType.Health => new()
@@ -194,7 +188,6 @@ namespace Haiku.Rando.Checks
             CheckType.TrainStation => GameManager.instance.trainStations[check.CheckId].title,
             CheckType.FireRes => "_FIRE_RES_TITLE",
             CheckType.WaterRes => "_WATER_RES_TITLE",
-            CheckType.Filler => ModText._NOTHING_TITLE,
             CheckType.MapMarker => (RustyType)check.CheckId switch
             {
                 RustyType.Health => "_HEALTH_PINS",

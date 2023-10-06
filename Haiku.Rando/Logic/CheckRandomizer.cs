@@ -262,7 +262,7 @@ namespace Haiku.Rando.Logic
             Debug.Log($"Replaced check {original.Check.Name} with {newItem.Name}");
         }
 
-        private void SetCheckMapping(RandoCheck original, RandoCheck newItem)
+        private void SetCheckMapping(RandoCheck original, IRandoItem newItem)
         {
             _checkMapping.Add((original, newItem));
             // Duplicate a subset of train shop checks onto the Abandoned Wastes pre-train shop.
@@ -342,13 +342,18 @@ namespace Haiku.Rando.Logic
 
             for (var i = _pool.Count; i < _checksToReplace.Count; i++)
             {
-                var filler = new RandoCheck(CheckType.Filler, 0, new(0, 0), i - _pool.Count);
-                // Zero is not appropriate value for the index, as there is
-                // an actual check at index 0 in the topology.
-                filler.Index = _topology.Checks.Count + filler.CheckId;
-                if (i - _pool.Count >= CheckRandomizer.MaxFillerChecks)
+                var j = i - _pool.Count;
+                IRandoItem filler;
+                if (j < CheckRandomizer.MaxFillerChecks)
+                {
+                    // Zero is not appropriate value for the index, as there is
+                    // an actual check at index 0 in the topology.
+                    filler = new FillerItem(i - _pool.Count) { Index = _topology.Checks.Count + j };
+                }
+                else
                 {
                     Debug.Log("Out of filler checks. Will leave placement blank.");
+                    filler = BlankItem.Instance;
                 }
                 Debug.Log($"Remaining checks, replaced {_checksToReplace[i]} with {filler}");
                 SetCheckMapping(_checksToReplace[i].Check, filler);
@@ -535,7 +540,7 @@ namespace Haiku.Rando.Logic
                 {
                     if (c.Type == CheckType.MoneyPile && !piles.Contains(c))
                     {
-                        _checkMapping.Add((c, new RandoCheck(CheckType.Filler, 0, new(0, 0), 999999)));
+                        _checkMapping.Add((c, BlankItem.Instance));
                     }
                 }
             };

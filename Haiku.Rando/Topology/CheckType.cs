@@ -23,7 +23,7 @@ namespace Haiku.Rando.Topology
         WaterRes,
         TrainStation,
         Clock,
-        Filler,
+        RESERVED,
         MapMarker,
         MoneyPile,
         Multiworld

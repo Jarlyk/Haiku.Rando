@@ -632,7 +632,7 @@ namespace Haiku.Rando.Multiworld
             var items = new Collections.List<(string, string)>();
             foreach (var entry in mapping)
             {
-                if (IsDeletedCheck(entry.Value) || IsDuplicateShopCheck(entry.Key))
+                if (entry.Value is RChecks.BlankItem || IsDuplicateShopCheck(entry.Key))
                 {
                     continue;
                 }
@@ -656,9 +656,6 @@ namespace Haiku.Rando.Multiworld
                 Log($"MW: sent {items.Count} item placements to server");
             });
         }
-
-        private static bool IsDeletedCheck(RTopology.IRandoItem it) =>
-            it is RTopology.RandoCheck check && check.Type == CType.Filler && check.CheckId > 900000;
         
         private static bool IsDuplicateShopCheck(RTopology.RandoCheck check) =>
             check.SceneId == SpecialScenes.AbandonedWastesStation && check.IsShopItem;

@@ -33,6 +33,8 @@ namespace Haiku.Rando
         private SaveData _saveData;
         private SaveData _presetSaveData;
 
+        internal static SaveData CurrentSaveData => Instance._saveData;
+
         private readonly static ConcurrentQueue<Action<RandoPlugin>> MainThreadCallbacks = new();
 
         internal static void InvokeOnMainThread(Action f)
@@ -47,8 +49,12 @@ namespace Haiku.Rando
 
         internal CheckRandomizer Randomizer => _randomizer;
 
+        private static RandoPlugin Instance;
+
         public void Start()
         {
+            Instance = this;
+
             Settings.Init(Config);
 
             HaikuResources.Init();
@@ -334,9 +340,10 @@ namespace Haiku.Rando
                 return false;
             }
             var allChecks = _randomizer.Topology.Checks;
-            var check = i < allChecks.Count ? allChecks[i] :
-                new RandoCheck(CheckType.Filler, 0, new(0, 0), i - allChecks.Count);
-            CheckManager.TriggerCheck(this, check, where);
+            IRandoItem check = i < allChecks.Count ? allChecks[i] :
+                new FillerItem(i - allChecks.Count);
+            check.Give(this);
+            CheckManager.ShowCheckPopup(check, where);
             return true;
         }
 

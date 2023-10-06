@@ -146,7 +146,6 @@ namespace Haiku.Rando.Checks
             CheckType.Clock => GameManager.instance.trainUnlocked,
             CheckType.Lore => GetCurrentSaveData().CollectedLore.Contains(check.CheckId),
             CheckType.PartsMonument => false,
-            CheckType.Filler => check.CheckId >= CheckRandomizer.MaxFillerChecks || GetCurrentSaveData().CollectedFillers.Contains(check.CheckId),
             CheckType.MapMarker => HasMapMarker((RustyType)check.CheckId),
             CheckType.MoneyPile => GameManager.instance.moneyPiles[check.CheckId].collected,
             CheckType.Multiworld => GetCurrentSaveData().MW.RemoteItems[check.CheckId].State != RemoteItemState.Uncollected,
@@ -228,15 +227,10 @@ namespace Haiku.Rando.Checks
 
         public static void TriggerCheck(MonoBehaviour self, RandoCheck check)
         {
-            Instance.DoTriggerCheck(self, check, LocationText.OfCurrentScene());
+            Instance.DoTriggerCheck(self, check);
         }
 
-        public static void TriggerCheck(MonoBehaviour self, RandoCheck check, LocationText where)
-        {
-            Instance.DoTriggerCheck(self, check, where);
-        }
-
-        private void DoTriggerCheck(MonoBehaviour self, RandoCheck check, LocationText where)
+        private void DoTriggerCheck(MonoBehaviour self, RandoCheck check)
         {
             var refPickup = HaikuResources.RefPickupItem;
             bool hasWorldObject = true;
@@ -308,17 +302,6 @@ namespace Haiku.Rando.Checks
                     GameManager.instance.trainUnlocked = true;
                     hasWorldObject = false;
                     break;
-                case CheckType.Filler:
-                    if (check.CheckId < CheckRandomizer.MaxFillerChecks)
-                    {
-                        GetCurrentSaveData().CollectedFillers.Add(check.CheckId);
-                    }
-                    else
-                    {
-                        Log(LogLevel.Error, $"picked up excess filler check {check.CheckId}; this should never happen");
-                    }
-                    hasWorldObject = false;
-                    break;
                 case CheckType.MapMarker:
                     GiveMapMarker((RustyType)check.CheckId);
                     hasWorldObject = false;
@@ -339,15 +322,6 @@ namespace Haiku.Rando.Checks
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
-            }
-            if (check.Type == CheckType.Lore)
-            {
-                var uidef = UIDef.Of(check);
-                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name, where?.Where);
-            }
-            else
-            {
-                ShowCheckPopup(check, where);
             }
 
             if (hasWorldObject)
@@ -414,32 +388,35 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        private static void ShowCheckPopup(RandoCheck check, LocationText where)
+        public static void ShowCheckPopup(IRandoItem check, LocationText where)
         {
-            var uidef = UIDef.Of(check);
+            var uidef = check.UIDef();
             var desc = "";
             if (where != null && where.ShowInCornerPopup)
             {
                 desc = "$from " + where.Where;
             }
-            CameraBehavior.instance.ShowLeftCornerUI(uidef.Sprite, uidef.Name, desc, PickupTextDuration);
-            switch (check.Type)
+            if (!(check is RandoCheck rc2 && rc2.Type == CheckType.Lore))
             {
-                case CheckType.PowerCell:
-                    var collectedCount = GameManager.instance.powerCells.Count(p => p.collected);
-                    var annotatedName = $"{CameraBehavior.instance.leftCornerTitleText.text} ({collectedCount})";
-                    CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
-                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName, where?.Where);
-                    break;
-                case CheckType.MoneyPile:
-                    var value = check.SaveId;
-                    annotatedName = $"{value} {CameraBehavior.instance.leftCornerTitleText.text}";
-                    CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
-                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName, where?.Where);
-                    break;
-                default:
-                    RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name, where?.Where);
-                    break;
+                CameraBehavior.instance.ShowLeftCornerUI(uidef.Sprite, uidef.Name, desc, PickupTextDuration);
+            }
+            if (check is RandoCheck rc3 && rc3.Type == CheckType.PowerCell)
+            {
+                var collectedCount = GameManager.instance.powerCells.Count(p => p.collected);
+                var annotatedName = $"{CameraBehavior.instance.leftCornerTitleText.text} ({collectedCount})";
+                CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
+                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName, where?.Where);
+            }
+            else if (check is RandoCheck rc && rc.Type == CheckType.MoneyPile)
+            {
+                var value = rc.SaveId;
+                var annotatedName = $"{value} {CameraBehavior.instance.leftCornerTitleText.text}";
+                CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
+                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName, where?.Where);
+            }
+            else
+            {
+                RecentPickupDisplay.AddRecentPickup(uidef.Sprite, uidef.Name, where?.Where);
             }
         }
 

@@ -48,10 +48,12 @@ namespace Haiku.Rando.Topology
 
         public override string ToString() => $"{SceneId}:{Name}";
 
-        public void Trigger(MonoBehaviour self) => CheckManager.TriggerCheck(self, this);
+        public void Give(MonoBehaviour self) => CheckManager.TriggerCheck(self, this);
 
         public bool Obtained() => CheckManager.AlreadyGotCheck(this);
 
         public UIDef UIDef() => Haiku.Rando.Checks.UIDef.Of(this);
+
+        public string UIName() => Haiku.Rando.Checks.UIDef.NameOf(this);
     }
 }

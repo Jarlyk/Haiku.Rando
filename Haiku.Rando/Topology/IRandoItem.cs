@@ -6,16 +6,25 @@ namespace Haiku.Rando.Topology
 {
     public interface IRandoItem
     {
-        public void Trigger(MonoBehaviour self);
+        public void Give(MonoBehaviour self);
 
         public bool Obtained();
 
         public UIDef UIDef();
 
-        public string UIName() => UIDef().Name;
+        public string UIName();
 
         public string Name { get; }
 
         public int Index { get; }
+    }
+
+    public static class RandoItemExtensions
+    {
+        public static void Trigger(this IRandoItem item, MonoBehaviour self)
+        {
+            item.Give(self);
+            CheckManager.ShowCheckPopup(item, LocationText.OfCurrentScene());
+        }
     }
 }
