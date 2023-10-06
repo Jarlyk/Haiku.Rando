@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Haiku.Rando.Checks;
+using Haiku.Rando.Logic;
 
 namespace Haiku.Rando.Topology
 {
-    public sealed class RandoCheck : IRandoNode
+    public sealed class RandoCheck : IRandoNode, IRandoItem
     {
         public RandoCheck(CheckType type, int sceneId, Vector2 position, int checkId)
         {
@@ -45,5 +47,11 @@ namespace Haiku.Rando.Topology
         IReadOnlyList<GraphEdge> IRandoNode.Outgoing => Array.Empty<GraphEdge>();
 
         public override string ToString() => $"{SceneId}:{Name}";
+
+        public void Trigger(MonoBehaviour self) => CheckManager.TriggerCheck(self, this);
+
+        public bool Obtained() => CheckManager.AlreadyGotCheck(this);
+
+        public UIDef UIDef() => Haiku.Rando.Checks.UIDef.Of(this);
     }
 }

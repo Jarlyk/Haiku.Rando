@@ -10,7 +10,7 @@ namespace Haiku.Rando.Checks
 {
     public sealed class ShopItemReplacer : MonoBehaviour
     {
-        public RandoCheck check;
+        public IRandoItem check;
 
         public static void InitHooks()
         {
@@ -37,7 +37,7 @@ namespace Haiku.Rando.Checks
             InventoryManager.instance.SpendSpareParts(self.priceHolder);
 
             //Trigger the replacement check
-            CheckManager.TriggerCheck(replacer, replacer.check);
+            replacer.check.Trigger(replacer);
 
             //From original game code
             SoundManager.instance.PlayOneShot("event:/UI/UI Success");
@@ -82,7 +82,7 @@ namespace Haiku.Rando.Checks
             var check = replacer.check;
             if (check == null) return;
 
-            var uidef = UIDef.Of(check);
+            var uidef = check.UIDef();
             self.shopScript.UpdateTexts(uidef.Name, uidef.Description, uidef.Sprite, self.price, 0, 0, self.gameObject, self.itemPositionInList);
             self.shopScript.UpdateCursor(self.transform);
         }
@@ -99,7 +99,7 @@ namespace Haiku.Rando.Checks
 
             if (replacer.check == null) return;
 
-            bool alreadyGot = CheckManager.AlreadyGotCheck(replacer.check);
+            bool alreadyGot = replacer.check.Obtained();
             if (alreadyGot)
             {
                 self.gameObject.SetActive(false);
@@ -122,7 +122,7 @@ namespace Haiku.Rando.Checks
             orig(self);
 
             if (replacer.check == null) return;
-            var sprite = UIDef.Of(replacer.check).Sprite;
+            var sprite = replacer.check.UIDef().Sprite;
             if (sprite == null) return;
             self.itemImage.sprite = sprite;
         }

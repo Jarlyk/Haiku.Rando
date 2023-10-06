@@ -9,7 +9,7 @@ namespace Haiku.Rando.Checks
 {
     internal class LeverReplacer : MonoBehaviour
     {
-        public RandoCheck replacement;
+        public IRandoItem replacement;
 
         public static void InitHooks()
         {
@@ -40,7 +40,7 @@ namespace Haiku.Rando.Checks
             var lr = self.GetComponent<LeverReplacer>();
             if (lr != null)
             {
-                var gotCheck = CheckManager.AlreadyGotCheck(lr.replacement);
+                var gotCheck = lr.replacement.Obtained();
                 self.switchAnim.SetBool("open", gotCheck);
                 self.switchCollider.enabled = !gotCheck;
             }
@@ -57,7 +57,7 @@ namespace Haiku.Rando.Checks
             var lr = self.GetComponent<LeverReplacer>();
             if (lr != null)
             {
-                var gotCheck = CheckManager.AlreadyGotCheck(lr.replacement);
+                var gotCheck = lr.replacement.Obtained();
                 self.switchAnim.SetBool("open", gotCheck);
                 self.switchCollider.enabled = !gotCheck;
             }
@@ -79,7 +79,7 @@ namespace Haiku.Rando.Checks
             self.switchAnim.SetBool("open", true);
             self.switchCollider.enabled = false;
             // give the item
-            CheckManager.TriggerCheck(self, lr.replacement);
+            lr.replacement.Trigger(self);
         }
 
         private static void ReplaceIncineratorItem(
@@ -98,7 +98,7 @@ namespace Haiku.Rando.Checks
             self.switchAnim.SetBool("open", true);
             self.switchCollider.enabled = false;
             // give the item
-            CheckManager.TriggerCheck(self, lr.replacement);
+            lr.replacement.Trigger(self);
         }
 
         private static MonoBehaviour FindLever(int doorID) => doorID switch
@@ -117,7 +117,7 @@ namespace Haiku.Rando.Checks
         public const int IncineratorLever = 13;
         public const int PistonLever = 17;
 
-        public static void ReplaceCheck(RandoCheck orig, RandoCheck replacement)
+        public static void ReplaceCheck(RandoCheck orig, IRandoItem replacement)
         {
             if (orig.CheckId == OldArcadiaElevatorLever)
             {
@@ -134,7 +134,7 @@ namespace Haiku.Rando.Checks
             lr.enabled = true;
         }
 
-        private static void ReplaceOldArcadiaElevatorCheck(RandoCheck replacement)
+        private static void ReplaceOldArcadiaElevatorCheck(IRandoItem replacement)
         {
             // The Old Arcadia elevator lever is actually two levers, one for each door
             // on each side of the elevator. We attach the check to one lever and disable

@@ -10,7 +10,7 @@ namespace Haiku.Rando.Checks
     {
         private class Replacement
         {
-            public RandoCheck Check;
+            public IRandoItem Check;
             public GameObject Pickup;
         }
 
@@ -45,7 +45,7 @@ namespace Haiku.Rando.Checks
                     var r = replacer?.chipReplacement;
                     if (r != null)
                     {
-                        r.Pickup.SetActive(!CheckManager.AlreadyGotCheck(r.Check));
+                        r.Pickup.SetActive(!r.Check.Obtained());
                     }
                 }
                 else if (rewardObj.name.Contains("_Health fragment 1"))
@@ -53,7 +53,7 @@ namespace Haiku.Rando.Checks
                     var r = replacer?.capsule1Replacement;
                     if (r != null)
                     {
-                        r.Pickup.SetActive(!CheckManager.AlreadyGotCheck(r.Check));
+                        r.Pickup.SetActive(!r.Check.Obtained());
                     }
                 }
                 else if (rewardObj.name.Contains("_Health fragment 2"))
@@ -61,14 +61,14 @@ namespace Haiku.Rando.Checks
                     var r = replacer?.capsule2Replacement;
                     if (r != null)
                     {
-                        r.Pickup.SetActive(!CheckManager.AlreadyGotCheck(r.Check));
+                        r.Pickup.SetActive(!r.Check.Obtained());
                     }
                 }
             }
             while (running);
         }
 
-        public static void ReplaceCheck(RandoCheck orig, RandoCheck replacement, GameObject pickup)
+        public static void ReplaceCheck(RandoCheck orig, IRandoItem replacement, GameObject pickup)
         {
             var portal = SceneUtils.FindObjectOfType<e29Portal>();
             if (portal == null)

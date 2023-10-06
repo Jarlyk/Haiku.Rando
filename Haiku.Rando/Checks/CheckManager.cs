@@ -59,7 +59,7 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        public void ReplaceCheck(int sceneId, RandoCheck original, RandoCheck replacement)
+        public void ReplaceCheck(int sceneId, RandoCheck original, IRandoItem replacement)
         {
             Debug.Log($"Replacing check {original} with {replacement}");
             if (original.IsShopItem)
@@ -71,7 +71,7 @@ namespace Haiku.Rando.Checks
             Replacer(original)(replacement);
         }
 
-        private Action<RandoCheck> Replacer(RandoCheck orig) => orig.Type switch
+        private Action<IRandoItem> Replacer(RandoCheck orig) => orig.Type switch
         {
             CheckType.Wrench => UniversalPickup.ReplaceWrench,
             CheckType.Bulblet => UniversalPickup.ReplaceBulblet,
@@ -93,7 +93,7 @@ namespace Haiku.Rando.Checks
             _ => throw new ArgumentOutOfRangeException($"invalid check type {orig.Type}")
         };
 
-        private void ReplaceShopCheck(RandoCheck original, RandoCheck replacement)
+        private void ReplaceShopCheck(RandoCheck original, IRandoItem replacement)
         {
             var button = SceneUtils.FindObjectsOfType<ShopItemButton>().FirstOrDefault(b => MatchesShop(b, original));
             if (button)

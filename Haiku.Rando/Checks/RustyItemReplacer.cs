@@ -7,7 +7,7 @@ namespace Haiku.Rando.Checks
 {
     internal class RustyItemReplacer : MonoBehaviour
     {
-        private RandoCheck replacement;
+        private IRandoItem replacement;
 
         public static void InitHooks()
         {
@@ -23,11 +23,11 @@ namespace Haiku.Rando.Checks
             }
             else
             {
-                CheckManager.TriggerCheck(self, replacer.replacement);
+                replacer.replacement.Trigger(self);
             }
         }
 
-        public static void ReplaceCheck(RustyType origType, RandoCheck replacement)
+        public static void ReplaceCheck(RustyType origType, IRandoItem replacement)
         {
             foreach (var rusty in SceneUtils.FindObjectsOfType<Rusty>())
             {
@@ -51,7 +51,7 @@ namespace Haiku.Rando.Checks
                     {
                         GameObject.Destroy(switcher);
                     }
-                    rusty.gameObject.SetActive(!CheckManager.AlreadyGotCheck(replacement));
+                    rusty.gameObject.SetActive(!replacement.Obtained());
                     
                     if (origType == RustyType.Health)
                     {

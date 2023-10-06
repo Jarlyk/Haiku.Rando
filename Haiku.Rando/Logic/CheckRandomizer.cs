@@ -13,7 +13,7 @@ namespace Haiku.Rando.Logic
     {
         public GenerationSettings Settings { get; internal set; }
         public RandoTopology Topology { get; internal set; }
-        public IReadOnlyDictionary<RandoCheck, RandoCheck> CheckMapping { get; internal set; }
+        public IReadOnlyDictionary<RandoCheck, IRandoItem> CheckMapping { get; internal set; }
         public int? StartScene { get; internal set; }
         public int StartSpareParts { get; internal set; }
         internal int? StartStation { get; set; }
@@ -36,9 +36,9 @@ namespace Haiku.Rando.Logic
             }
         }
 
-        internal void SetCheckMapping(RandoCheck location, RandoCheck item)
+        internal void SetCheckMapping(RandoCheck location, IRandoItem item)
         {
-            var dict = (InsertionOrderDictionary<RandoCheck, RandoCheck>)CheckMapping;
+            var dict = (InsertionOrderDictionary<RandoCheck, IRandoItem>)CheckMapping;
             dict[location] = item;
         }
 
@@ -76,7 +76,7 @@ namespace Haiku.Rando.Logic
         private readonly int? _startScene;
         private int? _startStation;
         private int _startScrap;
-        private readonly List<(RandoCheck, RandoCheck)> _checkMapping = new();
+        private readonly List<(RandoCheck, IRandoItem)> _checkMapping = new();
         private bool _randomized;
 
         // things that are only needed during randomization
@@ -125,7 +125,7 @@ namespace Haiku.Rando.Logic
             {
                 Settings = Settings,
                 Topology = _topology,
-                CheckMapping = new InsertionOrderDictionary<RandoCheck, RandoCheck>(_checkMapping),
+                CheckMapping = new InsertionOrderDictionary<RandoCheck, IRandoItem>(_checkMapping),
                 StartScene = _startScene,
                 StartStation = _startStation,
                 StartSpareParts = _startScrap,

@@ -18,7 +18,7 @@ namespace Haiku.Rando.Checks
     /// </summary>
     public sealed class UniversalPickup : MonoBehaviour
     {
-        public RandoCheck check;
+        public IRandoItem check;
         public bool midAir;
 
         public static void InitHooks()
@@ -38,7 +38,7 @@ namespace Haiku.Rando.Checks
         {
             if (check == null) return;
 
-            bool alreadyGot = CheckManager.AlreadyGotCheck(check);
+            bool alreadyGot = check.Obtained();
             gameObject.SetActive(!alreadyGot);
 
             if (midAir)
@@ -75,7 +75,7 @@ namespace Haiku.Rando.Checks
             var check = universalPickup.check;
             if (check == null) return;
 
-            CheckManager.TriggerCheck(self, check);
+            check.Trigger(self);
             self.gameObject.SetActive(false);
         }
 
@@ -88,7 +88,7 @@ namespace Haiku.Rando.Checks
             c.EmitDelegate((Func<bool, PianoManager, bool>)((orig, pm) =>
             {
                 var p = pm.reward.GetComponent<UniversalPickup>();
-                return p == null ? orig : CheckManager.AlreadyGotCheck(p.check);
+                return p == null ? orig : p.check.Obtained();
             }));
         }
 
@@ -104,13 +104,13 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        internal static void ReplaceWrench(RandoCheck replacement)
+        internal static void ReplaceWrench(IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectOfType<PickupWrench>().gameObject;
             Replace(obj, replacement, false);
         }
 
-        internal static void ReplaceBulblet(RandoCheck replacement)
+        internal static void ReplaceBulblet(IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectOfType<PickupBulb>().gameObject;
             var newObj = Replace(obj, replacement, false);
@@ -123,13 +123,13 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        internal static void ReplaceAbility(RandoCheck replacement)
+        internal static void ReplaceAbility(IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectOfType<UnlockTutorial>().gameObject;
             Replace(obj, replacement, true);
         }
 
-        internal static void ReplaceItem(RandoCheck orig, RandoCheck replacement)
+        internal static void ReplaceItem(RandoCheck orig, IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(
                 p => p.itemID == orig.CheckId && p.saveID == orig.SaveId)?.gameObject;
@@ -152,7 +152,7 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        internal static void ReplaceChip(RandoCheck orig, RandoCheck replacement)
+        internal static void ReplaceChip(RandoCheck orig, IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(
                 p => p.triggerChip &&
@@ -173,20 +173,20 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        internal static void ReplaceChipSlot(RandoCheck orig, RandoCheck replacement)
+        internal static void ReplaceChipSlot(RandoCheck orig, IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(
                 p => p.triggerChipSlot && p.chipSlotNumber == orig.CheckId)?.gameObject;
             Replace(obj, replacement, false);
         }
 
-        internal static void ReplaceMapDisruptor(RandoCheck replacement)
+        internal static void ReplaceMapDisruptor(IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectOfType<Disruptor>().gameObject;
             Replace(obj, replacement, false);
         }
 
-        internal static void ReplaceLore(RandoCheck orig, RandoCheck replacement)
+        internal static void ReplaceLore(RandoCheck orig, IRandoItem replacement)
         {
             var sentences = CheckManager.LoreTabletText[orig.CheckId];
             var oldObject = SceneUtils.FindObjectsOfType<DialogueTrigger>()
@@ -198,14 +198,14 @@ namespace Haiku.Rando.Checks
             Replace(oldObject, replacement, false);
         }
 
-        internal static void ReplaceLever(RandoCheck orig, RandoCheck replacement)
+        internal static void ReplaceLever(RandoCheck orig, IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectsOfType<SwitchDoor>().FirstOrDefault(
                 p => p.doorID == orig.CheckId)?.gameObject;
             Replace(obj, replacement, false);
         }
 
-        internal static void ReplacePowerCell(RandoCheck orig, RandoCheck replacement)
+        internal static void ReplacePowerCell(RandoCheck orig, IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectsOfType<PowerCell>().FirstOrDefault(
                 p => p.saveID == orig.SaveId)?.gameObject;
@@ -217,34 +217,34 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        internal static void ReplaceCoolant(RandoCheck orig, RandoCheck replacement)
+        internal static void ReplaceCoolant(RandoCheck orig, IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectsOfType<PickupItem>().FirstOrDefault(
                 p => p.triggerCoolant && p.saveID == orig.SaveId)?.gameObject;
             Attach(obj, replacement, false);
         }
 
-        internal static void ReplaceTrainStation(RandoCheck replacement)
+        internal static void ReplaceTrainStation(IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectOfType<TrainTicket>().gameObject;
             Replace(obj, replacement, false);
         }
 
-        internal static void ReplaceMoneyPile(RandoCheck orig, RandoCheck replacement)
+        internal static void ReplaceMoneyPile(RandoCheck orig, IRandoItem replacement)
         {
             var obj = SceneUtils.FindObjectsOfType<SmallMoneyPile>().FirstOrDefault(
                 p => p.pileID == orig.CheckId)?.gameObject;
             Replace(obj, replacement, true);
         }
 
-        private static void Attach(GameObject obj, RandoCheck replacement, bool midAir)
+        private static void Attach(GameObject obj, IRandoItem replacement, bool midAir)
         {
             var universalPickup = obj.AddComponent<UniversalPickup>();
             universalPickup.check = replacement;
             universalPickup.midAir = midAir;
 
             var pickup = obj.GetComponent<PickupItem>();
-            pickup.saveID = replacement.SaveId;
+            pickup.saveID = replacement is RandoCheck rc ? rc.SaveId : 0;
         }
 
         //Special-case: Car Battery death object linkage
@@ -261,13 +261,13 @@ namespace Haiku.Rando.Checks
             //TODO: Go to Car Battery and find the actual settings for this
         }
 
-        private static GameObject Replace(GameObject oldObject, RandoCheck replacement, bool midAir)
+        private static GameObject Replace(GameObject oldObject, IRandoItem replacement, bool midAir)
         {
             oldObject.SetActive(false);
             var oldPickup = oldObject.GetComponent<PickupItem>();
             if (oldPickup)
             {
-                oldPickup.saveID = replacement.SaveId;
+                oldPickup.saveID = replacement is RandoCheck rc ? rc.SaveId : 0;
             }
 
             var newObject = UnityEngine.Object.Instantiate(HaikuResources.PrefabGenericPickup, oldObject.transform.position, oldObject.transform.rotation);

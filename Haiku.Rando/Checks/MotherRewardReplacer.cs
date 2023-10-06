@@ -8,7 +8,7 @@ namespace Haiku.Rando.Checks
 {
     internal class MotherRewardReplacer : MonoBehaviour
     {
-        private RandoCheck replacement;
+        private IRandoItem replacement;
 
         public static void InitHooks()
         {
@@ -34,10 +34,10 @@ namespace Haiku.Rando.Checks
                 //Check wasn't replaced, so use original logic
                 return GameManager.instance.chip[GameManager.instance.getChipNumber("b_FastHeal")].collected;
             }
-            return CheckManager.AlreadyGotCheck(replacer.replacement);
+            return replacer.replacement.Obtained();
         }
 
-        public static void ReplaceCheck(RandoCheck replacement)
+        public static void ReplaceCheck(IRandoItem replacement)
         {
             var mother = SceneUtils.FindObjectOfType<MotherWindUp>();
             if (mother == null)

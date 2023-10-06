@@ -6,7 +6,7 @@ namespace Haiku.Rando.Checks
 {
     internal class BeeHiveItemReplacer : MonoBehaviour
     {
-        private RandoCheck replacement;
+        private IRandoItem replacement;
         private GameObject newPickup;
 
         public static void InitHooks()
@@ -20,7 +20,7 @@ namespace Haiku.Rando.Checks
             var replacer = self.GetComponent<BeeHiveItemReplacer>();
             if (replacer != null && 
                 !GameManager.instance.bosses[self.bossID].defeated &&
-                !CheckManager.AlreadyGotCheck(replacer.replacement))
+                !replacer.replacement.Obtained())
             {
                 self.bulbObject.SetActive(false);
             }
@@ -37,7 +37,7 @@ namespace Haiku.Rando.Checks
             orig(self);
         }
 
-        public static void ReplaceCheck(RandoCheck replacement, GameObject pickup)
+        public static void ReplaceCheck(IRandoItem replacement, GameObject pickup)
         {
             var hive = SceneUtils.FindObjectOfType<BeeHive>();
             if (hive == null)

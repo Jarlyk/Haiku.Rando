@@ -436,7 +436,7 @@ namespace Haiku.Rando.Multiworld
             return -1;
         }
 
-        private static int Hash(Collections.IReadOnlyDictionary<RTopology.RandoCheck, RTopology.RandoCheck> mapping)
+        private static int Hash(Collections.IReadOnlyDictionary<RTopology.RandoCheck, RTopology.IRandoItem> mapping)
         {
             var h = 0;
             foreach (var entry in mapping)
@@ -454,6 +454,9 @@ namespace Haiku.Rando.Multiworld
             hash = AddToHash(hash, check.SaveId);
             return hash;
         }
+
+        private static int AddToHash(int hash, RTopology.IRandoItem it) => AddToHash(hash, it.Index);
+
         private static int AddToHash(int hash, int val) => hash * 97 + val;
 
         public void Connect(string serverAddr, string nickname, string roomName)
@@ -618,7 +621,13 @@ namespace Haiku.Rando.Multiworld
             return $"{basename}_({check.Index})";
         }
 
-        private void SendCheckMapping(Collections.IReadOnlyDictionary<RTopology.RandoCheck, RTopology.RandoCheck> mapping, RTopology.RandoTopology topology)
+        private static string ExternalName(RTopology.IRandoItem check)
+        {
+            var basename = LocalizationSystem.GetLocalizedValue(check.UIName()).Replace(' ', '_');
+            return $"{basename}_({check.Index})";
+        }
+
+        private void SendCheckMapping(Collections.IReadOnlyDictionary<RTopology.RandoCheck, RTopology.IRandoItem> mapping, RTopology.RandoTopology topology)
         {
             var items = new Collections.List<(string, string)>();
             foreach (var entry in mapping)
@@ -648,8 +657,8 @@ namespace Haiku.Rando.Multiworld
             });
         }
 
-        private static bool IsDeletedCheck(RTopology.RandoCheck check) =>
-            check.Type == CType.Filler && check.CheckId > 900000;
+        private static bool IsDeletedCheck(RTopology.IRandoItem it) =>
+            it is RTopology.RandoCheck check && check.Type == CType.Filler && check.CheckId > 900000;
         
         private static bool IsDuplicateShopCheck(RTopology.RandoCheck check) =>
             check.SceneId == SpecialScenes.AbandonedWastesStation && check.IsShopItem;

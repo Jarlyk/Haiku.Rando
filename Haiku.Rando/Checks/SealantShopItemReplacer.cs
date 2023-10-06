@@ -10,10 +10,10 @@ namespace Haiku.Rando.Checks
 {
     internal class SealantShopItemReplacer : MonoBehaviour
     {
-        private RandoCheck fireResReplacement;
-        private RandoCheck waterResReplacement;
+        private IRandoItem fireResReplacement;
+        private IRandoItem waterResReplacement;
 
-        private RandoCheck Check(bool fireWater) =>
+        private IRandoItem Check(bool fireWater) =>
             fireWater ? fireResReplacement : waterResReplacement;
 
         public static void InitHooks()
@@ -55,7 +55,7 @@ namespace Haiku.Rando.Checks
             {
                 return false;
             }
-            if (CheckManager.AlreadyGotCheck(check))
+            if (check.Obtained())
             {
                 self.anim.SetTrigger("powerOn");
                 self.triggered = true;
@@ -76,13 +76,13 @@ namespace Haiku.Rando.Checks
             {
                 orig(self, fireWater);
             }
-            else if (!CheckManager.AlreadyGotCheck(check))
+            else if (!check.Obtained())
             {
-                CheckManager.TriggerCheck(self, check);
+                check.Trigger(self);
             }
         }
 
-        private static void ReplaceCheck(bool fireWater, RandoCheck replacement)
+        private static void ReplaceCheck(bool fireWater, IRandoItem replacement)
         {
             var trigger = SceneUtils.FindObjectsOfType<e7FireWaterTrigger>().First(t => t.fireWater == fireWater);
             var shop = SceneUtils.FindObjectOfType<e7UpgradeShop>();
@@ -90,7 +90,7 @@ namespace Haiku.Rando.Checks
             {
                 throw new InvalidOperationException("attempted to replace fire sealant check without the shop being present");
             }
-            trigger.dialogue.sentence = UIDef.Of(replacement).Name;
+            trigger.dialogue.sentence = replacement.UIDef().Name;
             var rt = trigger.gameObject.AddComponent<SealantShopItemReplacer>();
             if (!shop.gameObject.TryGetComponent<SealantShopItemReplacer>(out var rs))
             {
@@ -108,12 +108,12 @@ namespace Haiku.Rando.Checks
             }
         }
 
-        public static void ReplaceFire(RandoCheck replacement)
+        public static void ReplaceFire(IRandoItem replacement)
         {
             ReplaceCheck(true, replacement);
         }
 
-        public static void ReplaceWater(RandoCheck replacement)
+        public static void ReplaceWater(IRandoItem replacement)
         {
             ReplaceCheck(false, replacement);
         }

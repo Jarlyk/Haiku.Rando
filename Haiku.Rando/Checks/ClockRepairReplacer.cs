@@ -15,7 +15,7 @@ namespace Haiku.Rando.Checks
             IL.FixClockAndTrain.Update += EnableIfNotGivenPart2;
         }
 
-        public RandoCheck replacement;
+        public IRandoItem replacement;
 
         private static void EnableIfNotGiven(On.FixClockAndTrain.orig_Start orig, FixClockAndTrain self)
         {
@@ -23,7 +23,7 @@ namespace Haiku.Rando.Checks
             var r = self.GetComponent<ClockRepairReplacer>();
             if (r != null)
             {
-                var unclaimed = !CheckManager.AlreadyGotCheck(r.replacement);
+                var unclaimed = !r.replacement.Obtained();
                 self.gameObject.SetActive(unclaimed);
                 if (unclaimed && self.rewiredInput == null)
                 {
@@ -46,7 +46,7 @@ namespace Haiku.Rando.Checks
         private static bool IsCheckCollected(bool orig, FixClockAndTrain obj)
         {
             var r = obj.GetComponent<ClockRepairReplacer>();
-            return r == null ? orig : CheckManager.AlreadyGotCheck(r.replacement);
+            return r == null ? orig : r.replacement.Obtained();
         }
 
         private static void GiveItem(On.FixClockAndTrain.orig_RepairAction orig, FixClockAndTrain self)
@@ -58,12 +58,12 @@ namespace Haiku.Rando.Checks
             }
             else
             {
-                CheckManager.TriggerCheck(self, r.replacement);
+                r.replacement.Trigger(self);
                 self.gameObject.SetActive(false);
             }
         }
 
-        public static void ReplaceCheck(RandoCheck replacement)
+        public static void ReplaceCheck(IRandoItem replacement)
         {
             var f = SceneUtils.FindObjectOfType<FixClockAndTrain>();
             if (f == null)
@@ -72,7 +72,7 @@ namespace Haiku.Rando.Checks
             }
             var r = f.gameObject.AddComponent<ClockRepairReplacer>();
             r.replacement = replacement;
-            f.dialogue.sentence = UIDef.Of(replacement).Name;
+            f.dialogue.sentence = replacement.UIDef().Name;
         }
     }
 }
