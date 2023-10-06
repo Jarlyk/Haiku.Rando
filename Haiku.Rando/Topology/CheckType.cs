@@ -23,7 +23,7 @@ namespace Haiku.Rando.Topology
         WaterRes,
         TrainStation,
         Clock,
-        RESERVED,
+        RESERVED, // used to be Filler; kept to avoid renumbering the others
         MapMarker,
         MoneyPile
     }
