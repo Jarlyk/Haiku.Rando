@@ -28,7 +28,7 @@ namespace Haiku.Rando.Checks
 
         public string UIName() => ModText._NOTHING_TITLE;
 
-        public string Name => $"Filler[{_saveIndex}]";
+        public override string ToString() => $"Filler[{_saveIndex}]";
 
         public int Index { get; set; }
     }

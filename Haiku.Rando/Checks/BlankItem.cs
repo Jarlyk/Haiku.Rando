@@ -21,7 +21,7 @@ namespace Haiku.Rando.Checks
 
         public string UIName() => "";
 
-        public string Name => "Blank";
+        public override string ToString() => "Blank";
 
         public int Index => int.MinValue;
     }

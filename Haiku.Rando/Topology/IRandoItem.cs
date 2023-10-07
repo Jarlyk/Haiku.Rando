@@ -14,8 +14,6 @@ namespace Haiku.Rando.Topology
 
         public string UIName();
 
-        public string Name { get; }
-
         public int Index { get; }
     }
 

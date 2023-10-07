@@ -274,7 +274,7 @@ namespace Haiku.Rando.Logic
                 if (outsideLocation != null)
                 {
                     _checkMapping.Add((outsideLocation, newItem));
-                    Debug.Log($"Replaced duplicate check {outsideLocation.Name} with {newItem.Name}");
+                    Debug.Log($"Replaced duplicate check {outsideLocation.Name} with {newItem}");
                 }
             }
         }

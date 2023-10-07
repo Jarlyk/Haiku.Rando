@@ -28,9 +28,9 @@ namespace Haiku.Rando.Multiworld
 
         public string UIName() => ModText._MW_ITEM_TITLE(Index);
 
-        string RTopology.IRandoItem.Name => $"Multiworld[{Index}]";
-
         int RTopology.IRandoItem.Index => int.MinValue;
+
+        public override string ToString() => $"Multiworld[{Index}]";
     }
 
     internal enum RemoteItemState
