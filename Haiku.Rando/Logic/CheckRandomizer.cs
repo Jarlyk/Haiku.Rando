@@ -64,7 +64,7 @@ namespace Haiku.Rando.Logic
 
         // This is the maximum number of checks that can fit in a Bitset64.
         // Any more than that will be left blank (not vanilla), by replacing with
-        // a check for which AlreadyHasCheck returns true always.
+        // a BlankItem.
         internal const int MaxFillerChecks = 64;
     }
 
