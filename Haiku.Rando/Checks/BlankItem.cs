@@ -4,7 +4,7 @@ using Haiku.Rando.Topology;
 
 namespace Haiku.Rando.Checks
 {
-    internal class BlankItem : IRandoItem
+    public class BlankItem : IRandoItem
     {
         public static BlankItem Instance = new();
 
