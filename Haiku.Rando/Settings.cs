@@ -21,6 +21,9 @@ namespace Haiku.Rando
         private static List<ConfigEntry<bool>> PoolToggles;
         private static List<ConfigEntry<bool>> SkipToggles;
 
+        public static ConfigEntry<bool> IncludeOldArcadia { get; private set; }
+        public static ConfigEntry<bool> IncludeLostArchives { get; private set; }
+
         public static ConfigEntry<bool> ShowRecentPickups { get; private set; }
         public static ConfigEntry<bool> FastMoney { get; private set; }
         public static ConfigEntry<bool> SyncedMoney { get; private set; }
@@ -33,6 +36,7 @@ namespace Haiku.Rando
 
         //Groups of settings
         private const string General = "General";
+        private const string Areas = "Special Areas";
         private const string QoL = "QoL";
         private const string Multiworld = "Multiworld";
 
@@ -66,6 +70,10 @@ namespace Haiku.Rando
             SkipToggles = EnumValues<Skip>()
                 .Select(c => config.Bind("Skips", SplitCamelCase(c.ToString()), false, skipDescriptions.TryGetValue(c, out var d) ? d : ""))
                 .ToList();
+
+            IncludeOldArcadia = config.Bind(Areas, "Old Arcadia", true, "Includes all checks gated by the Old Arcadia door");
+            IncludeLostArchives = config.Bind(Areas, "Lost Archives", true, "Includes all checks gated by the Lost Archives door");
+
             //TODO: Load/Save settings to copyable string
             //TODO: Hash display for race sync
             //ConfigManagerUtil.createButton(config, ShowHash, General, "ShowHash", "Show Hash");
@@ -131,7 +139,9 @@ namespace Haiku.Rando
                 TrainLoverMode = TrainLoverMode.Value,
                 StartingItems = BitsetFromToggles(StartingItemToggles),
                 Pools = BitsetFromToggles(PoolToggles),
-                Skips = BitsetFromToggles(SkipToggles)
+                Skips = BitsetFromToggles(SkipToggles),
+                IncludeOldArcadia = IncludeOldArcadia.Value,
+                IncludeLostArchives = IncludeLostArchives.Value
             };
         }
 

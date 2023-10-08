@@ -550,6 +550,17 @@ namespace Haiku.Rando.Logic
             // The checks in the Abandoned Wastes shop are all duplicates of those in the train, and become inaccessible once
             // the train is unlocked.
             _pool.RemoveAll(IsAbandonedWastesShopItem);
+
+            if (!Settings.IncludeOldArcadia)
+            {
+                _pool.RemoveAll(c => c.SceneId > SpecialScenes.LastRoomBeforeOldArcadia);
+            }
+            if (!Settings.IncludeLostArchives)
+            {
+                _pool.RemoveAll(c => c.SceneId == SpecialScenes.LostArchives ||
+                    (c.SceneId == SpecialScenes.Mainframe && c.Type == CheckType.MapMarker));
+            }
+
             foreach (var c in _pool)
             {
                 _startingPool.Add(c);

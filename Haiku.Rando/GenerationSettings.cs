@@ -9,6 +9,8 @@ namespace Haiku.Rando
         internal Bitset64 StartingItems;
         internal Bitset64 Skips;
         public RandomizationLevel Level;
+        public bool IncludeOldArcadia;
+        public bool IncludeLostArchives;
 
         public bool Contains(Pool p) => Pools.Contains((int)p);
         public bool Contains(StartingItemSet s) => StartingItems.Contains((int)s);

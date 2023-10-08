@@ -527,7 +527,7 @@ Right1->Left0: Magnet
 Right1->Right0: Magnet
 Left0->Right0: Magnet | Grapple
 Right0->Left0: Magnet | Grapple
-*->Door0: 2#NeutronOrElectronBoss + ProtonBoss + FireRes + FireRes // fire res for Proton
+*->Door0: 2#NeutronOrElectronBoss + ProtonBoss + FireRes // fire res for Proton
 Door0->Left1: true
 Door0->Right1: true
 Door0->Left0: Magnet
