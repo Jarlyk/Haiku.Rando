@@ -51,6 +51,11 @@ namespace Haiku.Rando
 
         private static RandoPlugin Instance;
 
+        // The number of distinct logic symbols in use by this randomizer's
+        // logic, and therefore the size of the array required to hold the
+        // state of all those symbols.
+        public static int NumLogicSymbols => (int)LogicSymbol.False;
+
         public void Start()
         {
             Instance = this;
