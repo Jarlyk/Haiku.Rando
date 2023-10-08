@@ -96,7 +96,7 @@ Left->Item: true
 // Checks: MoneyPile (MoneyPile[9])
 // Note that we mark access from Right1 as blocked; this is because can only use key from left
 Scene 12
-*->Right1: RustedKey
+*->Right1: 4#RustedKey
 Right1->*: false
 !Right1->MoneyPile: true
 
@@ -376,15 +376,15 @@ Scene 46
 
 $LeftLever {Left, Lever}
 
-Right0->Door: RustedKey
+Right0->Door: 4#RustedKey
 Right0->Right1: true
 Right0->LeftLever: Lever
 Right0->MoneyPile*: true
-Right1->Door: RustedKey
+Right1->Door: 4#RustedKey
 Right1->Right0: Magnet | DoubleJump
 Right1->LeftLever: Lever + (Magnet | DoubleJump)
 Right1->MoneyPile*: Magnet | DoubleJump
-Left->Door: Lever + RustedKey
+Left->Door: Lever + 4#RustedKey
 Left->Right0: Lever + (Magnet | DoubleJump)
 Left->Right1: Lever
 Left->MoneyPile*: Lever + (Magnet | DoubleJump)
@@ -875,8 +875,7 @@ Scene 95
 //NOTE: The Chip here is behind the 'save the children' quest
 //This means access is a bit unusual, as it involves visiting room 97 and completing it
 //We thus flag the Chip as being gated based on room 97's obstacles
-//TODO: For future room rando, we probably want to keep 95-97 linked, as otherwise logic here gets very wonky (or we can use a transition requirement, like for bosses)
-*->Chip: Magnet | (DoubleJump + Lever42)
+*->Chip: SteamTownChildren + (Magnet | (DoubleJump + Lever42))
 
 // Scene 96 : Piston bridge
 // Transitions: Right (96-95), Left (93-96)
@@ -1304,7 +1303,7 @@ Scene 136
 // Transitions: Right (137-138), Left (134-137)
 // Checks:
 Scene 137
-Left->Right: RustedKey
+Left->Right: 4#RustedKey
 Right->Left: false
 
 // Scene 138: First Tree
@@ -1592,7 +1591,6 @@ Right1->PowerCell: Magnet
 Scene 169
 *->Door: ElectricKey
 Right->Left: DoubleJump
-//TODO: BLJ skip
 
 // Scene 170 : Quatern
 // Transitions: Right (170-66)
@@ -2156,8 +2154,8 @@ Right1->Right0: Magnet | DoubleJump
 // Checks:
 Scene 254 // Elegy
 Right->Left: DoubleJump | Magnet + Blink | Magnet + Grapple
-Right->Door: RustedKey + WaterRes + (DoubleJump | Blink | Grapple)
-Left->Door: RustedKey + WaterRes
+Right->Door: 4#RustedKey + WaterRes + (DoubleJump | Blink | Grapple)
+Left->Door: 4#RustedKey + WaterRes
 Left->Right: DoubleJump | Blink | Grapple
 Door->Left: WaterRes + (DoubleJump | Magnet + Blink | Magnet + Grapple)
 Door->Right: WaterRes + (DoubleJump | Blink | Grapple)

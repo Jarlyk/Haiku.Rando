@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Haiku.Rando.Logic;
@@ -26,22 +27,58 @@ namespace Haiku.Rando
             _random = new Xoroshiro128Plus(seed.S0, seed.S1);
         }
 
-        public void Randomize()
+        // TODO: exclude Old Arcadia and Archives transitions if their respective
+        // settings are off
+
+        public void Randomize(GenerationSettings gs)
         {
-            //TODO: Multiple attempts, in case randomization fails
-            TryRandomize();
+            switch (gs.Level)
+            {
+                case RandomizationLevel.Doors:
+                    RandomizeDoors();
+                    break;
+                case RandomizationLevel.Rooms:
+                    RandomizeAll();
+                    break;
+                default:
+                    throw new InvalidOperationException("tried to randomize transitions without any transition rando enabled");
+            }
         }
 
-        private bool TryRandomize()
+        public void RandomizeAll()
         {
+            //TODO: Multiple attempts, in case randomization fails
             //We only want to swap transition nodes that change scenes, ignoring the Train
             //We're also only looking at Edge and Door transitions; things get weird with stuff like elevators
             var availableNodes = _topology.Nodes.OfType<TransitionNode>().Where(n => !n.InScene(SpecialScenes.Train) && n.SceneId1 != n.SceneId2
             && (n.Type == TransitionType.RoomEdge || n.Type == TransitionType.Door)).ToList();
+            TryRandomize(availableNodes);
+        }
 
+        public void RandomizeDoors()
+        {
+            var doorTransitions = new HashSet<(int, int)>
+            {
+                (95, 97), // Steam Town
+                (24, 166), // Tire Village
+                (222, 46), // Freezer
+                (138, 227), // First Tree
+                (220, 169), // Echo
+                (197, 224), // Reaper
+                (208, 223), // Elder Snailbot
+                (270, 254), // Reactor Core
+            };
+            var doorNodes = _topology.Transitions
+                .Where(n => doorTransitions.Contains((n.SceneId1, n.SceneId2)) ||
+                            doorTransitions.Contains((n.SceneId2, n.SceneId1)))
+                .ToList();
+            TryRandomize(doorNodes);
+        }
+
+        private bool TryRandomize(List<TransitionNode> availableNodes)
+        {
             var blacklistedTransitions = new Dictionary<int, int>
             {
-                { 95, 97 }, // save the children
                 { 62, 205 }, // virus entrance
                 { 139, 144 }, // TE fight entrance
                 { 98, 91 }, // MM drop

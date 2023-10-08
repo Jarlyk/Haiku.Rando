@@ -59,7 +59,8 @@ namespace Haiku.Rando.Logic
             {(212, "Left"), LogicSymbol.MiniBoss}, // Big Brother
             {(200, "Right"), LogicSymbol.ProtonBoss}, // Proton (also needs FireRes)
             {(98, "Right"), LogicSymbol.MiniBoss}, // Mischevious
-            {(205, null), LogicSymbol.VirusBoss} // Virus
+            {(205, null), LogicSymbol.VirusBoss}, // Virus
+            {(97, "Left"), LogicSymbol.SteamTownChildren}
         };
 
         // This is the maximum number of checks that can fit in a Bitset64.

@@ -17,6 +17,9 @@ namespace Haiku.Rando
         //Areas,
 
         [Description("Randomize pickups and room transitions")]
-        Rooms
+        Rooms,
+
+        [Description("Randomize pickups and door transitions")]
+        Doors
     }
 }

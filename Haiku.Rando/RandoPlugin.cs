@@ -480,7 +480,7 @@ namespace Haiku.Rando
                     Debug.LogWarning($"Randomization failed: attempt {i+1} of {maxRetries}");
                     //Iterate the seed
                     gs.Seed = $"{origSeed}__attempt{i+1}";
-                    if (gs.Level == RandomizationLevel.Rooms)
+                    if (gs.Level == RandomizationLevel.Rooms || gs.Level == RandomizationLevel.Doors)
                     {
                         ReloadTopology();
                     }
@@ -522,11 +522,11 @@ namespace Haiku.Rando
                 startScene = null;
             }
 
-            if (gs.Level == RandomizationLevel.Rooms)
+            if (gs.Level == RandomizationLevel.Rooms || gs.Level == RandomizationLevel.Doors)
             {
                 Debug.Log("** Configuring transition randomization **");
                 _transRandomizer = new TransitionRandomizer(_topology, evaluator, seed);
-                _transRandomizer.Randomize();
+                _transRandomizer.Randomize(gs);
                 TransitionManager.Instance.Randomizer = _transRandomizer;
             }
 

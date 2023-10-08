@@ -80,6 +80,7 @@ namespace Haiku.Rando.Logic
         CreatorTrioBoss,
         VirusBoss,
         MiniBoss,
+        SteamTownChildren,
         False
     }
 }
