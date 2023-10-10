@@ -28,15 +28,17 @@ namespace Haiku.Rando
             var randomizer = Instance.Randomizer;
             if (randomizer != null)
             {
-                var outgoing = self.transform.localScale.x >= 1f;
-                var node1 = randomizer.Swaps.Keys.FirstOrDefault(n => n.Name == self.pointName);
-                if (node1 != null)
+                var src = new TransitionSource(
+                    self.gameObject.scene.buildIndex,
+                    self.levelToLoad,
+                    self.pointName
+                );
+
+                if (randomizer.Redirects.TryGetValue(src, out var dest))
                 {
-                    var oldName = self.pointName;
-                    var node2 = randomizer.Swaps[node1];
-                    self.pointName = node2.Name;
-                    self.levelToLoad = outgoing ? node1.SceneId2 : node2.SceneId1;
-                    Debug.Log($"Reconfiguring {oldName} door transition to {self.levelToLoad}:{self.pointName}");
+                    Debug.Log($"Reconfiguring {self.pointName} door transition to {dest.ToScene}:{dest.ToTransition}");
+                    self.levelToLoad = dest.ToScene;
+                    self.pointName = dest.ToTransition;
                 }
             }
         }
@@ -48,15 +50,17 @@ namespace Haiku.Rando
             var randomizer = Instance.Randomizer;
             if (randomizer != null)
             {
-                var outgoing = self.transform.localScale.x >= 1f;
-                var node1 = randomizer.Swaps.Keys.FirstOrDefault(n => n.Name == self.pointName);
-                if (node1 != null)
+                var src = new TransitionSource(
+                    self.gameObject.scene.buildIndex,
+                    self.levelToLoad,
+                    self.pointName
+                );
+
+                if (randomizer.Redirects.TryGetValue(src, out var dest))
                 {
-                    var oldName = self.pointName;
-                    var node2 = randomizer.Swaps[node1];
-                    self.pointName = node2.Name;
-                    self.levelToLoad = outgoing ? node1.SceneId2 : node2.SceneId1;
-                    Debug.Log($"Redirecting {oldName} edge transition to {self.levelToLoad}:{self.pointName}");
+                    Debug.Log($"Reconfiguring {self.pointName} edge transition to {dest.ToScene}:{dest.ToTransition}");
+                    self.levelToLoad = dest.ToScene;
+                    self.pointName = dest.ToTransition;
                 }
             }
         }

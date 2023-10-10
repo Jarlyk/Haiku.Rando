@@ -16,9 +16,9 @@ namespace Haiku.Rando
         private readonly RandoTopology _topology;
         private readonly LogicEvaluator _logic;
         private readonly Xoroshiro128Plus _random;
-        private readonly Dictionary<TransitionNode, TransitionNode> _swaps = new Dictionary<TransitionNode, TransitionNode>();
+        private readonly Dictionary<TransitionSource, TransitionDestination> _redirects = new();
 
-        public IReadOnlyDictionary<TransitionNode, TransitionNode> Swaps => _swaps;
+        public IReadOnlyDictionary<TransitionSource, TransitionDestination> Redirects => _redirects;
 
         public TransitionRandomizer(RandoTopology topology, LogicEvaluator logic, Seed128 seed)
         {
@@ -140,8 +140,10 @@ namespace Haiku.Rando
 
                 //Save the mapping, as the TransitionManager needs to know this to actually swap the transition during gameplay
                 Debug.Log($"Swapping transition {node1.Name} with {node2.Name}");
-                _swaps.Add(node2, node1);
-                _swaps.Add(node1, node2);
+                _redirects[new(node1.SceneId1, node1.SceneId2, node1.Name)] = new(node2.SceneId2, node2.Name);
+                _redirects[new(node2.SceneId2, node2.SceneId1, node2.Name)] = new(node1.SceneId1, node1.Name);
+                _redirects[new(node2.SceneId1, node2.SceneId2, node2.Name)] = new(node1.SceneId2, node1.Name);
+                _redirects[new(node1.SceneId2, node1.SceneId1, node1.Name)] = new(node2.SceneId1, node2.Name);
 
                 //We're going to track the transitions involved here as 1_2 and 3_4
                 //Our goal is change the topology so that we end up with 1_4 and 3_2
@@ -214,4 +216,7 @@ namespace Haiku.Rando
             }
         }
     }
+
+    public record struct TransitionSource(int FromScene, int ToScene, string ToTransition);
+    public record struct TransitionDestination(int ToScene, string ToTransition);
 }
