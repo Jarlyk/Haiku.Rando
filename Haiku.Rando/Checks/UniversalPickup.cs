@@ -138,6 +138,7 @@ namespace Haiku.Rando.Checks
                 var newObj = Replace(obj, replacement, false);
                 if (orig.SceneId == SpecialScenes.Quatern)
                 {
+                    Debug.Log($"Replacing {obj} with {replacement}");
                     newObj.SetActive(false);
                     QuaternRewardReplacer.ReplaceCheck(orig, replacement, newObj);
                 }

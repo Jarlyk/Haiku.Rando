@@ -40,12 +40,15 @@ namespace Haiku.Rando.Checks
                 // original loop
                 var i = GameManager.instance.lastPowercellCount - 1;
                 var rewardObj = self.rewardObjects[i];
+                Debug.Log($"Reward object {i} is {rewardObj.name}");
                 if (rewardObj.name.Contains("_Chip"))
                 {
                     var r = replacer?.chipReplacement;
                     if (r != null)
                     {
-                        r.Pickup.SetActive(!r.Check.Obtained());
+                        var unclaimed = !r.Check.Obtained();
+                        rewardObj.SetActive(unclaimed);
+                        r.Pickup.SetActive(unclaimed);
                     }
                 }
                 else if (rewardObj.name.Contains("_Health fragment 1"))
