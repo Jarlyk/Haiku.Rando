@@ -1794,8 +1794,10 @@ Scene 190
 // Transitions: Right (191-180), Left (194-191)
 // Checks: Lore (Lore[21]), MoneyPile5 (MoneyPile[111]), MoneyPile6 (MoneyPile[110]), MoneyPile7 (MoneyPile[112]), MoneyPile1 (MoneyPile[108]), MoneyPile3 (MoneyPile[107]), MoneyPile0 (MoneyPile[109]), MoneyPile2 (MoneyPile[105]), MoneyPile4 (MoneyPile[106])
 Scene 191
-$Exit {Left, Right}
-Exit->*: Ball
+Left->Lore: true
+Left->MoneyPile*: true
+Left->Right: Ball
+Right->*: Ball
 
 // Scene 192
 // Transitions: Left1 (100-192), Left0 (178-192)
@@ -1824,7 +1826,7 @@ Left->Right0: Magnet | DoubleJump
 // Transitions: Right (194-191), Left (193-194), Repair (194Repair)
 // Checks: Chip (Chip[5])
 Scene 194
-*->Right: Ball
+*->Right: Ball | Blink
 Right->*: Ball
 
 // Scene 195
