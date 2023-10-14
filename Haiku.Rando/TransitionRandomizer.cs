@@ -27,7 +27,7 @@ namespace Haiku.Rando
             _random = new Xoroshiro128Plus(seed.S0, seed.S1);
         }
 
-        // TODO: exclude Old Arcadia and Archives transitions if their respective
+        // TODO: exclude Old Arcadia transitions if their respective
         // settings are off
 
         public void Randomize(GenerationSettings gs)
@@ -35,27 +35,38 @@ namespace Haiku.Rando
             switch (gs.Level)
             {
                 case RandomizationLevel.Doors:
-                    RandomizeDoors();
+                    RandomizeDoors(gs.IncludeOldArcadia);
                     break;
                 case RandomizationLevel.Rooms:
-                    RandomizeAll();
+                    RandomizeAll(gs.IncludeOldArcadia);
                     break;
                 default:
                     throw new InvalidOperationException("tried to randomize transitions without any transition rando enabled");
             }
         }
 
-        public void RandomizeAll()
+        public void RandomizeAll(bool includeOldArcadia)
         {
             //TODO: Multiple attempts, in case randomization fails
             //We only want to swap transition nodes that change scenes, ignoring the Train
             //We're also only looking at Edge and Door transitions; things get weird with stuff like elevators
-            var availableNodes = _topology.Nodes.OfType<TransitionNode>().Where(n => !n.InScene(SpecialScenes.Train) && n.SceneId1 != n.SceneId2
-            && (n.Type == TransitionType.RoomEdge || n.Type == TransitionType.Door)).ToList();
-            TryRandomize(availableNodes);
+            bool IsRandomizableTransition(TransitionNode n)
+            {
+                return !n.InScene(SpecialScenes.Train) && n.SceneId1 != n.SceneId2 && 
+                    (n.Type == TransitionType.RoomEdge || n.Type == TransitionType.Door);
+            }
+
+            var availableNodes = _topology.Nodes.OfType<TransitionNode>().Where(IsRandomizableTransition);
+            if (!includeOldArcadia)
+            {
+                availableNodes = availableNodes.Where(
+                    n => n.SceneId1 <= SpecialScenes.LastRoomBeforeOldArcadia &&
+                         n.SceneId2 <= SpecialScenes.LastRoomBeforeOldArcadia);
+            }
+            TryRandomize(availableNodes.ToList());
         }
 
-        public void RandomizeDoors()
+        public void RandomizeDoors(bool includeOldArcadia)
         {
             var doorTransitions = new HashSet<(int, int)>
             {
@@ -66,8 +77,11 @@ namespace Haiku.Rando
                 (220, 169), // Echo
                 (197, 224), // Reaper
                 (208, 223), // Elder Snailbot
-                (270, 254), // Reactor Core
             };
+            if (includeOldArcadia)
+            {
+                doorTransitions.Add((270, 254)); // Reactor Core
+            }
             var doorNodes = _topology.Transitions
                 .Where(n => doorTransitions.Contains((n.SceneId1, n.SceneId2)) ||
                             doorTransitions.Contains((n.SceneId2, n.SceneId1)))
