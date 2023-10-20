@@ -331,7 +331,7 @@ namespace Haiku.Rando.Logic
                 throw new RandomizationException($"insufficient locations to place all remaining checks; {_checksToReplace.Count} existing, {_pool.Count} needed");
             }
 
-            UniformShuffle(_checksToReplace);
+            _random.UniformShuffle(_checksToReplace);
 
             for (var i = 0; i < _pool.Count; i++)
             {
@@ -360,17 +360,6 @@ namespace Haiku.Rando.Logic
 
             _pool.Clear();
             _checksToReplace.Clear();
-        }
-
-        private void UniformShuffle(List<InLogicCheck> checks)
-        {
-            for (var i = 0; i < checks.Count; i++)
-            {
-                var j = _random.NextRange(i, checks.Count);
-                var c = checks[i];
-                checks[i] = checks[j];
-                checks[j] = c;
-            }
         }
 
         private static double WeighFrontier(FrontierEdge edge)

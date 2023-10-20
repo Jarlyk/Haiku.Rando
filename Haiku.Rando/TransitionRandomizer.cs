@@ -114,6 +114,39 @@ namespace Haiku.Rando
             availableNodes.RemoveAll(n => (n.Incoming.Count > 0 && n.Incoming.All(e => _logic.IsFalse(e)) ||
                                            n.Outgoing.Count > 0 && n.Outgoing.All(e => _logic.IsFalse(e))));
 
+            var newDestinations = new List<TransitionNode>(availableNodes);
+            _random.UniformShuffle(newDestinations);
+            var rebindings = new List<(int, string)>(availableNodes.Count);
+
+            for (int i = 0; i < availableNodes.Count; i++)
+            {
+                var node1 = availableNodes[i];
+                var node2 = newDestinations[i];
+
+                Debug.Log($"Redirecting transition {node1.Name} to target of {node2.Name}");
+
+                _redirects[new(node1.SceneId1, node1.SceneId2, node1.Name)] = new(node2.SceneId2, node2.Name);
+                _redirects[new(node2.SceneId2, node2.SceneId1, node2.Name)] = new(node1.SceneId1, node1.Name);
+
+                var newDestScene = _topology.Scenes[node2.SceneId2];
+
+                AdjustEdges(node2, node1, newDestScene);
+                newDestScene.Nodes.Remove(node2);
+                newDestScene.Nodes.Add(node1);
+                // We can't immediately rebind node1's SceneId2 and Alias2,
+                // as eventually something else will rebind to node1's too.
+                rebindings.Add((node2.SceneId2, node2.Alias2));
+            }
+
+            for (int i = 0; i < availableNodes.Count; i++)
+            {
+                var node1 = availableNodes[i];
+                var (scene, alias) = rebindings[i];
+                node1.SceneId2 = scene;
+                node1.Alias2 = alias;
+            }
+
+            // If the map got split into disjoint parts, rejoin them.
             const int swapCount = 200;
             for (int i = 0; i < swapCount; i++)
             {
@@ -139,17 +172,13 @@ namespace Haiku.Rando
                 //If so, we'll try to pick in a way that rejoins them
                 var accessible = GetAllAccessibleNodes(node1);
                 var remainder = matchingNodes.Except(accessible).ToList();
-                TransitionNode node2;
-                if (remainder.Count > 0)
+                // Everything is reachable from node1. We're done.
+                if (remainder.Count == 0)
                 {
-                    int pick2 = _random.NextRange(0, remainder.Count);
-                    node2 = remainder[pick2];
+                    break;
                 }
-                else
-                {
-                    int pick2 = _random.NextRange(0, matchingNodes.Count);
-                    node2 = matchingNodes[pick2];
-                }
+                int pick2 = _random.NextRange(0, remainder.Count);
+                var node2 = remainder[pick2];
                 availableNodes.Remove(node2);
 
                 //Save the mapping, as the TransitionManager needs to know this to actually swap the transition during gameplay

@@ -10,6 +10,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 /**
  * Blackman and Vigna's XOr ROtate SHIft ROtate 128+ PRNG algorithm <http://vigna.di.unimi.it/xorshift/xoroshiro128plus.c> implementation in C#.
@@ -238,6 +239,18 @@ namespace Haiku.Rando.Util
             for (int i = 0; i < bytes.Length; i += 8)
             {
                 Array.Copy(BitConverter.GetBytes(next()), 0, bytes, i, Math.Min(8, (bytes.Length - i)));
+            }
+        }
+
+        // Added for the Haiku rando.
+        public void UniformShuffle<T>(List<T> items)
+        {
+            for (var i = 0; i < items.Count; i++)
+            {
+                var j = NextRange(i, items.Count);
+                var x = items[i];
+                items[i] = items[j];
+                items[j] = x;
             }
         }
 
