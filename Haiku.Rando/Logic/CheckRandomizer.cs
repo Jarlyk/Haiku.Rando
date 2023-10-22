@@ -517,6 +517,7 @@ namespace Haiku.Rando.Logic
             if (Settings.Contains(Pool.Sealants)) AddToPool(CheckType.FireRes);
             if (Settings.Contains(Pool.Sealants)) AddToPool(CheckType.WaterRes);
             if (Settings.Contains(Pool.Lore)) AddToPool(CheckType.Lore);
+            if (Settings.Contains(Pool.Splunk)) AddToPool(CheckType.Splunk);
             if (Settings.Contains(Pool.MapMarkers)) AddToPool(CheckType.MapMarker);
             if (Settings.Contains(Pool.Clock)) AddToPool(CheckType.Clock);
             if (Settings.Contains(Pool.ScrapShrines))

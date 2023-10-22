@@ -16,7 +16,7 @@ namespace Haiku.Rando.Topology
         MapDisruptor,
         Lore,
         Lever,
-        PartsMonument,
+        Splunk,
         PowerCell,
         Coolant,
         FireRes,

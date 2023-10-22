@@ -63,6 +63,12 @@ namespace Haiku.Rando.Checks
                 Name = ModText._LORE_TITLE,
                 Description = ModText._LORE_DESCRIPTION
             },
+            CheckType.Splunk => new()
+            {
+                Sprite = GameManager.instance.chip[15].image,
+                Name = "_SPARE_PARTS_TITLE",
+                Description = "_SPARE_PARTS_DESCRIPTION"
+            },
             CheckType.PowerCell => new()
             {
                 Sprite = HaikuResources.RefPowerCell.GetComponentInChildren<SpriteRenderer>(true).sprite,

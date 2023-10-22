@@ -656,6 +656,14 @@ namespace Haiku.Rando.Topology
                 }
             }
 
+            foreach (var splunk in SceneUtils.FindObjectsOfType<SplunkOnBench>())
+            {
+                var check = new RandoCheck(CheckType.Splunk, sceneId, splunk.transform.position, 0);
+                check.Alias = "Splunk";
+                check.SaveId = 6; // the amount of geo given
+                checks.Add(check);
+            }
+
             int shopItemIndex = 0;
             foreach (var shop in SceneUtils.FindObjectsOfType<ShopTrigger>())
             {

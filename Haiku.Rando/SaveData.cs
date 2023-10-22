@@ -16,10 +16,12 @@ namespace Haiku.Rando
         
         private const string collectedLoreKey = "randoCollectedLoreTablets";
         private const string collectedFillerKey = "randoCollectedFillers";
+        private const string collectedSplunkKey = "randoCollectedSplunk";
 
         public GenerationSettings Settings;
         public Bitset64 CollectedLore;
         public Bitset64 CollectedFillers;
+        public bool CollectedSplunk;
         public MWSaveData MW;
 
         public static SaveData Load(ES3File saveFile) =>
@@ -43,6 +45,7 @@ namespace Haiku.Rando
             };
             CollectedLore = new(saveFile.Load<ulong>(collectedLoreKey, 0UL));
             CollectedFillers = new(saveFile.Load<ulong>(collectedFillerKey, 0UL));
+            CollectedSplunk = saveFile.Load<bool>(collectedSplunkKey, false);
             MW = MWSaveData.Load(saveFile);
         }
 
@@ -58,6 +61,7 @@ namespace Haiku.Rando
             saveFile.Save(levelKey, (int)Settings.Level);
             saveFile.Save(collectedLoreKey, CollectedLore.Bits);
             saveFile.Save(collectedFillerKey, CollectedFillers.Bits);
+            saveFile.Save(collectedSplunkKey, CollectedSplunk);
             if (MW != null)
             {
                 MW.SaveTo(saveFile);

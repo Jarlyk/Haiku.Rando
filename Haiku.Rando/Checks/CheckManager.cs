@@ -81,6 +81,7 @@ namespace Haiku.Rando.Checks
             CheckType.ChipSlot => r => UniversalPickup.ReplaceChipSlot(orig, r),
             CheckType.MapDisruptor => UniversalPickup.ReplaceMapDisruptor,
             CheckType.Lore => r => UniversalPickup.ReplaceLore(orig, r),
+            CheckType.Splunk => SplunkRewardReplacer.ReplaceCheck,
             CheckType.PowerCell => r => UniversalPickup.ReplacePowerCell(orig, r),
             CheckType.Coolant => r => UniversalPickup.ReplaceCoolant(orig, r),
             CheckType.FireRes => SealantShopItemReplacer.ReplaceFire,
@@ -145,7 +146,7 @@ namespace Haiku.Rando.Checks
             CheckType.TrainStation => GameManager.instance.trainStations[check.CheckId].unlockedStation,
             CheckType.Clock => GameManager.instance.trainUnlocked,
             CheckType.Lore => GetCurrentSaveData().CollectedLore.Contains(check.CheckId),
-            CheckType.PartsMonument => false,
+            CheckType.Splunk => GetCurrentSaveData().CollectedSplunk,
             CheckType.MapMarker => HasMapMarker((RustyType)check.CheckId),
             CheckType.MoneyPile => GameManager.instance.moneyPiles[check.CheckId].collected,
             _ => throw new ArgumentOutOfRangeException()
@@ -266,8 +267,10 @@ namespace Haiku.Rando.Checks
                     GetCurrentSaveData().CollectedLore.Add(check.CheckId);
                     hasWorldObject = false;
                     break;
-                case CheckType.PartsMonument:
-                    //TODO
+                case CheckType.Splunk:
+                    GetCurrentSaveData().CollectedSplunk = true;
+                    InventoryManager.instance.AddSpareParts(check.SaveId);
+                    hasWorldObject = false;
                     break;
                 case CheckType.PowerCell:
                     self.StartCoroutine(RemoveHeat());
@@ -402,7 +405,8 @@ namespace Haiku.Rando.Checks
                 CameraBehavior.instance.leftCornerTitleText.text = annotatedName;
                 RecentPickupDisplay.AddRecentPickup(uidef.Sprite, annotatedName, where?.Where);
             }
-            else if (check is RandoCheck rc && rc.Type == CheckType.MoneyPile)
+            else if (check is RandoCheck rc && 
+                (rc.Type == CheckType.MoneyPile || rc.Type == CheckType.Splunk))
             {
                 var value = rc.SaveId;
                 var annotatedName = $"{value} {CameraBehavior.instance.leftCornerTitleText.text}";

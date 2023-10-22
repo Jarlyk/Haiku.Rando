@@ -33,7 +33,8 @@ namespace Haiku.Rando
         Lore,
         ScrapShrines,
         Clock,
-        Levers
+        Levers,
+        Splunk
     }
 
     public enum StartingItemSet
