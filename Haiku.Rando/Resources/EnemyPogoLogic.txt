@@ -78,6 +78,10 @@ Scene 104 // Fire Wheels Incinerator Room
 Right1->PowerCell: FireRes
 Right*->Lore: FireRes + Magnet
 
+Scene 111 // First Splunk location, in Water Ducts
+
+Right->Left: true // pogo a fish
+
 Scene 114 // Water Ducts, right of the train
 
 *->*: true

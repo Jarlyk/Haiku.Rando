@@ -631,7 +631,7 @@ Right0->Left0: Ball
 Right0->Left1: true
 Right0->Left2: true
 Right0->Right1: true
-Right1->*: Magnet | DoubleJump
+Right1->*: Magnet | (Ball + DoubleJump) // corner boost with ball
 Left0->Right0: Ball
 Left0->Chip: Ball
 *->Right0: Magnet | DoubleJump
