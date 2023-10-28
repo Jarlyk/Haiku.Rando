@@ -1,3 +1,22 @@
+# 2.4 (28 October 2023)
+
+New features:
+
+- Door rando: randomizes all 8 minor door transitions.
+- The reward at the end of Splunk's quest can be randomized.
+- Options to exclude Old Arcadia and Lost Archives from randomization.
+
+Bug fixes:
+
+- Blink-only entrance to the Factory shrine room is now in logic.
+- Logic now allows for crossing the first Splunk room from right to left with enemy pogos.
+- Fixed a false positive on entry to the Car Battery room.
+- Transition rando (room or door)'s permutations are no longer restricted to pairwise swaps.
+
+Known issues:
+
+- Full room rando (not door) may sometimes generate uncompletable seeds. Fixes are welcome.
+
 # 2.3 (5 October 2023)
 
 New features:

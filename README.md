@@ -12,8 +12,20 @@ therefore more likely to have problems, so if you run into any issues, please le
 
 ## Configuration options
 
-- **Randomization Level**: selects whether only item pickups are randomized (the default), or both room transitions and item
-  pickups, or neither.
+- **Randomization Level**: selects whether only item pickups are randomized, or also room transitions.
+  There are four levels:
+  - Disable Randomization (randomizes nothing)
+  - Randomize pickups only
+  - Randomize pickups and room transitions
+  - Randomize pickups and door transitions - the following doors are included:
+    - Steam Town engine
+    - Echo
+    - Reaper
+    - Pantry (in Bunker)
+    - Atom (in First Tree)
+    - Elder Snailbot
+    - Near Tire Mother (in Abandoned Wastes)
+    - Reactor Core (in Old Arcadia besides Elegy)
 - **Seed**: the randomization seed. If left blank, the game will generate a random seed.
 - **Random Start Location**: if enabled, starts the game at a randomly-chosen repair station instead of the opening cutscene wake location.
 - **Train Lover Mode**: if enabled, starts the game in the train with one station unlocked.
