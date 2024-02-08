@@ -395,6 +395,10 @@ namespace Haiku.Rando
 
         internal void GiveStartingState()
         {
+            if (GameManager.instance.introPlayed)
+            {
+                return;
+            }
             var rando = _randomizer;
             var gs = rando.Settings;
             if (rando.StartScene != null)
