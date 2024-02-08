@@ -13,6 +13,8 @@ namespace Haiku.Rando
         private const string startingItemsKey = "randoStartingItems";
         private const string skipsKey = "randoSkips";
         private const string levelKey = "randoLevel";
+        private const string includeOldArcadiaKey = "randoIncludeOldArcadia";
+        private const string includeLostArchivesKey = "randoIncludeLostArchives";
         
         private const string collectedLoreKey = "randoCollectedLoreTablets";
         private const string collectedFillerKey = "randoCollectedFillers";
@@ -41,7 +43,9 @@ namespace Haiku.Rando
                 Pools = new(saveFile.Load<ulong>(poolsKey, 0UL)),
                 StartingItems = new(saveFile.Load<ulong>(startingItemsKey, 0UL)),
                 Skips = new(saveFile.Load<ulong>(skipsKey, 0UL)),
-                Level = (RandomizationLevel)saveFile.Load<int>(levelKey, 0)
+                Level = (RandomizationLevel)saveFile.Load<int>(levelKey, 0),
+                IncludeOldArcadia = saveFile.Load<bool>(includeOldArcadiaKey, false),
+                IncludeLostArchives = saveFile.Load<bool>(includeLostArchivesKey, false)
             };
             CollectedLore = new(saveFile.Load<ulong>(collectedLoreKey, 0UL));
             CollectedFillers = new(saveFile.Load<ulong>(collectedFillerKey, 0UL));
@@ -59,6 +63,8 @@ namespace Haiku.Rando
             saveFile.Save(startingItemsKey, Settings.StartingItems.Bits);
             saveFile.Save(skipsKey, Settings.Skips.Bits);
             saveFile.Save(levelKey, (int)Settings.Level);
+            saveFile.Save(includeOldArcadiaKey, Settings.IncludeOldArcadia);
+            saveFile.Save(includeLostArchivesKey, Settings.IncludeLostArchives);
             saveFile.Save(collectedLoreKey, CollectedLore.Bits);
             saveFile.Save(collectedFillerKey, CollectedFillers.Bits);
             saveFile.Save(collectedSplunkKey, CollectedSplunk);
