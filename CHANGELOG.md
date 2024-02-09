@@ -1,3 +1,14 @@
+# 2.4.1 (9 February 2024)
+
+Bug fixes:
+
+- Starting items (including scrap) are now granted only once.
+- The Include Old Arcadia and Include Lost Archives settings are now preserved properly in the save file.
+  (Previously, if these options were enabled, they would
+  no longer be on after reloading the file, causing the entire seed to change.)
+- The train location no longer resets to the starting
+  station when reloading a Train Lover Mode save.
+
 # 2.4 (28 October 2023)
 
 New features:
