@@ -198,6 +198,7 @@ namespace Haiku.Rando.Checks
                 _ => "_MARKER"
             },
             CheckType.MoneyPile => "_SPARE_PARTS_TITLE",
+            CheckType.Splunk => "_SPARE_PARTS_TITLE",
             CheckType.Clock => ModText._CLOCK_TITLE,
             CheckType.Lever => ModText._LEVER_TITLE(check.CheckId),
             _ => throw new ArgumentOutOfRangeException($"name not defined for check type {check.Type}")
