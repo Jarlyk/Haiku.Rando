@@ -1296,6 +1296,7 @@ Left1->Right: DoubleJump
 Left1->*: Magnet + (Blink | Grapple)
 Left1->Left0: DoubleJump
 *->Chip: Magnet + (Grapple | Blink | DoubleJump)
+Right->Chip: Blink + AmplifyingTransputer
 
 // Scene 136
 // Transitions: Left (134-136), Train (136-Train)
