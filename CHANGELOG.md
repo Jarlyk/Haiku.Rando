@@ -1,3 +1,11 @@
+# 2.4.2 (31 August 2024)
+
+Bug fixes:
+
+- Enabling Splunk no longer causes multiworld generation to fail.
+- The Space Disturbance location is now reachable with just the right
+  transition, Blink and Amplifying Transputer
+
 # 2.4.1 (9 February 2024)
 
 Bug fixes:
